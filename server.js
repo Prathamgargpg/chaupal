@@ -52,9 +52,12 @@ function limit(req, res, next) {
   arr.push(now); hits.set(key, arr); next();
 }
 
+// Express 4 does not catch errors thrown in async routes; this does, and answers in JSON
+const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-app.post("/api/signup", limit, async (req, res) => {
+app.post("/api/signup", limit, wrap(async (req, res) => {
   const { name, email, password } = req.body || {};
   const e = String(email || "").trim().toLowerCase();
   const n = String(name || "").trim().slice(0, 40) || e.split("@")[0];
@@ -62,18 +65,23 @@ app.post("/api/signup", limit, async (req, res) => {
   if (String(password || "").length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
   if (findByEmail.get(e)) return res.status(409).json({ error: "An account with this email already exists. Sign in instead." });
   const hash = await bcrypt.hash(password, 10);
-  const info = insertUser.run(e, n, hash);
+  let info;
+  try { info = insertUser.run(e, n, hash); }
+  catch (err) {
+    if (String(err.code).startsWith("SQLITE_CONSTRAINT")) return res.status(409).json({ error: "An account with this email already exists. Sign in instead." });
+    throw err;
+  }
   const user = { id: info.lastInsertRowid, name: n, email: e };
   res.json({ token: sign(user), user: publicUser(user) });
-});
+}));
 
-app.post("/api/login", limit, async (req, res) => {
+app.post("/api/login", limit, wrap(async (req, res) => {
   const { email, password } = req.body || {};
   const row = findByEmail.get(String(email || "").trim().toLowerCase());
   const ok = row && (await bcrypt.compare(String(password || ""), row.password_hash));
   if (!ok) return res.status(401).json({ error: "Email or password is incorrect." });
   res.json({ token: sign(row), user: publicUser(row) });
-});
+}));
 
 function auth(req, res, next) {
   const h = req.headers.authorization || "";
@@ -102,7 +110,19 @@ app.get("/api/ice", auth, (req, res) => {
   res.json({ iceServers });
 });
 
-app.get("/healthz", (_req, res) => res.send("ok"));
+app.get("/healthz", (_req, res) => {
+  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok" }); }
+  catch (e) { res.status(500).json({ ok: false, db: String(e.message) }); }
+});
+
+// any unhandled route error (including bad JSON bodies) -> JSON, never an HTML page
+app.use((err, _req, res, _next) => {
+  console.error("Request error:", err);
+  if (err.type === "entity.parse.failed") return res.status(400).json({ error: "Bad request." });
+  res.status(500).json({ error: "Server error. Please try again in a moment." });
+});
+
+process.on("unhandledRejection", e => console.error("Unhandled rejection:", e));
 
 /* ---------- socket.io signaling ---------- */
 const server = http.createServer(app);
