@@ -1,405 +1,173 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chaupal – video meetings</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<script src="/socket.io/socket.io.js"></script>
-<style>
-  :root{
-    --bg:#E9EDF4; --panel:#FFFFFF; --ink:#14213D; --muted:#5B6785;
-    --line:#CBD3E3; --accent:#F2A900; --accent-ink:#14213D;
-    --danger:#C0392B; --stage:#0E1630;
-    font-family:"Bricolage Grotesque",system-ui,sans-serif;
+import express from "express";
+import http from "http";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { Server } from "socket.io";
+import Database from "better-sqlite3";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PORT = process.env.PORT || 3000;
+const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 6);
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "chaupal.db");
+
+let JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  JWT_SECRET = "dev-only-secret-" + Math.random().toString(36).slice(2);
+  console.warn("JWT_SECRET not set. Using a temporary one; logins reset on restart.");
+}
+
+/* ---------- database ---------- */
+fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+const db = new Database(DB_PATH);
+db.pragma("journal_mode = WAL");
+db.exec(`CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)`);
+const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
+const findById = db.prepare("SELECT id, email, name FROM users WHERE id = ?");
+const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
+
+/* ---------- app ---------- */
+const app = express();
+app.set("trust proxy", 1);
+app.use(express.json({ limit: "10kb" }));
+app.use(express.static(path.join(__dirname, "public")));
+
+const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
+const publicUser = u => ({ id: u.id, name: u.name, email: u.email });
+
+// tiny in-memory rate limit for auth endpoints
+const hits = new Map();
+function limit(req, res, next) {
+  const key = req.ip, now = Date.now();
+  const arr = (hits.get(key) || []).filter(t => now - t < 10 * 60 * 1000);
+  if (arr.length >= 30) return res.status(429).json({ error: "Too many attempts. Try again in a few minutes." });
+  arr.push(now); hits.set(key, arr); next();
+}
+
+// Express 4 does not catch errors thrown in async routes; this does, and answers in JSON
+const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+app.post("/api/signup", limit, wrap(async (req, res) => {
+  const { name, email, password } = req.body || {};
+  const e = String(email || "").trim().toLowerCase();
+  const n = String(name || "").trim().slice(0, 40) || e.split("@")[0];
+  if (!EMAIL_RE.test(e)) return res.status(400).json({ error: "Enter a valid email address." });
+  if (String(password || "").length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
+  if (findByEmail.get(e)) return res.status(409).json({ error: "An account with this email already exists. Sign in instead." });
+  const hash = await bcrypt.hash(password, 10);
+  let info;
+  try { info = insertUser.run(e, n, hash); }
+  catch (err) {
+    if (String(err.code).startsWith("SQLITE_CONSTRAINT")) return res.status(409).json({ error: "An account with this email already exists. Sign in instead." });
+    throw err;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink)}
-  button,input{font:inherit;color:inherit}
-  button{cursor:pointer}
-  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-  .hidden{display:none!important}
-  .center{min-height:100%;display:grid;place-items:center;padding:24px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px;width:min(440px,100%)}
-  h1{font-size:44px;line-height:1;letter-spacing:-.03em;margin:0 0 8px;font-weight:800}
-  h2{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
-  p.sub{color:var(--muted);margin:0 0 24px;line-height:1.45}
-  .tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:20px}
-  .tabs button{flex:1;border:0;background:transparent;padding:10px;border-radius:7px;font-weight:600;color:var(--muted)}
-  .tabs button[aria-selected=true]{background:var(--panel);color:var(--ink)}
-  label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
-  input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:#fff}
-  .btn{border:0;border-radius:8px;padding:12px 18px;font-weight:600;background:var(--accent);color:var(--accent-ink)}
-  .btn.full{width:100%;margin-top:20px}
-  .btn.ghost{background:transparent;border:1px solid var(--line)}
-  .msg{min-height:20px;margin-top:12px;font-size:14px;color:var(--danger)}
-  .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 24px}
-  .brand{font-weight:800;font-size:22px;letter-spacing:-.02em}
-  .who{display:flex;gap:12px;align-items:center;color:var(--muted);font-size:15px}
-  .lobby{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));max-width:860px;margin:40px auto;padding:0 24px}
-  .lobby .card{width:auto}
-  .row{display:flex;gap:8px}
-  .row input{flex:1}
-  .row .btn{margin:0}
+  const user = { id: info.lastInsertRowid, name: n, email: e };
+  res.json({ token: sign(user), user: publicUser(user) });
+}));
 
-  #room{position:fixed;inset:0;background:var(--stage);display:flex;flex-direction:column;color:#fff}
-  .stagebar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;font-size:14px;color:#B7C0DA}
-  .stagebar code{background:#1B2547;padding:4px 8px;border-radius:6px;color:#fff}
-  .main{flex:1;display:flex;min-height:0}
-  .grid{flex:1;display:grid;gap:10px;padding:10px 18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));grid-auto-rows:minmax(180px,1fr);min-height:0;overflow:auto}
-  .tile{position:relative;background:#1B2547;border-radius:12px;overflow:hidden;min-height:0}
-  .tile video{width:100%;height:100%;object-fit:cover;display:block}
-  .tile.local video{transform:scaleX(-1)}
-  .tile.local.sharing video{transform:none;object-fit:contain}
-  .tile .name{position:absolute;left:10px;bottom:10px;background:rgba(14,22,48,.8);padding:4px 10px;border-radius:6px;font-size:14px}
-  .chat{width:300px;border-left:1px solid #1B2547;display:flex;flex-direction:column;background:#0A1128}
-  .chat .log{flex:1;overflow:auto;padding:12px;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
-  .chat .log div{margin-bottom:10px}
-  .chat .log b{color:var(--accent)}
-  .chat form{display:flex;gap:6px;padding:10px;border-top:1px solid #1B2547}
-  .chat input{background:#1B2547;border-color:#2A3665;color:#fff}
-  .controls{display:flex;justify-content:center;gap:10px;padding:14px;flex-wrap:wrap}
-  .ctl{border:0;border-radius:999px;padding:12px 20px;background:#1B2547;color:#fff;font-weight:600}
-  .ctl[aria-pressed=true]{background:#fff;color:var(--ink)}
-  .ctl.off{background:var(--danger);color:#fff}
-  .ctl.leave{background:var(--danger)}
-  @media (max-width:800px){.chat{position:absolute;right:0;top:48px;bottom:70px;z-index:5}}
-</style>
-</head>
-<body>
+app.post("/api/login", limit, wrap(async (req, res) => {
+  const { email, password } = req.body || {};
+  const row = findByEmail.get(String(email || "").trim().toLowerCase());
+  const ok = row && (await bcrypt.compare(String(password || ""), row.password_hash));
+  if (!ok) return res.status(401).json({ error: "Email or password is incorrect." });
+  res.json({ token: sign(row), user: publicUser(row) });
+}));
 
-<main id="auth" class="center hidden">
-  <div class="card">
-    <h1>Chaupal</h1>
-    <p class="sub">Video meetings for small groups. Sign in to start or join one.</p>
-    <div class="tabs" role="tablist">
-      <button role="tab" id="tab-in" aria-selected="true">Sign in</button>
-      <button role="tab" id="tab-up" aria-selected="false">Create account</button>
-    </div>
-    <div id="name-wrap" class="hidden">
-      <label for="dname">Your name</label>
-      <input id="dname" autocomplete="name" maxlength="40">
-    </div>
-    <label for="email">Email</label>
-    <input id="email" type="email" autocomplete="email">
-    <label for="pass">Password</label>
-    <input id="pass" type="password" autocomplete="current-password">
-    <button class="btn full" id="auth-btn">Sign in</button>
-    <div class="msg" id="auth-msg" role="alert"></div>
-  </div>
-</main>
-
-<div id="lobby" class="hidden">
-  <div class="topbar">
-    <div class="brand">Chaupal</div>
-    <div class="who"><span id="who"></span><button class="btn ghost" id="logout">Sign out</button></div>
-  </div>
-  <div class="lobby">
-    <div class="card">
-      <h2>Start a meeting</h2>
-      <p class="sub">Get a link you can send to anyone.</p>
-      <button class="btn" id="new-room">Start meeting</button>
-    </div>
-    <div class="card">
-      <h2>Join a meeting</h2>
-      <p class="sub">Enter the meeting code.</p>
-      <div class="row">
-        <input id="code" placeholder="abc-defg-hij" aria-label="Meeting code">
-        <button class="btn" id="join-room">Join</button>
-      </div>
-      <div class="msg" id="lobby-msg" role="alert"></div>
-    </div>
-  </div>
-</div>
-
-<div id="room" class="hidden">
-  <div class="stagebar">
-    <div>Meeting code <code id="room-code"></code> <button class="ctl" id="copy" style="padding:4px 12px;margin-left:6px">Copy link</button></div>
-    <div id="count"></div>
-  </div>
-  <div class="main">
-    <div class="grid" id="grid"></div>
-    <aside class="chat" id="chat">
-      <div class="log" id="log" aria-live="polite"></div>
-      <form id="chat-form"><input id="chat-in" placeholder="Message everyone" aria-label="Message" maxlength="1000"><button class="btn" style="padding:8px 12px">Send</button></form>
-    </aside>
-  </div>
-  <div class="controls">
-    <button class="ctl" id="mic" aria-pressed="true">Mic on</button>
-    <button class="ctl" id="cam" aria-pressed="true">Camera on</button>
-    <button class="ctl" id="share" aria-pressed="false">Share screen</button>
-    <button class="ctl" id="toggle-chat" aria-pressed="true">Chat</button>
-    <button class="ctl leave" id="leave">Leave</button>
-  </div>
-</div>
-
-<script>
-const $ = id => document.getElementById(id);
-let token = localStorage.getItem("chaupal_token");
-let me = null, mode = "in";
-
-function show(which){ for (const id of ["auth","lobby","room"]) $(id).classList.toggle("hidden", id !== which); }
-
-/* ---------- API ---------- */
-async function api(path, opts = {}) {
-  const res = await fetch(path, {
-    method: opts.body ? "POST" : "GET",
-    headers: { "Content-Type": "application/json", ...(token ? { Authorization: "Bearer " + token } : {}) },
-    body: opts.body ? JSON.stringify(opts.body) : undefined
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "Something went wrong.");
-  return data;
-}
-
-/* ---------- auth ---------- */
-function setMode(m){
-  mode = m;
-  $("tab-in").setAttribute("aria-selected", m === "in");
-  $("tab-up").setAttribute("aria-selected", m === "up");
-  $("name-wrap").classList.toggle("hidden", m === "in");
-  $("auth-btn").textContent = m === "in" ? "Sign in" : "Create account";
-  $("pass").autocomplete = m === "in" ? "current-password" : "new-password";
-  $("auth-msg").textContent = "";
-}
-$("tab-in").onclick = () => setMode("in");
-$("tab-up").onclick = () => setMode("up");
-
-async function submitAuth(){
-  $("auth-msg").textContent = "";
+function auth(req, res, next) {
+  const h = req.headers.authorization || "";
   try {
-    const body = { email: $("email").value, password: $("pass").value };
-    if (mode === "up") body.name = $("dname").value;
-    const data = await api(mode === "up" ? "/api/signup" : "/api/login", { body });
-    token = data.token; me = data.user;
-    localStorage.setItem("chaupal_token", token);
-    afterLogin();
-  } catch (e) { $("auth-msg").textContent = e.message; }
-}
-$("auth-btn").onclick = submitAuth;
-["email","pass","dname"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") submitAuth(); }));
-
-function logout(){
-  leaveRoom();
-  token = null; me = null;
-  localStorage.removeItem("chaupal_token");
-  history.replaceState(null, "", location.pathname);
-  show("auth");
-}
-$("logout").onclick = logout;
-
-function afterLogin(){
-  $("who").textContent = me.name;
-  route();
+    const p = jwt.verify(h.replace(/^Bearer /, ""), JWT_SECRET);
+    const u = findById.get(p.id);
+    if (!u) throw new Error("no user");
+    req.user = u; next();
+  } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
 
-/* ---------- lobby ---------- */
-const genCode = () => {
-  const r = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => "abcdefghijkmnpqrstuvwxyz"[b % 24]).join("");
-  return `${r(3)}-${r(4)}-${r(3)}`;
-};
-const validCode = c => /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/.test(c);
-function route(){
-  const h = location.hash.slice(1).toLowerCase();
-  if (validCode(h)) enterRoom(h); else show("lobby");
-}
-$("new-room").onclick = () => { location.hash = genCode(); };
-$("join-room").onclick = () => {
-  const c = $("code").value.trim().toLowerCase().replace(/^.*#/, "");
-  if (!validCode(c)){ $("lobby-msg").textContent = "That code should look like abc-defg-hij."; return; }
-  $("lobby-msg").textContent = "";
-  location.hash = c;
-};
-window.addEventListener("hashchange", () => { if (me && !socket) route(); });
+app.get("/api/me", auth, (req, res) => res.json({ user: req.user }));
 
-/* ---------- room: Socket.IO signaling + WebRTC mesh ---------- */
-let socket = null, localStream = null, camTrack = null, screenStream = null, iceServers = [];
-const peers = new Map(); // socketId -> { pc, name }
-
-async function getMedia(){
-  try { return await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: { echoCancellation: true, noiseSuppression: true } }); }
-  catch { try { return await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { return null; } }
-}
-
-function addTile(id, stream, label, local){
-  let t = document.getElementById("t-" + id);
-  if (!t){
-    t = document.createElement("div");
-    t.className = "tile" + (local ? " local" : "");
-    t.id = "t-" + id;
-    t.innerHTML = '<video autoplay playsinline></video><div class="name"></div>';
-    $("grid").appendChild(t);
-  }
-  const v = t.querySelector("video");
-  if (v.srcObject !== stream) v.srcObject = stream;
-  if (local) v.muted = true;
-  t.querySelector(".name").textContent = label;
-  updateCount();
-}
-function removeTile(id){ const t = document.getElementById("t-" + id); if (t) t.remove(); updateCount(); }
-function updateCount(){ const n = $("grid").children.length; $("count").textContent = n + (n === 1 ? " person" : " people"); }
-
-async function enterRoom(code){
-  show("room");
-  $("room-code").textContent = code;
-  $("grid").innerHTML = ""; $("log").innerHTML = "";
-
-  localStream = await getMedia();
-  if (!localStream){
-    alert("Chaupal needs camera or microphone access. Allow it in your browser and try again.");
-    leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return;
-  }
-  camTrack = localStream.getVideoTracks()[0] || null;
-  syncButtons();
-  addTile("me", localStream, me.name + " (you)", true);
-
-  try { iceServers = (await api("/api/ice")).iceServers; } catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
-
-  socket = io({ auth: { token } });
-  socket.on("connect_error", err => { if (err.message === "unauthorized") logout(); });
-
-  socket.on("connect", () => {
-    socket.emit("join", code, async res => {
-      if (res.error){ alert(res.error); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
-      // the newcomer starts a connection to everyone already inside
-      for (const p of res.peers) await connectTo(p.id, p.name, true);
+app.get("/api/ice", auth, (req, res) => {
+  const iceServers = [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:global.stun.twilio.com:3478" }
+  ];
+  if (process.env.TURN_URL) {
+    iceServers.push({
+      urls: process.env.TURN_URL.split(","),
+      username: process.env.TURN_USERNAME,
+      credential: process.env.TURN_CREDENTIAL
     });
+  }
+  res.json({ iceServers });
+});
+
+app.get("/healthz", (_req, res) => {
+  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok" }); }
+  catch (e) { res.status(500).json({ ok: false, db: String(e.message) }); }
+});
+
+// any unhandled route error (including bad JSON bodies) -> JSON, never an HTML page
+app.use((err, _req, res, _next) => {
+  console.error("Request error:", err);
+  if (err.type === "entity.parse.failed") return res.status(400).json({ error: "Bad request." });
+  res.status(500).json({ error: "Server error. Please try again in a moment." });
+});
+
+process.on("unhandledRejection", e => console.error("Unhandled rejection:", e));
+
+/* ---------- socket.io signaling ---------- */
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: false } });
+
+io.use((socket, next) => {
+  try {
+    const p = jwt.verify(socket.handshake.auth?.token || "", JWT_SECRET);
+    const u = findById.get(p.id);
+    if (!u) throw new Error("no user");
+    socket.user = { id: u.id, name: u.name };
+    next();
+  } catch { next(new Error("unauthorized")); }
+});
+
+const ROOM_RE = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
+
+io.on("connection", socket => {
+  socket.on("join", async (room, ack) => {
+    if (typeof ack !== "function") return;
+    if (!ROOM_RE.test(room)) return ack({ error: "Invalid meeting code." });
+    if (socket.room) return ack({ error: "Already in a meeting." });
+    const members = await io.in(room).fetchSockets();
+    if (members.length >= MAX_ROOM_SIZE) return ack({ error: `This meeting is full (${MAX_ROOM_SIZE} people max).` });
+    socket.join(room);
+    socket.room = room;
+    socket.to(room).emit("peer-joined", { id: socket.id, name: socket.user.name });
+    ack({ peers: members.map(s => ({ id: s.id, name: s.user.name })) });
   });
 
-  socket.on("peer-joined", ({ id, name }) => { /* wait for their offer */ if (!peers.has(id)) peers.set(id, { pc: null, name, chain: Promise.resolve() }); });
-  socket.on("peer-left", ({ id }) => closePeer(id));
-
-  socket.on("signal", ({ from, name, data }) => {
-    let p = peers.get(from);
-    if (!p){ p = { pc: null, name, chain: Promise.resolve() }; peers.set(from, p); }
-    // handle one message at a time per peer, in arrival order
-    p.chain = p.chain.then(() => handleSignal(from, name, data)).catch(e => console.warn("signal error", e));
+  // relay SDP offers/answers and ICE candidates between two peers in the same room
+  socket.on("signal", ({ to, data } = {}) => {
+    const target = io.sockets.sockets.get(to);
+    if (!target || !socket.room || target.room !== socket.room) return;
+    target.emit("signal", { from: socket.id, name: socket.user.name, data });
   });
 
-  socket.on("chat", ({ name, text }) => addChat(name, text));
-}
+  socket.on("chat", text => {
+    if (!socket.room || typeof text !== "string") return;
+    socket.to(socket.room).emit("chat", { name: socket.user.name, text: text.slice(0, 1000) });
+  });
 
-async function handleSignal(from, name, data){
-  let p = peers.get(from);
-  if (!p || !p.pc) p = await connectTo(from, name, false);
-  const pc = p.pc;
-  if (data.sdp){
-    await pc.setRemoteDescription(data.sdp);
-    if (data.sdp.type === "offer"){
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      socket.emit("signal", { to: from, data: { sdp: pc.localDescription } });
-    }
-  } else if (data.candidate){
-    await pc.addIceCandidate(data.candidate);
-  }
-}
+  socket.on("disconnecting", () => {
+    if (socket.room) socket.to(socket.room).emit("peer-left", { id: socket.id });
+  });
+});
 
-async function connectTo(id, name, initiator){
-  const pc = new RTCPeerConnection({ iceServers });
-  const entry = peers.get(id) || { name, chain: Promise.resolve() };
-  entry.pc = pc; entry.name = name;
-  peers.set(id, entry);
-
-  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-  pc.onicecandidate = e => { if (e.candidate) socket.emit("signal", { to: id, data: { candidate: e.candidate } }); };
-  pc.ontrack = e => addTile(id, e.streams[0], name, false);
-  pc.onconnectionstatechange = () => { if (pc.connectionState === "failed" || pc.connectionState === "closed") closePeer(id); };
-
-  if (initiator){
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    socket.emit("signal", { to: id, data: { sdp: pc.localDescription } });
-  }
-  return entry;
-}
-
-function closePeer(id){
-  const p = peers.get(id);
-  if (p && p.pc) p.pc.close();
-  peers.delete(id);
-  removeTile(id);
-}
-
-function leaveRoom(){
-  if (socket){ socket.disconnect(); socket = null; }
-  for (const id of [...peers.keys()]) closePeer(id);
-  [localStream, screenStream].forEach(s => s && s.getTracks().forEach(t => t.stop()));
-  localStream = screenStream = camTrack = null;
-  $("grid").innerHTML = "";
-}
-$("leave").onclick = () => { leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); };
-window.addEventListener("beforeunload", leaveRoom);
-
-/* ---------- controls ---------- */
-function setBtn(id, on, onText, offText){
-  const b = $(id); b.setAttribute("aria-pressed", !!on); b.textContent = on ? onText : offText; b.classList.toggle("off", !on);
-}
-function syncButtons(){
-  const a = localStream.getAudioTracks()[0];
-  setBtn("mic", a && a.enabled, "Mic on", "Mic off");
-  setBtn("cam", camTrack && camTrack.enabled, "Camera on", "Camera off");
-}
-$("mic").onclick = () => { const a = localStream.getAudioTracks()[0]; if (a){ a.enabled = !a.enabled; syncButtons(); } };
-$("cam").onclick = () => { if (camTrack){ camTrack.enabled = !camTrack.enabled; syncButtons(); } };
-
-function swapVideoTrack(track){
-  for (const { pc } of peers.values()){
-    if (!pc) continue;
-    const sender = pc.getSenders().find(s => s.track && s.track.kind === "video");
-    if (sender) sender.replaceTrack(track);
-  }
-}
-$("share").onclick = async () => {
-  if (screenStream){ stopShare(); return; }
-  try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); } catch { return; }
-  const track = screenStream.getVideoTracks()[0];
-  swapVideoTrack(track);
-  const tile = $("t-me");
-  tile.querySelector("video").srcObject = screenStream;
-  tile.classList.add("sharing");
-  $("share").setAttribute("aria-pressed", "true"); $("share").textContent = "Stop sharing";
-  track.onended = stopShare;
-};
-function stopShare(){
-  if (!screenStream) return;
-  screenStream.getTracks().forEach(t => t.stop()); screenStream = null;
-  if (camTrack) swapVideoTrack(camTrack);
-  const tile = $("t-me");
-  if (tile){ tile.querySelector("video").srcObject = localStream; tile.classList.remove("sharing"); }
-  $("share").setAttribute("aria-pressed", "false"); $("share").textContent = "Share screen";
-}
-
-function addChat(name, text){
-  const d = document.createElement("div");
-  const b = document.createElement("b"); b.textContent = name + ": ";
-  d.append(b, document.createTextNode(text));
-  $("log").appendChild(d); $("log").scrollTop = 1e9;
-}
-$("chat-form").onsubmit = e => {
-  e.preventDefault();
-  const text = $("chat-in").value.trim(); if (!text || !socket) return;
-  socket.emit("chat", text); addChat("You", text);
-  $("chat-in").value = "";
-};
-$("toggle-chat").onclick = () => {
-  const hidden = $("chat").classList.toggle("hidden");
-  $("toggle-chat").setAttribute("aria-pressed", !hidden);
-};
-$("copy").onclick = async () => {
-  const url = location.origin + location.pathname + "#" + $("room-code").textContent;
-  try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Copy link", 1500); }
-  catch { prompt("Copy this link", url); }
-};
-
-/* ---------- boot ---------- */
-(async () => {
-  if (!token){ show("auth"); return; }
-  try { me = (await api("/api/me")).user; afterLogin(); }
-  catch { token = null; localStorage.removeItem("chaupal_token"); show("auth"); }
-})();
-</script>
-</body>
-</html>
+server.listen(PORT, () => console.log(`Chaupal running on http://localhost:${PORT}`));
