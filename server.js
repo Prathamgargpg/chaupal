@@ -38,7 +38,20 @@ const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VA
 const app = express();
 app.set("trust proxy", 1);
 app.use(express.json({ limit: "10kb" }));
-app.use(express.static(path.join(__dirname, "public")));
+// Find the front-end folder even if the upload put it somewhere unexpected
+const staticDir = [path.join(__dirname, "public"), path.join(__dirname, "chaupal-app", "public")]
+  .find(d => fs.existsSync(path.join(d, "index.html")));
+if (staticDir) app.use(express.static(staticDir));
+app.get("/", (_req, res) => {
+  const rootIndex = path.join(__dirname, "index.html");
+  if (fs.existsSync(rootIndex)) return res.sendFile(rootIndex);   // index.html uploaded next to server.js
+  const files = fs.readdirSync(__dirname).filter(f => f !== "node_modules" && !f.startsWith(".env")).join(", ");
+  res.status(500).type("text").send(
+    "Chaupal server is running, but index.html was not found.\n" +
+    "Create the file public/index.html in your GitHub repo.\n\n" +
+    "Files next to server.js: " + files
+  );
+});
 
 const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
 const publicUser = u => ({ id: u.id, name: u.name, email: u.email });
