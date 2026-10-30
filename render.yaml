@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: chaupal
+    name: chaupal-pratham
     runtime: node
     plan: free
     buildCommand: npm install
