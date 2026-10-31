@@ -384,6 +384,20 @@
   #room .grid.focus{width:100%;height:100%;grid-template-columns:minmax(0,1fr) 220px;grid-template-rows:repeat(var(--n),minmax(0,1fr));grid-auto-rows:unset}
   #room .tile .who{display:block;color:#fff;font-size:14px;gap:0}
   @media (max-width:820px){#room .stage{container-type:normal;display:block;min-height:320px}#room .grid{width:100%}}
+  /* menu: expands on hover to show text labels */
+  #room .rail{position:relative;z-index:30;overflow:hidden;align-items:flex-start;padding:16px 14px;transition:width .2s ease,box-shadow .2s ease;width:72px}
+  #room .rail:hover,#room .rail:focus-within{width:224px;box-shadow:12px 0 32px -18px rgba(15,27,61,.35)}
+  #room .logo{margin-left:2px;flex:none}
+  #room .nav{width:100%;display:flex;align-items:center;justify-content:flex-start;gap:14px;padding:0 12px;white-space:nowrap;overflow:hidden;font-size:14px;font-weight:600}
+  #room .nav .ic{flex:none}
+  #room .nav .lbl,#room .rcard .lbl{opacity:0;transform:translateX(-6px);transition:opacity .15s,transform .2s}
+  #room .rail:hover .lbl,#room .rail:focus-within .lbl{opacity:1;transform:none}
+  #room .nav:hover .ic{color:var(--pr)}
+  #room .nav:hover{background:#EEF3FD;color:var(--pr)}
+  #room .rcard{width:100%;margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:2px;padding:0}
+  #room .rcard .lbl{display:none;font-size:13px;font-weight:600;color:var(--mu)}
+  #room .rail:hover .rcard,#room .rail:focus-within .rcard{flex-direction:row;justify-content:flex-start;gap:10px;padding-left:12px}
+  #room .rail:hover .rcard .lbl,#room .rail:focus-within .rcard .lbl{display:inline}
 </style>
 </head>
 <body>
@@ -465,13 +479,13 @@
 <div id="room" class="hidden">
   <aside class="rail">
     <div class="logo">C</div>
-    <button class="nav on" id="n-room" title="Study room"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="m22 8-6 4 6 4z"/></svg></button>
-    <button class="nav" id="n-home" title="Home"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg></button>
-    <button class="nav" id="n-prof" title="Profile"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
-    <button class="nav" id="n-act" title="Activity"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></button>
-    <button class="nav" id="n-dev" title="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
-    <button class="nav hidden" id="n-admin" title="Admin portal"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg></button>
-    <div class="rcard" title="Login streak"><svg class="ic" viewBox="0 0 24 24" style="color:#F97316"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><span id="rail-num">0</span><small id="rail-streak" class="hidden"></small><i id="rail-bar" class="hidden"></i></div>
+    <button class="nav on" id="n-room" aria-label="Study room"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="m22 8-6 4 6 4z"/></svg><span class="lbl">Study room</span></button>
+    <button class="nav" id="n-home" aria-label="Home"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg><span class="lbl">Home</span></button>
+    <button class="nav" id="n-prof" aria-label="Profile"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="lbl">Profile</span></button>
+    <button class="nav" id="n-act" aria-label="Activity"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg><span class="lbl">Activity</span></button>
+    <button class="nav" id="n-dev" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span class="lbl">Settings</span></button>
+    <button class="nav hidden" id="n-admin" aria-label="Admin portal"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg><span class="lbl">Admin portal</span></button>
+    <div class="rcard" ><svg class="ic" viewBox="0 0 24 24" style="color:#F97316"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><span id="rail-num">0</span><span class="lbl">day streak</span><small id="rail-streak" class="hidden"></small><i id="rail-bar" class="hidden"></i></div>
   </aside>
 
   <section class="rmain">
