@@ -167,6 +167,70 @@
   th{color:var(--muted);font-weight:600;font-size:13px}
   tbody tr:hover{background:#F1F6FF}
   @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+  .status{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:16px;color:#B9CCF5;font-size:14px;line-height:1.4;pointer-events:none;z-index:1}
+  .status:empty{display:none}
+  .chip{background:#DBEAFE;color:#1D4ED8;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+  .social{display:grid;gap:20px;grid-template-columns:minmax(0,2fr) minmax(0,1fr);max-width:860px;margin:0 auto 40px;padding:0 24px}
+  .social .card{width:auto}
+  @media (max-width:760px){.social{grid-template-columns:1fr}}
+  .post,.person,.ev{border-top:1px solid var(--line);padding:10px 0;overflow-wrap:anywhere}
+  .person{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .person .btn,.post .btn{padding:5px 10px;font-size:13px;margin:0}
+  a.lnk{color:#2563EB;cursor:pointer;font-weight:600}
+  #feed,#people,#act-body{margin-top:14px}
+  .stats{display:flex;gap:16px;color:var(--muted);font-size:14px;margin:8px 0}
+  /* ===== study-room layout ===== */
+  .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  #room{display:grid;grid-template-columns:220px minmax(0,1fr) 340px;background:linear-gradient(160deg,#EEF4FF,#E2ECFF);color:var(--ink);flex-direction:unset}
+  .rail{background:rgba(255,255,255,.85);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:6px;min-height:0}
+  .rail .brand{font-size:22px;font-weight:800;color:#1D4ED8;padding:0 10px 18px}
+  .nav{border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:12px;font-weight:600;color:var(--muted);transition:background .15s,color .15s}
+  .nav.on,.nav:hover{background:#DBEAFE;color:#1D4ED8}
+  .rcard{margin-top:auto;border-radius:16px;padding:14px;background:linear-gradient(145deg,#DBEAFE,#EFF6FF);border:1px solid #BFDBFE;display:flex;flex-direction:column;gap:6px;animation:rise .5s both}
+  .rcard small{color:var(--muted)}
+  .bar{height:6px;border-radius:6px;background:#BFDBFE;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#2563EB,#38BDF8);transition:width .6s}
+  .rmain{display:flex;flex-direction:column;gap:12px;padding:18px;min-width:0;min-height:0}
+  .rhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .rt{font-size:28px;margin:0;display:flex;align-items:center;gap:10px}
+  .rchips{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .rchip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;color:var(--muted);-webkit-text-fill-color:initial}
+  .rchip code{color:var(--ink);font-weight:600}
+  .rchip.live{background:#DCFCE7;border-color:#BBF7D0;color:#15803D;font-weight:600;font-size:13px}
+  .rchip.live::before{content:"";width:8px;height:8px;border-radius:50%;background:#22C55E;animation:pulse 1.6s infinite}
+  .rchips .btn{padding:8px 16px}
+  #room .grid{padding:0;gap:14px;grid-template-columns:repeat(var(--c,2),minmax(0,1fr));grid-template-rows:repeat(var(--r,2),minmax(0,1fr));grid-auto-rows:unset;overflow:hidden;min-height:0}
+  #room .grid.focus{grid-template-columns:minmax(0,1fr) 200px;grid-template-rows:repeat(var(--n),minmax(0,1fr))}
+  @media (max-width:800px){#room .grid:not(.focus){grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:minmax(130px,1fr);overflow:auto}}
+  .tile.off{display:none}
+  .tile.pinned{border-color:#60A5FA}
+  .pager{display:flex;justify-content:center;align-items:center;gap:12px;color:var(--muted);font-size:14px}
+  .pg{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#1D4ED8;font-size:20px;line-height:1;transition:transform .15s}
+  .pg:hover:not(:disabled){transform:scale(1.1)}
+  .pg:disabled{opacity:.4;cursor:default}
+  .perl{display:flex;align-items:center;gap:8px;margin:0 0 0 12px;font-weight:500}
+  .perl select{width:auto;padding:6px 10px}
+  #room .controls{background:none;border:0;padding:4px 0 0;gap:12px;align-items:center}
+  #room .ctl{width:52px;height:52px;padding:0;border-radius:50%;display:grid;place-items:center;background:#fff;color:#1D4ED8;border:1px solid #D6E4FF;box-shadow:0 8px 18px -10px rgba(37,99,235,.6)}
+  #room .ctl:hover{background:#EFF6FF}
+  #room .ctl[aria-pressed=true]{background:#DBEAFE;color:#1D4ED8}
+  #room .ctl.off{background:#FEE2E2;color:#DC2626;border-color:#FECACA}
+  #room .ctl.leave{width:auto;padding:0 22px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff;border:0;font-weight:600}
+  .side{display:flex;flex-direction:column;gap:14px;padding:18px 18px 18px 0;min-height:0}
+  .scard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 14px 34px -22px rgba(37,99,235,.6);animation:rise .5s both}
+  .scard.grow{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+  .side .pomo{position:static;background:none;border:0;box-shadow:none;backdrop-filter:none;color:var(--ink);min-width:0;padding:4px 0 0;animation:none}
+  .side .pomo::after{background:linear-gradient(90deg,#2563EB var(--p,0%),#DBEAFE var(--p,0%))}
+  .side .pomo .row{gap:6px}
+  .side .pomo .btn{padding:8px 14px;font-size:14px}
+  #room .chat{width:auto;border:0;background:none;flex:1;min-height:0;position:static}
+  #room .chat .log{padding:4px 2px}
+  #room .chat .log b{color:#1D4ED8}
+  #room .chat form{border-top:1px solid var(--line);padding:10px 0 0}
+  #room .chat input{background:#fff;color:var(--ink);border-color:var(--line)}
+  #plist{flex:1;overflow:auto}
+  @media (max-width:1100px){#room{grid-template-columns:minmax(0,1fr) 300px}.rail{display:none}.side{padding-left:0}}
+  @media (max-width:800px){#room{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:auto}.side{padding:0 14px 14px;max-height:45vh}.rmain{padding:12px}}
 </style>
 </head>
 <body>
@@ -202,7 +266,7 @@
 <div id="lobby" class="hidden">
   <div class="topbar">
     <div class="brand">Chaupal</div>
-    <div class="who"><span id="who"></span><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
+    <div class="who"><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
   <div class="lobby">
@@ -223,34 +287,83 @@
       <div class="msg" id="lobby-msg" role="alert"></div>
     </div>
   </div>
+  <div class="social">
+    <div class="card">
+      <h2>What's on your mind?</h2>
+      <textarea id="post-in" maxlength="280" rows="2" placeholder="Share a thought, a goal or a win" aria-label="New post"></textarea>
+      <div class="row" style="margin-top:10px;justify-content:space-between;align-items:center"><span class="sub" id="post-count" style="margin:0">0 / 280</span><button class="btn" id="post-send">Post</button></div>
+      <div class="msg" id="post-msg" role="alert"></div>
+      <div id="feed"></div>
+    </div>
+    <div class="card">
+      <h2>People</h2>
+      <input id="people-q" placeholder="Search by name" aria-label="Search people" style="margin-top:10px">
+      <div id="people"></div>
+      <button class="btn ghost full" id="open-activity">My activity</button>
+    </div>
+  </div>
 </div>
 
 <div id="room" class="hidden">
-  <div class="stagebar">
-    <div>Meeting code <code id="room-code"></code> <button class="ctl" id="copy" style="padding:4px 12px;margin-left:6px">Copy link</button></div>
-    <div id="count"></div>
-  </div>
-  <div class="main">
-    <div class="grid" id="grid"></div>
-    <aside class="chat" id="chat">
-      <div class="log" id="log" aria-live="polite"></div>
-      <form id="chat-form"><input id="chat-in" placeholder="Message everyone" aria-label="Message" maxlength="1000"><button class="btn" style="padding:8px 12px">Send</button></form>
-    </aside>
-  </div>
-  <div class="controls">
-    <button class="ctl" id="mic" aria-pressed="true">Mic on</button>
-    <button class="ctl" id="cam" aria-pressed="true">Camera on</button>
-    <button class="ctl" id="view" aria-pressed="true">Tile view</button>
-    <button class="ctl" id="pomo-btn" aria-pressed="false">Pomodoro</button>
-    <button class="ctl" id="share" aria-pressed="false">Share screen</button>
-    <button class="ctl" id="toggle-chat" aria-pressed="true">Chat</button>
-    <button class="ctl leave" id="leave">Leave</button>
-  </div>
-</div>
+  <aside class="rail">
+    <div class="brand">Chaupal</div>
+    <button class="nav on" id="n-room">Study Room</button>
+    <button class="nav" id="n-home">Home</button>
+    <button class="nav" id="n-prof">Profile</button>
+    <button class="nav" id="n-act">Activity</button>
+    <button class="nav hidden" id="n-admin">Admin</button>
+    <div class="rcard"><b>Keep going!</b><small id="rail-streak">Start your streak</small><div class="bar"><i id="rail-bar"></i></div></div>
+  </aside>
 
-<div id="pomo" class="pomo hidden">
-  <div id="pomo-phase"></div><div id="pomo-time">25:00</div>
-  <div class="row"><button class="ctl" id="pomo-go">Start</button><button class="ctl" id="pomo-reset">Reset</button><button class="ctl" id="pomo-skip">Skip</button></div>
+  <section class="rmain">
+    <header class="rhead">
+      <div><h1 class="rt">Study Room <span class="rchip live">Live</span></h1><p class="sub" style="margin:2px 0 0">Together we study. Together we achieve.</p></div>
+      <div class="rchips">
+        <span class="rchip">Code <code id="room-code"></code></span>
+        <span class="rchip" id="count"></span>
+        <span class="rchip">Time <span id="elapsed">0m</span></span>
+        <button class="btn" id="copy">Share Room</button>
+      </div>
+    </header>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="pager">
+      <button class="pg" id="pg-prev" aria-label="Previous page">&#8249;</button>
+      <span id="pg">Page 1 of 1</span>
+      <button class="pg" id="pg-next" aria-label="Next page">&#8250;</button>
+      <label class="perl">People per page
+        <select id="per"><option value="4">4</option><option value="8">8</option></select></label>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="mic" aria-pressed="true" aria-label="Microphone" title="Mic on"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg></button>
+      <button class="ctl" id="cam" aria-pressed="true" aria-label="Camera" title="Camera on"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="m22 8-6 4 6 4z"/></svg></button>
+      <button class="ctl" id="share" aria-pressed="false" aria-label="Share screen" title="Share screen"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></button>
+      <button class="ctl" id="view" aria-pressed="true" aria-label="Layout" title="Tile view"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
+      <button class="ctl" id="pomo-btn" aria-pressed="true" aria-label="Study timer" title="Study timer"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></button>
+      <button class="ctl" id="toggle-chat" aria-pressed="true" aria-label="Chat" title="Chat"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/></svg></button>
+      <button class="ctl leave" id="leave"><svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Leave Room</button>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="scard">
+      <div class="sub" style="margin:0">Study Timer</div>
+      <div id="pomo" class="pomo">
+        <div id="pomo-phase"></div><div id="pomo-time">25:00</div>
+        <div class="row"><button class="btn" id="pomo-go">Start</button><button class="btn ghost" id="pomo-reset">Reset</button><button class="btn ghost" id="pomo-skip">Skip</button></div>
+      </div>
+    </div>
+    <div class="scard grow">
+      <div class="tabs tabs2"><button data-t="chat" aria-selected="true">Chat</button><button data-t="plist" aria-selected="false">Participants</button></div>
+      <aside class="chat" id="chat">
+        <div class="log" id="log" aria-live="polite"></div>
+        <form id="chat-form"><input id="chat-in" placeholder="Type a message" aria-label="Message" maxlength="1000"><button class="btn" style="padding:8px 14px">Send</button></form>
+      </aside>
+      <div id="plist" class="hidden"></div>
+    </div>
+  </aside>
 </div>
 
 <div id="prof" class="modal hidden"><div class="card">
@@ -258,6 +371,10 @@
   <label for="p-name">Name</label><input id="p-name" maxlength="40">
   <label for="p-title">Title</label><select id="p-title"></select>
   <label for="p-bio">Bio (200 characters)</label><textarea id="p-bio" maxlength="200" rows="3"></textarea>
+  <label for="p-vis">Who can see your profile and posts</label>
+  <select id="p-vis"><option value="public">Everyone</option><option value="followers">Only people who follow me</option><option value="private">Only me</option></select>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-streak" style="width:auto"> Show my login streak on my profile</label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-act" style="width:auto"> Show my recent activity on my profile</label>
   <button class="btn full" id="p-save">Save profile</button><button class="btn ghost full" id="p-close">Close</button>
   <div class="msg" id="p-msg" role="alert"></div>
 </div></div>
@@ -269,6 +386,9 @@
   <button class="btn full" id="enc-send">Send encouragement</button><button class="btn ghost full" id="enc-close">Close</button>
   <div class="msg" id="enc-msg" role="alert"></div>
 </div></div>
+
+<div id="pv" class="modal hidden"><div class="card"><div id="pv-body"></div><button class="btn ghost full" id="pv-close">Close</button></div></div>
+<div id="act" class="modal hidden"><div class="card"><h2>My activity</h2><p class="sub" id="act-streak"></p><div id="act-body"></div><button class="btn ghost full" id="act-close">Close</button></div></div>
 
 <div id="info" class="modal hidden"><div class="card">
   <h2 id="info-name"></h2><p class="sub" id="info-title"></p><p id="info-bio"></p>
@@ -349,8 +469,8 @@ $("logout").onclick = logout;
 
 function afterLogin(){
   $("who").textContent = me.name;
-  $("open-admin").classList.toggle("hidden", me.role !== "admin");
-  api("/api/me").then(r => { quota = r.quota; }).catch(() => {});
+  $("open-admin").classList.toggle("hidden", me.role !== "admin"); $("n-admin").classList.toggle("hidden", me.role !== "admin");
+  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); loadFeed(); }).catch(() => {});
   route();
 }
 
@@ -377,7 +497,7 @@ window.addEventListener("hashchange", () => { if (me && !socket) route(); });
 let socket = null, localStream = null, camTrack = null, screenStream = null, iceServers = [];
 const peers = new Map(); // socketId -> { pc, name }
 const info = new Map();  // socketId (or "me") -> { name, title, bio, pomo }
-let pinned = null, tileView = true, quota = { left: 3, max: 3, nextAt: 0 }, TITLES = [];
+let pinned = null, tileView = true, perPage = 4, page = 0, roomStart = 0, quota = { left: 3, max: 3, nextAt: 0 }, TITLES = [];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 async function getMedia(){
@@ -391,7 +511,7 @@ function addTile(id, stream, label, local){
     t = document.createElement("div");
     t.className = "tile" + (local ? " local" : "");
     t.id = "t-" + id;
-    t.innerHTML = '<video autoplay playsinline></video><div class="badge"></div><div class="name"></div><div class="tact"><button data-a="pin">Pin</button>' + (local ? "" : '<button data-a="enc">Encourage</button><button data-a="bio">Bio</button>') + "</div>";
+    t.innerHTML = '<video autoplay playsinline></video><div class="badge"></div><div class="status"></div><div class="name"></div><div class="tact"><button data-a="pin">Pin</button>' + (local ? "" : '<button data-a="enc">Encourage</button><button data-a="bio">Bio</button>') + "</div>";
     t.querySelector(".tact").onclick = e => { const a = e.target.dataset.a; if (a === "pin") togglePin(id); if (a === "enc") openEnc(id); if (a === "bio") showBio(id); };
     $("grid").appendChild(t);
   }
@@ -410,7 +530,7 @@ function removeTile(id){ const t = document.getElementById("t-" + id); if (t) t.
 function updateCount(){ const n = $("grid").children.length; $("count").textContent = n + (n === 1 ? " person" : " people"); }
 
 async function enterRoom(code){
-  show("room");
+  show("room"); roomStart = Date.now();
   $("room-code").textContent = code;
   $("grid").innerHTML = ""; $("log").innerHTML = "";
 
@@ -476,10 +596,18 @@ async function connectTo(id, name, initiator){
   entry.pc = pc; entry.name = name;
   peers.set(id, entry);
 
+  addTile(id, new MediaStream(), name, false);
+  const st0 = document.querySelector("#t-" + id + " .status"); if (st0) st0.textContent = "Connecting…";
   localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
   pc.onicecandidate = e => { if (e.candidate) socket.emit("signal", { to: id, data: { candidate: e.candidate } }); };
-  pc.ontrack = e => addTile(id, e.streams[0], name, false);
-  pc.onconnectionstatechange = () => { if (pc.connectionState === "failed" || pc.connectionState === "closed") closePeer(id); };
+  pc.ontrack = e => { addTile(id, e.streams[0], name, false); const v = document.querySelector("#t-" + id + " video"); if (v && v.play) v.play().catch(() => {}); };
+  pc.onconnectionstatechange = () => {
+    const s = pc.connectionState, el = document.querySelector("#t-" + id + " .status");
+    if (s === "closed") return closePeer(id);
+    if (!el) return;
+    el.textContent = s === "connected" ? "" : s === "failed" ? "Can't connect. Your networks are blocking direct video. The admin needs to add a TURN server (see README)." : s === "disconnected" ? "Connection lost. Retrying…" : "Connecting…";
+    if (s === "failed") console.warn("WebRTC failed for", id, "– a TURN server is needed");
+  };
 
   if (initiator){
     const offer = await pc.createOffer();
@@ -509,7 +637,7 @@ window.addEventListener("beforeunload", leaveRoom);
 
 /* ---------- controls ---------- */
 function setBtn(id, on, onText, offText){
-  const b = $(id); b.setAttribute("aria-pressed", !!on); b.textContent = on ? onText : offText; b.classList.toggle("off", !on);
+  const b = $(id); b.setAttribute("aria-pressed", !!on); b.title = on ? onText : offText; b.setAttribute("aria-label", b.title); b.classList.toggle("off", !on);
 }
 function syncButtons(){
   const a = localStream.getAudioTracks()[0];
@@ -534,7 +662,7 @@ $("share").onclick = async () => {
   const tile = $("t-me");
   tile.querySelector("video").srcObject = screenStream;
   tile.classList.add("sharing");
-  $("share").setAttribute("aria-pressed", "true"); $("share").textContent = "Stop sharing";
+  $("share").setAttribute("aria-pressed", "true"); $("share").title = "Stop sharing";
   track.onended = stopShare;
 };
 function stopShare(){
@@ -543,7 +671,7 @@ function stopShare(){
   if (camTrack) swapVideoTrack(camTrack);
   const tile = $("t-me");
   if (tile){ tile.querySelector("video").srcObject = localStream; tile.classList.remove("sharing"); }
-  $("share").setAttribute("aria-pressed", "false"); $("share").textContent = "Share screen";
+  $("share").setAttribute("aria-pressed", "false"); $("share").title = "Share screen";
 }
 
 function addChat(name, text){
@@ -558,30 +686,35 @@ $("chat-form").onsubmit = e => {
   socket.emit("chat", text); addChat("You", text);
   $("chat-in").value = "";
 };
-$("toggle-chat").onclick = () => {
-  const hidden = $("chat").classList.toggle("hidden");
-  $("toggle-chat").setAttribute("aria-pressed", !hidden);
-};
+$("toggle-chat").onclick = () => document.querySelector('.tabs2 [data-t="chat"]').click();
 $("copy").onclick = async () => {
   const url = location.origin + location.pathname + "#" + $("room-code").textContent;
-  try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Copy link", 1500); }
+  try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Share Room", 1500); }
   catch { prompt("Copy this link", url); }
 };
 
 /* ---------- tile view + pinning ---------- */
 function layout(){
-  const g = $("grid"), tiles = [...g.children];
+  const g = $("grid"), all = [...g.children];
   let pid = null;
-  if (!tileView && tiles.length > 1) pid = (pinned && $("t-" + pinned) && pinned) || (tiles.find(t => t.id !== "t-me") || tiles[0]).id.slice(2);
-  g.classList.toggle("focus", !!pid);
-  g.style.setProperty("--n", Math.max(1, tiles.length - 1));
-  tiles.forEach(t => {
+  if (!tileView && all.length > 1) pid = (pinned && $("t-" + pinned) && pinned) || (all.find(t => t.id !== "t-me") || all[0]).id.slice(2);
+  const rest = all.filter(t => t.id.slice(2) !== pid), per = pid ? Math.max(1, perPage - 1) : perPage;
+  const pages = Math.max(1, Math.ceil(rest.length / per));
+  page = Math.min(page, pages - 1);
+  const vis = new Set(rest.slice(page * per, page * per + per));
+  if (pid) vis.add($("t-" + pid));
+  all.forEach(t => {
     const id = t.id.slice(2);
-    t.classList.toggle("pinned", id === pid);
+    t.classList.toggle("pinned", id === pid); t.classList.toggle("off", !vis.has(t));
     const b = t.querySelector("[data-a=pin]"); if (b) b.textContent = id === pinned ? "Unpin" : "Pin";
   });
-  $("view").setAttribute("aria-pressed", tileView);
-  $("view").textContent = tileView ? "Tile view" : "Focus view";
+  const n = Math.max(1, vis.size), cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 6 ? 3 : 4;
+  g.classList.toggle("focus", !!pid);
+  g.style.setProperty("--n", Math.max(1, vis.size - 1)); g.style.setProperty("--c", cols); g.style.setProperty("--r", Math.ceil(n / cols));
+  $("view").setAttribute("aria-pressed", tileView); $("view").title = tileView ? "Tile view" : "Focus view";
+  $("pg").textContent = "Page " + (page + 1) + " of " + pages;
+  $("pg-prev").disabled = page === 0; $("pg-next").disabled = page >= pages - 1;
+  renderPeople();
 }
 function togglePin(id){ pinned = pinned === id ? null : id; tileView = !pinned; layout(); }
 $("view").onclick = () => { tileView = !tileView; layout(); };
@@ -609,14 +742,14 @@ $("enc-close").onclick = () => $("enc").classList.add("hidden");
 async function openProfile(){
   if (!TITLES.length) TITLES = (await api("/api/titles")).titles;
   $("p-title").innerHTML = '<option value="">No title</option>' + TITLES.map(t => "<option>" + esc(t) + "</option>").join("");
-  $("p-name").value = me.name; $("p-title").value = me.title || ""; $("p-bio").value = me.bio || ""; $("p-msg").textContent = "";
+  $("p-name").value = me.name; $("p-title").value = me.title || ""; $("p-vis").value = me.visibility || "public"; $("p-streak").checked = !!me.show_streak; $("p-act").checked = !!me.show_activity; $("p-bio").value = me.bio || ""; $("p-msg").textContent = "";
   $("prof").classList.remove("hidden");
 }
 $("open-profile").onclick = openProfile;
 $("p-close").onclick = () => $("prof").classList.add("hidden");
 $("p-save").onclick = async () => {
   try {
-    const r = await api("/api/me", { method: "PUT", body: { name: $("p-name").value, title: $("p-title").value, bio: $("p-bio").value } });
+    const r = await api("/api/me", { method: "PUT", body: { name: $("p-name").value, title: $("p-title").value, bio: $("p-bio").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked } });
     Object.assign(me, r.user); $("who").textContent = me.name;
     $("prof").classList.add("hidden");
   } catch (e) { $("p-msg").textContent = e.message; }
@@ -639,7 +772,7 @@ function pomoStart(){ if (ps.running) return; ps.at = Date.now(); ps.running = t
 function pomoPause(){ if (!ps.running) return; ps.left = rem(ps); ps.running = false; pomoSend(); }
 function pomoReset(){ ps.running = false; ps.left = POMO[ps.phase] * 60000; pomoSend(); }
 function pomoNext(){
-  if (ps.phase === "focus"){ ps.done++; ps.phase = ps.done % 4 === 0 ? "long" : "short"; } else ps.phase = "focus";
+  if (ps.phase === "focus"){ ps.done++; if (socket) socket.emit("pomo-done"); ps.phase = ps.done % 4 === 0 ? "long" : "short"; } else ps.phase = "focus";
   ps.running = false; ps.left = POMO[ps.phase] * 60000; beep(); pomoSend();
 }
 function renderPomo(){
@@ -691,6 +824,79 @@ $("admin-body").onclick = async e => {
     await loadAdmin();
   } catch (err) { alert(err.message); }
 };
+
+/* ---------- social: posts, follow, public profiles, activity timeline ---------- */
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago"; };
+const setStreak = s => { const c = s && s.current ? s.current : 0; $("streak").textContent = c ? c + "-day streak" : "Start your streak"; $("rail-streak").textContent = c ? c + "-day streak. Keep it up!" : "Log in daily to build a streak"; $("rail-bar").style.width = Math.min(100, c / 7 * 100) + "%"; };
+const postHtml = p => '<div class="post"><a class="lnk" data-u="' + p.uid + '">' + esc(p.name) + "</a>" + (p.title ? " · " + esc(p.title) : "") + " <small>" + ago(p.created_at) + "</small>" +
+  (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + "<div>" + esc(p.body) + "</div></div>";
+const followBtn = (id, on) => '<button class="btn ' + (on ? "ghost" : "") + '" data-f="' + id + '" data-on="' + (on ? 1 : 0) + '">' + (on ? "Following" : "Follow") + "</button>";
+const LABEL = { daily_login: () => "Logged in", joined_room: () => "Joined a meeting", pomodoro: () => "Finished a focus session", posted: () => "Shared a post",
+  encouraged: d => "Encouraged " + d.to, encouraged_by: d => d.from + " encouraged you", followed: d => "Followed " + d.name };
+const evHtml = e => '<div class="ev">' + esc((LABEL[e.type] || (() => e.type))(e.data)) + " <small>" + ago(e.created_at) + "</small></div>";
+
+async function loadFeed(){
+  try { const { posts } = await api("/api/feed"); $("feed").innerHTML = posts.length ? posts.map(postHtml).join("") : '<p class="sub">Nothing yet. Post something or follow people.</p>'; } catch {}
+}
+async function searchPeople(){
+  const { users } = await api("/api/users?q=" + encodeURIComponent($("people-q").value));
+  $("people").innerHTML = users.length ? users.map(u => '<div class="person"><span><a class="lnk" data-u="' + u.id + '">' + esc(u.name) + "</a>" + (u.title ? "<br><small>" + esc(u.title) + "</small>" : "") + "</span>" + followBtn(u.id, u.isFollowing) + "</div>").join("") : '<p class="sub">No one found.</p>';
+}
+let pt; $("people-q").oninput = () => { clearTimeout(pt); pt = setTimeout(() => searchPeople().catch(() => {}), 250); };
+$("post-in").oninput = () => { $("post-count").textContent = $("post-in").value.length + " / 280"; };
+$("post-send").onclick = async () => {
+  $("post-msg").textContent = "";
+  try { await api("/api/posts", { body: { body: $("post-in").value } }); $("post-in").value = ""; $("post-count").textContent = "0 / 280"; loadFeed(); }
+  catch (e) { $("post-msg").textContent = e.message; }
+};
+async function openUser(id){
+  const u = await api("/api/users/" + id);
+  let h = "<h2>" + esc(u.name) + "</h2><p class=\"sub\">" + esc(u.title || "No title") + "</p>" +
+    '<div class="stats"><span>' + u.followers + " followers</span><span>" + u.following + " following</span></div>" + (u.isMe ? "" : followBtn(u.id, u.isFollowing));
+  if (u.restricted) h += '<p class="sub" style="margin-top:16px">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>";
+  else {
+    if (u.streak) h += '<p style="margin-top:14px"><span class="chip">' + u.streak.current + "-day streak</span> best " + u.streak.best + "</p>";
+    h += "<p>" + esc(u.bio || "No bio yet.") + "</p><h2 style=\"font-size:18px;margin-top:16px\">Posts</h2>" + (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="sub">No posts yet.</p>');
+    if (u.activity) h += "<h2 style=\"font-size:18px;margin-top:16px\">Recent activity</h2>" + u.activity.map(evHtml).join("");
+  }
+  $("pv-body").innerHTML = h; $("pv").classList.remove("hidden");
+}
+$("pv-close").onclick = () => $("pv").classList.add("hidden");
+$("open-activity").onclick = async () => {
+  const { events, streak } = await api("/api/timeline");
+  $("act-streak").textContent = "Current streak " + streak.current + " days · best " + streak.best + " · " + streak.total + " days logged in";
+  $("act-body").innerHTML = events.length ? events.map(evHtml).join("") : '<p class="sub">No activity yet.</p>';
+  $("act").classList.remove("hidden");
+};
+$("act-close").onclick = () => $("act").classList.add("hidden");
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-u],[data-del],[data-f]"); if (!t) return;
+  try {
+    if (t.dataset.u) return openUser(t.dataset.u);
+    if (t.dataset.del){ await api("/api/posts/" + t.dataset.del, { method: "DELETE" }); }
+    if (t.dataset.f){ await api("/api/users/" + t.dataset.f + "/follow", { method: t.dataset.on === "1" ? "DELETE" : "POST" }); if (!$("pv").classList.contains("hidden")) openUser(t.dataset.f); searchPeople().catch(() => {}); }
+    loadFeed(); if (!$("pv").classList.contains("hidden") && t.dataset.del) $("pv").classList.add("hidden");
+  } catch (err) { alert(err.message); }
+});
+
+/* ---------- room page: pagination, side tabs, nav, participants ---------- */
+try { const v = Number(localStorage.getItem("chaupal_per")); if (v === 4 || v === 8) perPage = v; } catch {}
+$("per").value = perPage;
+$("per").onchange = () => { perPage = $("per").value === "8" ? 8 : 4; page = 0; try { localStorage.setItem("chaupal_per", perPage); } catch {} layout(); };
+$("pg-prev").onclick = () => { page = Math.max(0, page - 1); layout(); };
+$("pg-next").onclick = () => { page++; layout(); };
+document.querySelectorAll(".tabs2 button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs2 button").forEach(x => x.setAttribute("aria-selected", x === b));
+  $("chat").classList.toggle("hidden", b.dataset.t !== "chat"); $("plist").classList.toggle("hidden", b.dataset.t !== "plist");
+});
+function renderPeople(){
+  $("plist").innerHTML = [...info].map(([id, i]) => '<div class="person"><span><b>' + esc(i.name) + (id === "me" ? " (you)" : "") + "</b>" + (i.title ? "<br><small>" + esc(i.title) + "</small>" : "") + "</span>" + (id === "me" || !i.userId ? "" : '<a class="lnk" data-u="' + i.userId + '">Profile</a>') + "</div>").join("");
+}
+$("n-home").onclick = () => $("leave").click();
+$("n-prof").onclick = openProfile;
+$("n-act").onclick = () => $("open-activity").click();
+$("n-admin").onclick = () => $("open-admin").click();
+setInterval(() => { if (roomStart){ const m = Math.floor((Date.now() - roomStart) / 60000); $("elapsed").textContent = m >= 60 ? Math.floor(m / 60) + "h " + m % 60 + "m" : m + "m"; } }, 15000);
 
 /* ---------- boot ---------- */
 (async () => {
