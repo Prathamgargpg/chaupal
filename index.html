@@ -233,6 +233,7 @@
   @media (max-width:800px){#room{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:auto}.side{padding:0 14px 14px;max-height:45vh}.rmain{padding:12px}}
   .hint{color:var(--muted);font-size:13px;margin:10px 0 0}
   #dev-spk-wrap .btn{margin-top:10px}
+  .msg.ok{color:#15803D}
 </style>
 </head>
 <body>
@@ -248,7 +249,7 @@
   <div class="card">
     <h1>Chaupal</h1>
     <p class="sub">Video meetings for small groups. Sign in to start or join one.</p>
-    <div class="tabs" role="tablist">
+    <div class="tabs" role="tablist" id="auth-tabs">
       <button role="tab" id="tab-in" aria-selected="true">Sign in</button>
       <button role="tab" id="tab-up" aria-selected="false">Create account</button>
     </div>
@@ -256,11 +257,12 @@
       <label for="dname">Your name</label>
       <input id="dname" autocomplete="name" maxlength="40">
     </div>
-    <label for="email">Email</label>
-    <input id="email" type="email" autocomplete="email">
-    <label for="pass">Password</label>
-    <input id="pass" type="password" autocomplete="current-password">
+    <div id="email-wrap"><label for="email">Email</label>
+    <input id="email" type="email" autocomplete="email"></div>
+    <div id="pass-wrap"><label for="pass" id="pass-label">Password</label>
+    <input id="pass" type="password" autocomplete="current-password"></div>
     <button class="btn full" id="auth-btn">Sign in</button>
+    <div style="margin-top:14px"><a class="lnk" id="forgot-link">Forgot password?</a><a class="lnk hidden" id="back-link">Back to sign in</a></div>
     <div class="msg" id="auth-msg" role="alert"></div>
   </div>
 </main>
@@ -445,21 +447,41 @@ async function api(path, opts = {}) {
 }
 
 /* ---------- auth ---------- */
+let resetToken = null;
 function setMode(m){
   mode = m;
+  const plain = m === "in" || m === "up";
   $("tab-in").setAttribute("aria-selected", m === "in");
   $("tab-up").setAttribute("aria-selected", m === "up");
-  $("name-wrap").classList.toggle("hidden", m === "in");
-  $("auth-btn").textContent = m === "in" ? "Sign in" : "Create account";
+  $("auth-tabs").classList.toggle("hidden", !plain);
+  $("name-wrap").classList.toggle("hidden", m !== "up");
+  $("email-wrap").classList.toggle("hidden", m === "reset");
+  $("pass-wrap").classList.toggle("hidden", m === "forgot");
+  $("pass-label").textContent = m === "reset" ? "New password (at least 8 characters)" : "Password";
+  $("auth-btn").textContent = { in: "Sign in", up: "Create account", forgot: "Send reset link", reset: "Set new password" }[m];
   $("pass").autocomplete = m === "in" ? "current-password" : "new-password";
-  $("auth-msg").textContent = "";
+  $("forgot-link").classList.toggle("hidden", m !== "in");
+  $("back-link").classList.toggle("hidden", plain);
+  $("auth-msg").className = "msg"; $("auth-msg").textContent = "";
 }
+const note = t => { $("auth-msg").className = "msg ok"; $("auth-msg").textContent = t; };
+$("forgot-link").onclick = () => setMode("forgot");
+$("back-link").onclick = () => { resetToken = null; history.replaceState(null, "", location.pathname); setMode("in"); };
 $("tab-in").onclick = () => setMode("in");
 $("tab-up").onclick = () => setMode("up");
 
 async function submitAuth(){
   $("auth-msg").textContent = "";
   try {
+    if (mode === "forgot"){
+      await api("/api/forgot", { body: { email: $("email").value } });
+      setMode("in"); note("If that email has an account, a reset link is on its way. Check your inbox and spam folder."); return;
+    }
+    if (mode === "reset"){
+      await api("/api/reset", { body: { token: resetToken, password: $("pass").value } });
+      resetToken = null; $("pass").value = ""; history.replaceState(null, "", location.pathname);
+      setMode("in"); note("Password changed. Sign in with your new password."); return;
+    }
     const body = { email: $("email").value, password: $("pass").value };
     if (mode === "up") body.name = $("dname").value;
     const data = await api(mode === "up" ? "/api/signup" : "/api/login", { body });
@@ -974,6 +996,8 @@ $("dev-test").onclick = async () => { const a = new Audio(beepUrl()); await appl
 
 /* ---------- boot ---------- */
 (async () => {
+  const rt = new URLSearchParams(location.search).get("reset");
+  if (rt){ resetToken = rt; show("auth"); setMode("reset"); return; }
   if (!token){ show("auth"); return; }
   try { const r = await api("/api/me"); me = r.user; quota = r.quota; afterLogin(); }
   catch { token = null; localStorage.removeItem("chaupal_token"); show("auth"); }
