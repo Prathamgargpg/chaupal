@@ -231,6 +231,8 @@
   #plist{flex:1;overflow:auto}
   @media (max-width:1100px){#room{grid-template-columns:minmax(0,1fr) 300px}.rail{display:none}.side{padding-left:0}}
   @media (max-width:800px){#room{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:auto}.side{padding:0 14px 14px;max-height:45vh}.rmain{padding:12px}}
+  .hint{color:var(--muted);font-size:13px;margin:10px 0 0}
+  #dev-spk-wrap .btn{margin-top:10px}
 </style>
 </head>
 <body>
@@ -266,7 +268,7 @@
 <div id="lobby" class="hidden">
   <div class="topbar">
     <div class="brand">Chaupal</div>
-    <div class="who"><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
+    <div class="who"><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
   <div class="lobby">
@@ -311,6 +313,7 @@
     <button class="nav" id="n-home">Home</button>
     <button class="nav" id="n-prof">Profile</button>
     <button class="nav" id="n-act">Activity</button>
+    <button class="nav" id="n-dev">Settings</button>
     <button class="nav hidden" id="n-admin">Admin</button>
     <div class="rcard"><b>Keep going!</b><small id="rail-streak">Start your streak</small><div class="bar"><i id="rail-bar"></i></div></div>
   </aside>
@@ -343,6 +346,7 @@
       <button class="ctl" id="view" aria-pressed="true" aria-label="Layout" title="Tile view"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
       <button class="ctl" id="pomo-btn" aria-pressed="true" aria-label="Study timer" title="Study timer"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></button>
       <button class="ctl" id="toggle-chat" aria-pressed="true" aria-label="Chat" title="Chat"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/></svg></button>
+      <button class="ctl" id="dev-btn" aria-label="Audio and video settings" title="Audio and video settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
       <button class="ctl leave" id="leave"><svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Leave Room</button>
     </div>
   </section>
@@ -389,6 +393,15 @@
 
 <div id="pv" class="modal hidden"><div class="card"><div id="pv-body"></div><button class="btn ghost full" id="pv-close">Close</button></div></div>
 <div id="act" class="modal hidden"><div class="card"><h2>My activity</h2><p class="sub" id="act-streak"></p><div id="act-body"></div><button class="btn ghost full" id="act-close">Close</button></div></div>
+
+<div id="dev" class="modal hidden"><div class="card">
+  <h2>Audio &amp; video settings</h2><p class="sub">Choose the devices Chaupal uses. Changes apply right away during a meeting.</p>
+  <label for="dev-cam">Camera</label><select id="dev-cam"></select>
+  <label for="dev-mic">Microphone</label><select id="dev-mic"></select>
+  <div id="dev-spk-wrap"><label for="dev-spk">Speaker</label><select id="dev-spk"></select><button class="btn ghost" id="dev-test" type="button">Test speaker</button></div>
+  <p class="hint" id="dev-note"></p>
+  <button class="btn ghost full" id="dev-close">Close</button>
+</div></div>
 
 <div id="info" class="modal hidden"><div class="card">
   <h2 id="info-name"></h2><p class="sub" id="info-title"></p><p id="info-bio"></p>
@@ -501,8 +514,10 @@ let pinned = null, tileView = true, perPage = 4, page = 0, roomStart = 0, quota 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 async function getMedia(){
-  try { return await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: { echoCancellation: true, noiseSuppression: true } }); }
-  catch { try { return await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { return null; } }
+  const v = { width: 1280, height: 720, ...(DEV.cam ? { deviceId: { ideal: DEV.cam } } : {}) };
+  const a = { echoCancellation: true, noiseSuppression: true, ...(DEV.mic ? { deviceId: { ideal: DEV.mic } } : {}) };
+  try { return await navigator.mediaDevices.getUserMedia({ video: v, audio: a }); }
+  catch { try { return await navigator.mediaDevices.getUserMedia({ audio: a }); } catch { return null; } }
 }
 
 function addTile(id, stream, label, local){
@@ -517,7 +532,7 @@ function addTile(id, stream, label, local){
   }
   const v = t.querySelector("video");
   if (v.srcObject !== stream) v.srcObject = stream;
-  if (local) v.muted = true;
+  if (local) v.muted = true; else applySink(v);
   relabel(id, label);
   updateCount(); layout();
 }
@@ -897,6 +912,65 @@ $("n-prof").onclick = openProfile;
 $("n-act").onclick = () => $("open-activity").click();
 $("n-admin").onclick = () => $("open-admin").click();
 setInterval(() => { if (roomStart){ const m = Math.floor((Date.now() - roomStart) / 60000); $("elapsed").textContent = m >= 60 ? Math.floor(m / 60) + "h " + m % 60 + "m" : m + "m"; } }, 15000);
+
+/* ---------- audio / video device settings ---------- */
+const DEV = (() => { try { return JSON.parse(localStorage.getItem("chaupal_dev")) || {}; } catch { return {}; } })();
+const saveDev = () => { try { localStorage.setItem("chaupal_dev", JSON.stringify(DEV)); } catch {} };
+const canSink = "setSinkId" in HTMLMediaElement.prototype;
+function applySink(el){ return canSink && DEV.spk ? el.setSinkId(DEV.spk).catch(() => {}) : Promise.resolve(); }
+function fillSel(id, list, cur, name){
+  const s = $(id);
+  s.innerHTML = list.length ? list.map((d, i) => '<option value="' + esc(d.deviceId) + '">' + esc(d.label || name + " " + (i + 1)) + "</option>").join("") : "<option value=''>None found</option>";
+  if (list.some(d => d.deviceId === cur)) s.value = cur;
+}
+async function listDevices(){
+  if (!navigator.mediaDevices) { $("dev-note").textContent = "Your browser needs a secure (https) page to list devices."; return; }
+  let ds = await navigator.mediaDevices.enumerateDevices();
+  if (ds.some(d => d.kind !== "audiooutput" && !d.label)) {   // no permission yet, so names are hidden
+    try { (await navigator.mediaDevices.getUserMedia({ audio: true, video: true })).getTracks().forEach(t => t.stop()); ds = await navigator.mediaDevices.enumerateDevices(); } catch {}
+  }
+  fillSel("dev-cam", ds.filter(d => d.kind === "videoinput"), DEV.cam, "Camera");
+  fillSel("dev-mic", ds.filter(d => d.kind === "audioinput"), DEV.mic, "Microphone");
+  $("dev-spk-wrap").classList.toggle("hidden", !canSink);
+  if (canSink) fillSel("dev-spk", ds.filter(d => d.kind === "audiooutput"), DEV.spk, "Speaker");
+  $("dev-note").textContent = canSink ? "" : "Your browser plays sound through the system default speaker. Change it in your computer's sound settings.";
+}
+function openDev(){ $("dev").classList.remove("hidden"); listDevices().catch(() => {}); }
+["open-dev", "dev-btn", "n-dev"].forEach(id => $(id).onclick = openDev);
+$("dev-close").onclick = () => $("dev").classList.add("hidden");
+if (navigator.mediaDevices) navigator.mediaDevices.addEventListener("devicechange", () => { if (!$("dev").classList.contains("hidden")) listDevices().catch(() => {}); });
+
+function swapSender(kind, track){
+  for (const { pc } of peers.values()){
+    if (!pc) continue;
+    const s = pc.getSenders().find(x => x.track && x.track.kind === kind);
+    if (s) s.replaceTrack(track);
+  }
+}
+async function switchDevice(kind){
+  if (!localStream) return;
+  const old = kind === "video" ? camTrack : localStream.getAudioTracks()[0], id = kind === "video" ? DEV.cam : DEV.mic;
+  try {
+    const s = await navigator.mediaDevices.getUserMedia(kind === "video" ? { video: { deviceId: { exact: id } } } : { audio: { deviceId: { exact: id }, echoCancellation: true, noiseSuppression: true } });
+    const t = s.getTracks()[0];
+    if (old){ t.enabled = old.enabled; localStream.removeTrack(old); old.stop(); }
+    localStream.addTrack(t);
+    if (kind === "video"){ camTrack = t; if (!screenStream){ swapSender("video", t); const v = document.querySelector("#t-me video"); if (v) v.srcObject = localStream; } }
+    else swapSender("audio", t);
+    syncButtons();
+  } catch { toast("Couldn't switch to that device. It may be in use by another app."); }
+}
+$("dev-cam").onchange = () => { DEV.cam = $("dev-cam").value; saveDev(); switchDevice("video"); };
+$("dev-mic").onchange = () => { DEV.mic = $("dev-mic").value; saveDev(); switchDevice("audio"); };
+$("dev-spk").onchange = () => { DEV.spk = $("dev-spk").value; saveDev(); document.querySelectorAll(".tile:not(.local) video").forEach(applySink); };
+function beepUrl(){
+  const sr = 8000, n = sr * 0.4 | 0, b = new DataView(new ArrayBuffer(44 + n * 2)), w = (o, s) => [...s].forEach((c, i) => b.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); b.setUint32(4, 36 + n * 2, true); w(8, "WAVEfmt "); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, 1, true);
+  b.setUint32(24, sr, true); b.setUint32(28, sr * 2, true); b.setUint16(32, 2, true); b.setUint16(34, 16, true); w(36, "data"); b.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) b.setInt16(44 + i * 2, Math.sin(i / sr * 2 * Math.PI * 660) * 9000 * (1 - i / n), true);
+  return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+}
+$("dev-test").onclick = async () => { const a = new Audio(beepUrl()); await applySink(a); a.play().catch(() => {}); };
 
 /* ---------- boot ---------- */
 (async () => {
