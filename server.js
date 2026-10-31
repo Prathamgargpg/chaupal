@@ -57,6 +57,8 @@ CREATE TABLE IF NOT EXISTS login_days (user_id INTEGER NOT NULL, day TEXT NOT NU
 CREATE TABLE IF NOT EXISTS follows (follower_id INTEGER NOT NULL, followee_id INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (follower_id, followee_id));
 CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, body TEXT NOT NULL, created_at INTEGER NOT NULL);`);
 db.exec(`CREATE TABLE IF NOT EXISTS reset_tokens (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL)`);
+db.exec(`CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, description TEXT DEFAULT '',
+  video_allowed INTEGER DEFAULT 1, audio_allowed INTEGER DEFAULT 1, active INTEGER DEFAULT 1, created_by INTEGER, created_at INTEGER)`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
 const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
@@ -301,6 +303,37 @@ app.delete("/api/posts/:id", auth, (req, res) => {
 /* ---------- admin ---------- */
 const admin = (req, res, next) => (req.user.role === "admin" ? next() : res.status(403).json({ error: "Admins only." }));
 const kick = uid => { for (const s of io.sockets.sockets.values()) if (s.user.id === uid) s.disconnect(true); };
+/* ---------- study rooms (created by admins) ---------- */
+const genRoomCode = () => { const r = n => Array.from(crypto.randomBytes(n), b => "abcdefghijkmnpqrstuvwxyz"[b % 24]).join(""); return `${r(3)}-${r(4)}-${r(3)}`; };
+const roomOut = r => ({ id: r.id, code: r.code, name: r.name, description: r.description, video: !!r.video_allowed, audio: !!r.audio_allowed, active: !!r.active, live: io.sockets.adapter.rooms.get(r.code)?.size || 0 });
+app.get("/api/rooms", auth, (_req, res) => res.json({ rooms: db.prepare("SELECT * FROM rooms WHERE active = 1 ORDER BY id DESC").all().map(roomOut) }));
+app.get("/api/admin/rooms", auth, admin, (_req, res) => res.json({ rooms: db.prepare("SELECT * FROM rooms ORDER BY id DESC").all().map(roomOut) }));
+app.post("/api/admin/rooms", auth, admin, (req, res) => {
+  const b = req.body || {}, name = String(b.name || "").trim().slice(0, 60);
+  if (!name) return res.status(400).json({ error: "Give the room a name." });
+  const code = genRoomCode();
+  db.prepare("INSERT INTO rooms (code, name, description, video_allowed, audio_allowed, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+    .run(code, name, String(b.description || "").trim().slice(0, 140), b.video === false ? 0 : 1, b.audio === false ? 0 : 1, req.user.id, Date.now());
+  res.json({ room: roomOut(db.prepare("SELECT * FROM rooms WHERE code = ?").get(code)) });
+});
+app.patch("/api/admin/rooms/:id", auth, admin, (req, res) => {
+  const r = db.prepare("SELECT * FROM rooms WHERE id = ?").get(Number(req.params.id));
+  if (!r) return res.status(404).json({ error: "Room not found." });
+  const b = req.body || {};
+  const v = b.video === undefined ? r.video_allowed : b.video ? 1 : 0, a = b.audio === undefined ? r.audio_allowed : b.audio ? 1 : 0, act = b.active === undefined ? r.active : b.active ? 1 : 0;
+  db.prepare("UPDATE rooms SET name = ?, description = ?, video_allowed = ?, audio_allowed = ?, active = ? WHERE id = ?")
+    .run(String(b.name ?? r.name).trim().slice(0, 60) || r.name, String(b.description ?? r.description).slice(0, 140), v, a, act, r.id);
+  const nr = db.prepare("SELECT * FROM rooms WHERE id = ?").get(r.id);
+  io.in(r.code).emit("room-settings", { name: nr.name, video: !!nr.video_allowed, audio: !!nr.audio_allowed });
+  if (!act) { io.in(r.code).emit("room-closed"); io.in(r.code).disconnectSockets(true); }
+  res.json({ room: roomOut(nr) });
+});
+app.delete("/api/admin/rooms/:id", auth, admin, (req, res) => {
+  const r = db.prepare("SELECT * FROM rooms WHERE id = ?").get(Number(req.params.id));
+  if (r) { db.prepare("DELETE FROM rooms WHERE id = ?").run(r.id); io.in(r.code).emit("room-closed"); io.in(r.code).disconnectSockets(true); }
+  res.json({ ok: true });
+});
+
 app.get("/api/admin/users", auth, admin, (_req, res) => {
   const socks = [...io.sockets.sockets.values()];
   res.json({
@@ -316,7 +349,7 @@ app.patch("/api/admin/users/:id", auth, admin, wrap(async (req, res) => {
   if (!findById.get(id)) return res.status(404).json({ error: "User not found." });
   const { role, disabled, password } = req.body || {};
   if (id === req.user.id && (role === "user" || disabled)) return res.status(400).json({ error: "You can't demote or disable yourself." });
-  if (role) db.prepare("UPDATE users SET role = ? WHERE id = ?").run(role === "admin" ? "admin" : "user", id);
+  if (role) { const nr = role === "admin" ? "admin" : "user"; db.prepare("UPDATE users SET role = ? WHERE id = ?").run(nr, id); for (const s of io.sockets.sockets.values()) if (s.user.id === id) s.user.role = nr; }
   if (disabled !== undefined) db.prepare("UPDATE users SET disabled = ? WHERE id = ?").run(disabled ? 1 : 0, id);
   if (password !== undefined) {
     if (String(password).length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
@@ -371,7 +404,7 @@ io.use((socket, next) => {
     const p = jwt.verify(socket.handshake.auth?.token || "", JWT_SECRET);
     const u = findById.get(p.id);
     if (!u || u.disabled) throw new Error("no user");
-    socket.user = { id: u.id, name: u.name, title: u.title || "", bio: u.bio || "" };
+    socket.user = { id: u.id, name: u.name, title: u.title || "", bio: u.bio || "", role: u.role || "user" };
     next();
   } catch { next(new Error("unauthorized")); }
 });
@@ -387,13 +420,15 @@ io.on("connection", socket => {
     if (typeof ack !== "function") return;
     if (!ROOM_RE.test(room)) return ack({ error: "Invalid meeting code." });
     if (socket.room) return ack({ error: "Already in a meeting." });
+    const rm = db.prepare("SELECT * FROM rooms WHERE code = ?").get(room);
+    if (rm && !rm.active) return ack({ error: "This room has been closed by the admin." });
     const members = await io.in(room).fetchSockets();
     if (members.length >= MAX_ROOM_SIZE) return ack({ error: `This meeting is full (${MAX_ROOM_SIZE} people max).` });
     socket.join(room);
     socket.room = room;
     logEvent(socket.user.id, "joined_room", { room });
     socket.to(room).emit("peer-joined", peerInfo(socket));
-    ack({ peers: members.map(peerInfo) });
+    ack({ peers: members.map(peerInfo), settings: rm ? { name: rm.name, video: !!rm.video_allowed, audio: !!rm.audio_allowed } : null });
   });
 
   // relay SDP offers/answers and ICE candidates between two peers in the same room
@@ -436,6 +471,15 @@ io.on("connection", socket => {
     socket.pomo = p && typeof p === "object"
       ? { phase: String(p.phase).slice(0, 10), running: !!p.running, left: Math.max(0, Number(p.left) || 0), at: Date.now() } : null;
     socket.to(socket.room).emit("pomo", { id: socket.id, pomo: socket.pomo });
+  });
+
+  // admin controls: allow/stop someone's mic or camera, or remove them (admins only, never against other admins)
+  socket.on("admin-action", ({ to, action } = {}) => {
+    const t = io.sockets.sockets.get(to);
+    if (socket.user.role !== "admin" || !t || !socket.room || t.room !== socket.room || t.user.role === "admin") return;
+    if (!["mic-off", "mic-on", "cam-off", "cam-on", "remove"].includes(action)) return;
+    t.emit("forced", { action });
+    if (action === "remove") setTimeout(() => t.disconnect(true), 300);
   });
 
   socket.on("pomo-done", () => logEvent(socket.user.id, "pomodoro", {}));
