@@ -8,6 +8,7 @@ import Database from "better-sqlite3";
 import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -55,6 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_events_user ON events(user_id, created_at);
 CREATE TABLE IF NOT EXISTS login_days (user_id INTEGER NOT NULL, day TEXT NOT NULL, PRIMARY KEY (user_id, day));
 CREATE TABLE IF NOT EXISTS follows (follower_id INTEGER NOT NULL, followee_id INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (follower_id, followee_id));
 CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, body TEXT NOT NULL, created_at INTEGER NOT NULL);`);
+db.exec(`CREATE TABLE IF NOT EXISTS reset_tokens (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL)`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
 const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
@@ -161,6 +163,45 @@ app.post("/api/login", limit, wrap(async (req, res) => {
   if (row.disabled) return res.status(403).json({ error: "This account has been disabled. Contact the admin." });
   recordLogin(row.id);
   res.json({ token: sign(row), user: publicUser(row) });
+}));
+
+/* ---------- forgot / reset password ---------- */
+const hashTok = t => crypto.createHash("sha256").update(t).digest("hex");
+const htmlEsc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+async function sendMail(to, subject, html, text) {
+  if (!process.env.BREVO_API_KEY || !process.env.MAIL_FROM) { console.log("[mail not configured] To:", to, "|", text); return false; }
+  const r = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": process.env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ sender: { name: "Chaupal", email: process.env.MAIL_FROM }, to: [{ email: to }], subject, htmlContent: html, textContent: text })
+  });
+  if (!r.ok) console.error("Mail failed:", r.status, (await r.text()).slice(0, 200));
+  return r.ok;
+}
+// always answers "ok" so nobody can use this to find out which emails have accounts
+app.post("/api/forgot", limit, wrap(async (req, res) => {
+  const e = String((req.body || {}).email || "").trim().toLowerCase();
+  const u = EMAIL_RE.test(e) ? findByEmail.get(e) : null;
+  if (u && !u.disabled && !db.prepare("SELECT 1 FROM reset_tokens WHERE user_id = ? AND created_at > ?").get(u.id, Date.now() - 120000)) {
+    const tok = crypto.randomBytes(32).toString("hex"), now = Date.now();
+    db.prepare("DELETE FROM reset_tokens WHERE user_id = ? OR expires_at < ?").run(u.id, now);
+    db.prepare("INSERT INTO reset_tokens (user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?)").run(u.id, hashTok(tok), now + 30 * 60000, now);
+    const base = (process.env.APP_URL || "").replace(/\/$/, "") || req.protocol + "://" + req.get("host");
+    const link = `${base}/?reset=${tok}`;
+    sendMail(u.email, "Reset your Chaupal password",
+      `<p>Hi ${htmlEsc(u.name)},</p><p>Click to choose a new password. The link works for 30 minutes.</p><p><a href="${link}">Reset my password</a></p><p>If you didn't ask for this, ignore this email.</p>`,
+      `Hi ${u.name}, open this link to choose a new password (valid 30 minutes): ${link}`).catch(e2 => console.error("Mail error:", e2.message));
+  }
+  res.json({ ok: true });
+}));
+app.post("/api/reset", limit, wrap(async (req, res) => {
+  const { token, password } = req.body || {};
+  if (String(password || "").length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
+  const row = db.prepare("SELECT * FROM reset_tokens WHERE token_hash = ? AND expires_at > ?").get(hashTok(String(token || "")), Date.now());
+  if (!row) return res.status(400).json({ error: "This reset link is invalid or has expired. Request a new one." });
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(await bcrypt.hash(String(password), 10), row.user_id);
+  db.prepare("DELETE FROM reset_tokens WHERE user_id = ?").run(row.user_id);
+  res.json({ ok: true });
 }));
 
 function auth(req, res, next) {
