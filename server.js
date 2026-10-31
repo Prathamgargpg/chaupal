@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Server } from "socket.io";
 import Database from "better-sqlite3";
+import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -21,6 +22,19 @@ if (!JWT_SECRET) {
 
 /* ---------- database ---------- */
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+
+/* ---------- permanent storage ----------
+   The app runs on SQLite. If DATABASE_URL (a free Neon Postgres) is set, a snapshot of the SQLite
+   file is restored from Postgres at startup and saved back shortly after every change and on shutdown. */
+let pool = null;
+if (process.env.DATABASE_URL) {
+  pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false }, max: 2 });
+  await pool.query("CREATE TABLE IF NOT EXISTS app_snapshot (id INT PRIMARY KEY, data BYTEA NOT NULL, updated_at TIMESTAMPTZ DEFAULT now())");
+  const r = await pool.query("SELECT data FROM app_snapshot WHERE id = 1");
+  for (const ext of ["", "-wal", "-shm"]) fs.rmSync(DB_PATH + ext, { force: true });
+  if (r.rows[0]) { fs.writeFileSync(DB_PATH, r.rows[0].data); console.log("Restored database from Postgres snapshot."); }
+  else console.log("No snapshot yet. Starting fresh.");
+} else console.warn("DATABASE_URL not set: data lives only on this server's temporary disk.");
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 db.exec(`CREATE TABLE IF NOT EXISTS users (
@@ -44,6 +58,28 @@ CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id 
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
 const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
+
+let savedChanges = -1, saving = false;
+async function saveSnapshot(force = false) {
+  if (!pool || saving) return;
+  const c = db.prepare("SELECT total_changes() AS c").get().c;
+  if (!force && c === savedChanges) return;
+  saving = true;
+  try {
+    await pool.query("INSERT INTO app_snapshot (id, data) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()", [db.serialize()]);
+    savedChanges = c;
+  } catch (e) { console.error("Snapshot failed:", e.message); }
+  saving = false;
+}
+if (pool) {
+  setInterval(saveSnapshot, 10000).unref();
+  for (const sig of ["SIGTERM", "SIGINT"]) process.on(sig, async () => {
+    console.log("Saving database before shutdown...");
+    while (saving) await new Promise(r => setTimeout(r, 100));
+    await saveSnapshot(true);
+    process.exit(0);
+  });
+}
 
 /* ---------- app ---------- */
 const app = express();
@@ -272,7 +308,7 @@ app.get("/api/ice", auth, (req, res) => {
 });
 
 app.get("/healthz", (_req, res) => {
-  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok" }); }
+  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok", permanent: !!pool }); }
   catch (e) { res.status(500).json({ ok: false, db: String(e.message) }); }
 });
 
