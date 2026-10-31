@@ -10,7 +10,7 @@ import jwt from "jsonwebtoken";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
-const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 6);
+const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 8);
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "chaupal.db");
 
 let JWT_SECRET = process.env.JWT_SECRET;
@@ -30,13 +30,19 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
-for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"]])
+for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
   message TEXT, created_at INTEGER NOT NULL)`);
+db.exec(`
+CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, type TEXT NOT NULL, data TEXT, created_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_events_user ON events(user_id, created_at);
+CREATE TABLE IF NOT EXISTS login_days (user_id INTEGER NOT NULL, day TEXT NOT NULL, PRIMARY KEY (user_id, day));
+CREATE TABLE IF NOT EXISTS follows (follower_id INTEGER NOT NULL, followee_id INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (follower_id, followee_id));
+CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, body TEXT NOT NULL, created_at INTEGER NOT NULL);`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
-const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled FROM users WHERE id = ?");
+const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
 
 /* ---------- app ---------- */
@@ -59,7 +65,7 @@ app.get("/", (_req, res) => {
 });
 
 const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
-const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user" });
+const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0 });
 
 /* ---------- settings: titles, encouragement rules ---------- */
 const TITLES = ["Student", "Developer", "Designer", "Founder", "Mentor", "Teacher", "Writer", "Job seeker"];
@@ -106,6 +112,7 @@ app.post("/api/signup", limit, wrap(async (req, res) => {
   const id = Number(info.lastInsertRowid);
   if ((ADMIN_EMAIL && e === ADMIN_EMAIL) || db.prepare("SELECT COUNT(*) c FROM users").get().c === 1)
     db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(id);
+  recordLogin(id);
   const user = findById.get(id);
   res.json({ token: sign(user), user: publicUser(user) });
 }));
@@ -116,6 +123,7 @@ app.post("/api/login", limit, wrap(async (req, res) => {
   const ok = row && (await bcrypt.compare(String(password || ""), row.password_hash));
   if (!ok) return res.status(401).json({ error: "Email or password is incorrect." });
   if (row.disabled) return res.status(403).json({ error: "This account has been disabled. Contact the admin." });
+  recordLogin(row.id);
   res.json({ token: sign(row), user: publicUser(row) });
 }));
 
@@ -129,14 +137,88 @@ function auth(req, res, next) {
   } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
 
-app.get("/api/me", auth, (req, res) => res.json({ user: publicUser(req.user), quota: quota(req.user.id) }));
+app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id) }); });
 app.get("/api/titles", auth, (_req, res) => res.json({ titles: TITLES }));
 app.put("/api/me", auth, (req, res) => {
-  const { name, title, bio } = req.body || {};
+  const { name, title, bio, visibility, show_streak, show_activity } = req.body || {};
   const n = String(name || "").trim().slice(0, 40) || req.user.name;
   db.prepare("UPDATE users SET name = ?, title = ?, bio = ? WHERE id = ?")
     .run(n, TITLES.includes(title) ? title : "", String(bio || "").trim().slice(0, 200), req.user.id);
+  db.prepare("UPDATE users SET visibility = ?, show_streak = ?, show_activity = ? WHERE id = ?")
+    .run(["public", "followers", "private"].includes(visibility) ? visibility : "public", show_streak ? 1 : 0, show_activity ? 1 : 0, req.user.id);
   res.json({ user: publicUser(findById.get(req.user.id)) });
+});
+
+/* ---------- user data timeline, streaks, privacy ---------- */
+const dkey = t => new Date(t + TZ).toISOString().slice(0, 10);
+const logEvent = (uid, type, data = {}) => db.prepare("INSERT INTO events (user_id, type, data, created_at) VALUES (?, ?, ?, ?)").run(uid, type, JSON.stringify(data), Date.now());
+function recordLogin(uid) {
+  const d = dkey(Date.now());
+  if (db.prepare("INSERT OR IGNORE INTO login_days (user_id, day) VALUES (?, ?)").run(uid, d).changes) logEvent(uid, "daily_login", { day: d });
+}
+function streakOf(uid) {
+  const ds = db.prepare("SELECT day FROM login_days WHERE user_id = ? ORDER BY day").all(uid).map(r => Date.parse(r.day) / 864e5);
+  let best = 0, run = 0;
+  ds.forEach((d, i) => { run = i && d - ds[i - 1] === 1 ? run + 1 : 1; best = Math.max(best, run); });
+  const today = Date.parse(dkey(Date.now())) / 864e5, last = ds[ds.length - 1];
+  return { current: last !== undefined && today - last <= 1 ? run : 0, best, total: ds.length };
+}
+const eventsOf = (uid, n) => db.prepare("SELECT type, data, created_at FROM events WHERE user_id = ? ORDER BY id DESC LIMIT ?").all(uid, n).map(e => ({ ...e, data: JSON.parse(e.data || "{}") }));
+const follows = (a, b) => !!db.prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followee_id = ?").get(a, b);
+const canView = (v, o) => v.id === o.id || v.role === "admin" || o.visibility === "public" || (o.visibility === "followers" && follows(v.id, o.id));
+const POSTQ = "SELECT p.id, p.body, p.created_at, u.id uid, u.name, u.title, u.visibility FROM posts p JOIN users u ON u.id = p.user_id WHERE u.disabled = 0 AND ";
+
+app.get("/api/timeline", auth, (req, res) => res.json({ events: eventsOf(req.user.id, 50), streak: streakOf(req.user.id) }));
+
+app.get("/api/users", auth, (req, res) => {
+  const q = "%" + String(req.query.q || "").trim().replace(/[%_]/g, "") + "%";
+  const rows = db.prepare("SELECT id, name, title FROM users WHERE disabled = 0 AND visibility != 'private' AND id != ? AND name LIKE ? LIMIT 10").all(req.user.id, q);
+  res.json({ users: rows.map(r => ({ ...r, isFollowing: follows(req.user.id, r.id) })) });
+});
+
+app.get("/api/users/:id", auth, (req, res) => {
+  const o = findById.get(Number(req.params.id));
+  if (!o || o.disabled) return res.status(404).json({ error: "User not found." });
+  const cnt = col => db.prepare(`SELECT COUNT(*) c FROM follows WHERE ${col} = ?`).get(o.id).c;
+  const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), isMe: o.id === req.user.id };
+  if (!canView(req.user, o)) return res.json({ ...base, restricted: true });
+  const self = o.id === req.user.id || req.user.role === "admin";
+  res.json({ ...base, bio: o.bio, streak: self || o.show_streak ? streakOf(o.id) : null,
+    posts: db.prepare(POSTQ + "p.user_id = ? ORDER BY p.id DESC LIMIT 20").all(o.id),
+    activity: self || o.show_activity ? eventsOf(o.id, 20) : null });
+});
+
+app.post("/api/users/:id/follow", auth, (req, res) => {
+  const o = findById.get(Number(req.params.id));
+  if (!o || o.disabled || o.id === req.user.id) return res.status(400).json({ error: "You can't follow this user." });
+  if (o.visibility === "private") return res.status(403).json({ error: "This profile is private." });
+  if (db.prepare("INSERT OR IGNORE INTO follows VALUES (?, ?, ?)").run(req.user.id, o.id, Date.now()).changes) logEvent(req.user.id, "followed", { name: o.name });
+  res.json({ ok: true });
+});
+app.delete("/api/users/:id/follow", auth, (req, res) => {
+  db.prepare("DELETE FROM follows WHERE follower_id = ? AND followee_id = ?").run(req.user.id, Number(req.params.id));
+  res.json({ ok: true });
+});
+
+app.post("/api/posts", auth, (req, res) => {
+  const body = String((req.body || {}).body || "").trim().slice(0, 280);
+  if (!body) return res.status(400).json({ error: "Write something first." });
+  if (db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ? AND created_at >= ?").get(req.user.id, dayStart()).c >= 20)
+    return res.status(429).json({ error: "You've reached today's limit of 20 posts." });
+  const id = db.prepare("INSERT INTO posts (user_id, body, created_at) VALUES (?, ?, ?)").run(req.user.id, body, Date.now()).lastInsertRowid;
+  logEvent(req.user.id, "posted", { post: Number(id) });
+  res.json({ ok: true });
+});
+app.get("/api/feed", auth, (req, res) => {
+  const me = req.user.id;
+  const rows = db.prepare(POSTQ + "(p.user_id = ? OR p.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?)) ORDER BY p.id DESC LIMIT 50").all(me, me);
+  res.json({ posts: rows.filter(r => r.uid === me || r.visibility !== "private") });
+});
+app.delete("/api/posts/:id", auth, (req, res) => {
+  const p = db.prepare("SELECT user_id FROM posts WHERE id = ?").get(Number(req.params.id));
+  if (!p || (p.user_id !== req.user.id && req.user.role !== "admin")) return res.status(404).json({ error: "Post not found." });
+  db.prepare("DELETE FROM posts WHERE id = ?").run(Number(req.params.id));
+  res.json({ ok: true });
 });
 
 /* ---------- admin ---------- */
@@ -232,6 +314,7 @@ io.on("connection", socket => {
     if (members.length >= MAX_ROOM_SIZE) return ack({ error: `This meeting is full (${MAX_ROOM_SIZE} people max).` });
     socket.join(room);
     socket.room = room;
+    logEvent(socket.user.id, "joined_room", { room });
     socket.to(room).emit("peer-joined", peerInfo(socket));
     ack({ peers: members.map(peerInfo) });
   });
@@ -261,6 +344,8 @@ io.on("connection", socket => {
       if (q.left <= 0) return { error: `You've used all ${DAILY} encouragements for today. They reset at midnight.` };
       if (now < q.nextAt) return { error: `You can encourage again in ${Math.ceil((q.nextAt - now) / 60000)} min.` };
       db.prepare("INSERT INTO encouragements (from_id, to_id, message, created_at) VALUES (?, ?, ?, ?)").run(socket.user.id, t.user.id, msg, now);
+      logEvent(socket.user.id, "encouraged", { to: t.user.name });
+      logEvent(t.user.id, "encouraged_by", { from: socket.user.name });
       return { ok: true };
     })();
     if (!result.ok) return ack({ ...result, quota: quota(socket.user.id) });
@@ -275,6 +360,8 @@ io.on("connection", socket => {
       ? { phase: String(p.phase).slice(0, 10), running: !!p.running, left: Math.max(0, Number(p.left) || 0), at: Date.now() } : null;
     socket.to(socket.room).emit("pomo", { id: socket.id, pomo: socket.pomo });
   });
+
+  socket.on("pomo-done", () => logEvent(socket.user.id, "pomodoro", {}));
 
   socket.on("profile-updated", () => {
     const u = findById.get(socket.user.id);
