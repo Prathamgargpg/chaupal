@@ -410,7 +410,7 @@ io.use((socket, next) => {
 });
 
 const peerInfo = s => ({
-  id: s.id, userId: s.user.id, name: s.user.name, title: s.user.title, bio: s.user.bio,
+  id: s.id, userId: s.user.id, name: s.user.name, title: s.user.title, bio: s.user.bio, goal: s.goal || "", sessions: s.sessions || 0, cheers: s.cheers || 0,
   pomo: s.pomo ? { ...s.pomo, left: s.pomo.running ? Math.max(0, s.pomo.left - (Date.now() - s.pomo.at)) : s.pomo.left } : null
 });
 const ROOM_RE = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
@@ -462,6 +462,8 @@ io.on("connection", socket => {
     })();
     if (!result.ok) return ack({ ...result, quota: quota(socket.user.id) });
     t.emit("encouraged", { from: socket.user.name, message: msg });
+    t.cheers = (t.cheers || 0) + 1;
+    t.to(t.room).emit("peer-updated", peerInfo(t));
     ack({ ok: true, quota: quota(socket.user.id) });
   });
 
@@ -482,7 +484,16 @@ io.on("connection", socket => {
     if (action === "remove") setTimeout(() => t.disconnect(true), 300);
   });
 
-  socket.on("pomo-done", () => logEvent(socket.user.id, "pomodoro", {}));
+  socket.on("pomo-done", () => {
+    logEvent(socket.user.id, "pomodoro", {});
+    socket.sessions = (socket.sessions || 0) + 1;
+    if (socket.room) socket.to(socket.room).emit("peer-updated", peerInfo(socket));
+  });
+  // what you are working on, shown under your name on your tile
+  socket.on("goal", g => {
+    socket.goal = String(g || "").trim().slice(0, 80);
+    if (socket.room) socket.to(socket.room).emit("peer-updated", peerInfo(socket));
+  });
 
   socket.on("profile-updated", () => {
     const u = findById.get(socket.user.id);
