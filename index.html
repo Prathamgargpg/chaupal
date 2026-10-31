@@ -240,6 +240,45 @@
   .tagrow{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
   .tag{font-size:12px;padding:3px 9px;border-radius:999px;background:#DBEAFE;color:#1D4ED8;font-weight:600}
   .tag.off{background:#FEE2E2;color:#B91C1C}
+  /* ===== room interface v2 ===== */
+  #room{grid-template-columns:64px minmax(0,1fr) 340px}
+  #room.noside{grid-template-columns:64px minmax(0,1fr)}
+  #room.noside .side{display:none}
+  .rail{padding:14px 8px;align-items:center;gap:8px}
+  .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;background:linear-gradient(135deg,#1D4ED8,#38BDF8);margin-bottom:12px;box-shadow:0 10px 20px -10px rgba(37,99,235,.9)}
+  .nav{width:44px;height:44px;padding:0;display:grid;place-items:center;border-radius:12px}
+  .rcard{margin-top:auto;background:none;border:0;padding:0;align-items:center;gap:2px;animation:none}
+  #rail-num{font-weight:800;color:#1D4ED8}
+  .rleft{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .me-pill{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 4px;min-width:230px;flex:0 1 300px}
+  .me-pill .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1D4ED8,#38BDF8);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+  .me-pill input{border:0;padding:6px;background:transparent;min-width:0;flex:1;box-shadow:none}
+  .pager2{display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:700}
+  .tools2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tools2 input{width:170px;padding:8px 14px;border-radius:999px}
+  .seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px}
+  .seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;color:var(--muted)}
+  .seg button.on{background:#2563EB;color:#fff}
+  .tile .name{left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;padding:7px 10px;border-radius:10px;background:rgba(30,41,82,.82);font-size:14px}
+  .tile .who{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .who small{opacity:.7;margin-left:4px}
+  .tile .cnt{display:flex;gap:4px}
+  .tile .cnt i{font-style:normal;background:#0B1E4B;border-radius:6px;padding:0 7px;font-size:12px;font-weight:700}
+  .tile .goal{grid-column:1/-1;font-size:12.5px;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pinb{position:absolute;left:8px;top:8px;width:30px;height:30px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(255,255,255,.28);color:#fff;z-index:2;transition:background .15s}
+  .pinb .ic{width:16px;height:16px}
+  .pinb:hover{background:rgba(255,255,255,.5)}
+  .pinb.on{background:#2563EB}
+  .tile .badge{left:46px;top:11px}
+  .tact{z-index:2}
+  .tact:empty{display:none}
+  .tact button{min-width:30px;height:30px;padding:0 8px;display:inline-grid;place-items:center}
+  .tact button .ic{width:16px;height:16px}
+  .tile[data-ph=focus]{box-shadow:0 0 0 3px #3B82F6,0 0 26px rgba(59,130,246,.55)}
+  .tile[data-ph=short],.tile[data-ph=long]{box-shadow:0 0 0 3px #22C55E,0 0 22px rgba(34,197,94,.45)}
+  @media (max-width:1100px){#room,#room.noside{grid-template-columns:minmax(0,1fr) 300px}#room.noside{grid-template-columns:minmax(0,1fr)}.rail{display:none}}
+  @media (max-width:800px){#room,#room.noside{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:auto}.me-pill{flex-basis:100%}}
 </style>
 </head>
 <body>
@@ -320,36 +359,46 @@
 
 <div id="room" class="hidden">
   <aside class="rail">
-    <div class="brand">Chaupal</div>
-    <button class="nav on" id="n-room">Study Room</button>
-    <button class="nav" id="n-home">Home</button>
-    <button class="nav" id="n-prof">Profile</button>
-    <button class="nav" id="n-act">Activity</button>
-    <button class="nav" id="n-dev">Settings</button>
-    <button class="nav hidden" id="n-admin">Admin</button>
-    <div class="rcard"><b>Keep going!</b><small id="rail-streak">Start your streak</small><div class="bar"><i id="rail-bar"></i></div></div>
+    <div class="logo">C</div>
+    <button class="nav on" id="n-room" title="Study room"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="m22 8-6 4 6 4z"/></svg></button>
+    <button class="nav" id="n-home" title="Home"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg></button>
+    <button class="nav" id="n-prof" title="Profile"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
+    <button class="nav" id="n-act" title="Activity"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></button>
+    <button class="nav" id="n-dev" title="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+    <button class="nav hidden" id="n-admin" title="Admin portal"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg></button>
+    <div class="rcard" title="Login streak"><svg class="ic" viewBox="0 0 24 24" style="color:#F97316"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><span id="rail-num">0</span><small id="rail-streak" class="hidden"></small><i id="rail-bar" class="hidden"></i></div>
   </aside>
 
   <section class="rmain">
     <header class="rhead">
-      <div><h1 class="rt"><span id="room-name">Study Room</span> <span class="rchip live">Live</span></h1><p class="sub" style="margin:2px 0 0">Together we study. Together we achieve.</p></div>
+      <div class="rleft">
+        <button class="btn" id="finish">Finish session</button>
+        <h1 class="rt"><span id="room-name">Study Room</span> <span class="rchip live">Live</span></h1>
+      </div>
       <div class="rchips">
         <span class="rchip">Code <code id="room-code"></code></span>
-        <span class="rchip" id="count"></span>
         <span class="rchip">Time <span id="elapsed">0m</span></span>
-        <button class="btn" id="copy">Share Room</button>
+        <button class="btn" id="start-work">Start working</button>
+        <button class="btn ghost" id="copy">Share Room</button>
       </div>
     </header>
 
-    <div class="grid" id="grid"></div>
-
-    <div class="pager">
-      <button class="pg" id="pg-prev" aria-label="Previous page">&#8249;</button>
-      <span id="pg">Page 1 of 1</span>
-      <button class="pg" id="pg-next" aria-label="Next page">&#8250;</button>
-      <label class="perl">People per page
-        <select id="per"><option value="4">4</option><option value="8">8</option></select></label>
+    <div class="toolbar">
+      <div class="me-pill"><span class="av" id="me-av">Y</span><input id="goal-in" maxlength="80" placeholder="What are you working on?" aria-label="Your goal"></div>
+      <div class="pager2">
+        <button class="pg" id="pg-first" aria-label="First page">&#171;</button><button class="pg" id="pg-prev" aria-label="Previous page">&#8249;</button>
+        <span id="pg">1 / 1</span>
+        <button class="pg" id="pg-next" aria-label="Next page">&#8250;</button><button class="pg" id="pg-last" aria-label="Last page">&#187;</button>
+      </div>
+      <div class="tools2">
+        <input id="find" placeholder="Find focus buddies" aria-label="Find people">
+        <div class="seg"><button id="v-grid" class="on">Grid</button><button id="v-pin">Pin</button></div>
+        <label class="perl">Per page <select id="per"><option value="4">4</option><option value="8">8</option></select></label>
+        <span class="rchip" id="count"></span>
+      </div>
     </div>
+
+    <div class="grid" id="grid"></div>
 
     <div class="controls">
       <button class="ctl" id="mic" aria-pressed="true" aria-label="Microphone" title="Mic on"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg></button>
@@ -571,8 +620,13 @@ function addTile(id, stream, label, local){
     t = document.createElement("div");
     t.className = "tile" + (local ? " local" : "");
     t.id = "t-" + id;
-    t.innerHTML = '<video autoplay playsinline></video><div class="badge"></div><div class="status"></div><div class="name"></div><div class="tact"><button data-a="pin">Pin</button>' + (local ? "" : '<button data-a="enc">Encourage</button><button data-a="bio">Bio</button>' + (me.role === "admin" ? '<button data-a="a-mic">Mute</button><button data-a="a-cam">Stop cam</button><button data-a="a-rm">Remove</button>' : "")) + "</div>";
-    t.querySelector(".tact").onclick = e => { const a = e.target.dataset.a; if (a === "pin") togglePin(id); if (a === "enc") openEnc(id); if (a === "bio") showBio(id); if (a && a.startsWith("a-")) adminAct(id, a, e.target); };
+    t.innerHTML = '<video autoplay playsinline></video><button class="pinb" data-a="pin" title="Pin">' + TI.pin + '</button><div class="badge"></div><div class="status"></div><div class="name"></div><div class="tact">' +
+      (local ? "" : '<button data-a="enc" title="Encourage">' + TI.smile + '</button><button data-a="bio" title="Profile and bio">' + TI.info + "</button>" +
+        (me.role === "admin" ? '<button data-a="a-mic">Mute</button><button data-a="a-cam">Stop cam</button><button data-a="a-rm">Remove</button>' : "")) + "</div>";
+    t.onclick = e => {
+      const bt = e.target.closest("[data-a]"); if (!bt) return; const a = bt.dataset.a;
+      if (a === "pin") togglePin(id); if (a === "enc") openEnc(id); if (a === "bio") showBio(id); if (a.startsWith("a-")) adminAct(id, a, bt);
+    };
     $("grid").appendChild(t);
   }
   const v = t.querySelector("video");
@@ -582,9 +636,12 @@ function addTile(id, stream, label, local){
   updateCount(); layout();
 }
 function relabel(id, fallback){
-  const el = document.querySelector("#t-" + id + " .name"); if (!el) return;
-  const i = info.get(id);
-  el.textContent = (i ? i.name + (id === "me" ? " (you)" : "") : fallback) + (i && i.title ? " · " + i.title : "");
+  const t = $("t-" + id), el = t && t.querySelector(".name"); if (!el) return;
+  const i = info.get(id) || {}, nm = (i.name || fallback) + (id === "me" ? " (you)" : "");
+  el.innerHTML = '<span class="who"><b>' + esc(nm) + "</b>" + (i.title ? " <small>" + esc(i.title) + "</small>" : "") + "</span>" +
+    '<span class="cnt">' + (i.sessions ? '<i title="Focus sessions done">' + i.sessions + "</i>" : "") + (i.cheers ? '<i title="Encouragements received">+' + i.cheers + "</i>" : "") + "</span>" +
+    (i.goal ? '<span class="goal">' + esc(i.goal) + "</span>" : "");
+  t.dataset.s = (nm + " " + (i.title || "") + " " + (i.goal || "")).toLowerCase();
 }
 function removeTile(id){ const t = document.getElementById("t-" + id); if (t) t.remove(); if (pinned === id) { pinned = null; tileView = true; } info.delete(id); updateCount(); layout(); }
 function updateCount(){ const n = $("grid").children.length; $("count").textContent = n + (n === 1 ? " person" : " people"); }
@@ -602,6 +659,9 @@ async function enterRoom(code){
   }
   camTrack = localStream.getVideoTracks()[0] || null;
   syncButtons();
+  me.sessions = 0; me.cheers = 0; me.sent = 0;
+  try { me.goal = localStorage.getItem("chaupal_goal") || ""; } catch { me.goal = ""; }
+  $("goal-in").value = me.goal; $("me-av").textContent = (me.name || "Y")[0].toUpperCase();
   info.set("me", me);
   addTile("me", localStream, me.name + " (you)", true);
 
@@ -616,15 +676,15 @@ async function enterRoom(code){
       roomSettings = res.settings; applyBlocks();
       // the newcomer starts a connection to everyone already inside
       for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); await connectTo(p.id, p.name, true); }
-      pomoSend();
+      pomoSend(); if (me.goal) socket.emit("goal", me.goal);
     });
   });
 
   socket.on("peer-joined", p => { info.set(p.id, p); if (!peers.has(p.id)) peers.set(p.id, { pc: null, name: p.name, chain: Promise.resolve() }); });
   socket.on("peer-left", ({ id }) => closePeer(id));
-  socket.on("peer-updated", p => { const i = info.get(p.id) || {}; info.set(p.id, { ...i, ...p, pomo: i.pomo }); relabel(p.id); });
+  socket.on("peer-updated", p => { const i = info.get(p.id) || {}; info.set(p.id, { ...i, ...p, pomo: i.pomo }); relabel(p.id); layout(); });
   socket.on("pomo", ({ id, pomo }) => { const i = info.get(id); if (i) i.pomo = pomo && { ...pomo, at: Date.now() }; });
-  socket.on("encouraged", d => toast(d.from + ": " + d.message));
+  socket.on("encouraged", d => { me.cheers = (me.cheers || 0) + 1; relabel("me"); toast(d.from + ": " + d.message); });
   socket.on("room-settings", s => { roomSettings = s; applyBlocks(); toast("Room settings changed: video " + (s.video ? "on" : "off") + ", audio " + (s.audio ? "on" : "off")); });
   socket.on("room-closed", () => { alert("This room was closed by the admin."); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); });
   socket.on("forced", ({ action }) => {
@@ -756,7 +816,7 @@ $("chat-form").onsubmit = e => {
   socket.emit("chat", text); addChat("You", text);
   $("chat-in").value = "";
 };
-$("toggle-chat").onclick = () => document.querySelector('.tabs2 [data-t="chat"]').click();
+$("toggle-chat").onclick = () => { const off = $("room").classList.toggle("noside"); $("toggle-chat").setAttribute("aria-pressed", !off); };
 $("copy").onclick = async () => {
   const url = location.origin + location.pathname + "#" + $("room-code").textContent;
   try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Share Room", 1500); }
@@ -768,7 +828,7 @@ function layout(){
   const g = $("grid"), all = [...g.children];
   let pid = null;
   if (!tileView && all.length > 1) pid = (pinned && $("t-" + pinned) && pinned) || (all.find(t => t.id !== "t-me") || all[0]).id.slice(2);
-  const rest = all.filter(t => t.id.slice(2) !== pid), per = pid ? Math.max(1, perPage - 1) : perPage;
+  const q = $("find").value.trim().toLowerCase(), rest = all.filter(t => t.id.slice(2) !== pid && (!q || (t.dataset.s || "").includes(q))), per = pid ? Math.max(1, perPage - 1) : perPage;
   const pages = Math.max(1, Math.ceil(rest.length / per));
   page = Math.min(page, pages - 1);
   const vis = new Set(rest.slice(page * per, page * per + per));
@@ -776,14 +836,15 @@ function layout(){
   all.forEach(t => {
     const id = t.id.slice(2);
     t.classList.toggle("pinned", id === pid); t.classList.toggle("off", !vis.has(t));
-    const b = t.querySelector("[data-a=pin]"); if (b) b.textContent = id === pinned ? "Unpin" : "Pin";
+    const b = t.querySelector("[data-a=pin]"); if (b){ b.title = id === pinned ? "Unpin" : "Pin"; b.classList.toggle("on", id === pinned); }
   });
   const n = Math.max(1, vis.size), cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 6 ? 3 : 4;
   g.classList.toggle("focus", !!pid);
   g.style.setProperty("--n", Math.max(1, vis.size - 1)); g.style.setProperty("--c", cols); g.style.setProperty("--r", Math.ceil(n / cols));
   $("view").setAttribute("aria-pressed", tileView); $("view").title = tileView ? "Tile view" : "Focus view";
-  $("pg").textContent = "Page " + (page + 1) + " of " + pages;
-  $("pg-prev").disabled = page === 0; $("pg-next").disabled = page >= pages - 1;
+  $("pg").textContent = (page + 1) + " / " + pages;
+  $("pg-prev").disabled = $("pg-first").disabled = page === 0; $("pg-next").disabled = $("pg-last").disabled = page >= pages - 1;
+  $("v-grid").classList.toggle("on", tileView); $("v-pin").classList.toggle("on", !tileView);
   renderPeople();
 }
 function togglePin(id){ pinned = pinned === id ? null : id; tileView = !pinned; layout(); }
@@ -804,7 +865,7 @@ $("enc-presets").onclick = e => { if (e.target.tagName === "BUTTON") $("enc-cust
 $("enc-send").onclick = () => socket && socket.emit("encourage", { to: encTo, message: $("enc-custom").value }, r => {
   if (r.quota) quota = r.quota;
   if (r.error){ $("enc-msg").textContent = r.error; $("enc-quota").textContent = quotaText(); return; }
-  $("enc").classList.add("hidden"); toast("Encouragement sent");
+  $("enc").classList.add("hidden"); me.sent = (me.sent || 0) + 1; toast("Encouragement sent");
 });
 $("enc-close").onclick = () => $("enc").classList.add("hidden");
 
@@ -829,7 +890,7 @@ function showBio(id){
   $("info-name").textContent = i.name || ""; $("info-title").textContent = i.title || "No title"; $("info-bio").textContent = i.bio || "No bio yet.";
   $("info").classList.remove("hidden");
 }
-$("info-close").onclick = () => $("info").classList.add("hidden");
+$("info-close").onclick = () => { $("info").classList.add("hidden"); $("info-close").textContent = "Close"; if (pendingLeave){ pendingLeave = false; $("leave").click(); } };
 
 /* ---------- pomodoro ---------- */
 const POMO = { focus: 25, short: 5, long: 15 }, PH = { focus: "Focus", short: "Break", long: "Long break" };
@@ -842,13 +903,14 @@ function pomoStart(){ if (ps.running) return; ps.at = Date.now(); ps.running = t
 function pomoPause(){ if (!ps.running) return; ps.left = rem(ps); ps.running = false; pomoSend(); }
 function pomoReset(){ ps.running = false; ps.left = POMO[ps.phase] * 60000; pomoSend(); }
 function pomoNext(){
-  if (ps.phase === "focus"){ ps.done++; if (socket) socket.emit("pomo-done"); ps.phase = ps.done % 4 === 0 ? "long" : "short"; } else ps.phase = "focus";
+  if (ps.phase === "focus"){ ps.done++; if (socket) socket.emit("pomo-done"); me.sessions = (me.sessions || 0) + 1; relabel("me"); ps.phase = ps.done % 4 === 0 ? "long" : "short"; } else ps.phase = "focus";
   ps.running = false; ps.left = POMO[ps.phase] * 60000; beep(); pomoSend();
 }
 function renderPomo(){
   $("pomo-phase").textContent = PH[ps.phase] + " · round " + (ps.done % 4 + 1) + " of 4";
   $("pomo-time").textContent = fmt(rem(ps));
   $("pomo-go").textContent = ps.running ? "Pause" : "Start";
+  $("start-work").textContent = ps.running ? (ps.phase === "focus" ? "Working " : "Break ") + fmt(rem(ps)) : "Start working";
   $("pomo").style.setProperty("--p", (100 - rem(ps) / (POMO[ps.phase] * 600)) + "%");
 }
 function badge(p){
@@ -860,8 +922,9 @@ setInterval(() => {
   if (ps.running && rem(ps) <= 0) pomoNext();
   renderPomo();
   for (const [id, i] of info){
-    const b = document.querySelector("#t-" + id + " .badge");
-    if (b) b.textContent = badge(id === "me" ? ps : i.pomo);
+    const b = document.querySelector("#t-" + id + " .badge"), pp = id === "me" ? ps : i.pomo, tl = $("t-" + id);
+    if (b) b.textContent = badge(pp);
+    if (tl) tl.dataset.ph = pp && pp.running ? pp.phase : "";
   }
 }, 1000);
 $("pomo-go").onclick = () => ps.running ? pomoPause() : pomoStart();
@@ -897,7 +960,7 @@ $("admin-body").onclick = async e => {
 
 /* ---------- social: posts, follow, public profiles, activity timeline ---------- */
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago"; };
-const setStreak = s => { const c = s && s.current ? s.current : 0; $("streak").textContent = c ? c + "-day streak" : "Start your streak"; $("rail-streak").textContent = c ? c + "-day streak. Keep it up!" : "Log in daily to build a streak"; $("rail-bar").style.width = Math.min(100, c / 7 * 100) + "%"; };
+const setStreak = s => { const c = s && s.current ? s.current : 0; $("streak").textContent = c ? c + "-day streak" : "Start your streak"; $("rail-num").textContent = c; $("rail-streak").textContent = c ? c + "-day streak. Keep it up!" : "Log in daily to build a streak"; $("rail-bar").style.width = Math.min(100, c / 7 * 100) + "%"; };
 const postHtml = p => '<div class="post"><a class="lnk" data-u="' + p.uid + '">' + esc(p.name) + "</a>" + (p.title ? " · " + esc(p.title) : "") + " <small>" + ago(p.created_at) + "</small>" +
   (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + "<div>" + esc(p.body) + "</div></div>";
 const followBtn = (id, on) => '<button class="btn ' + (on ? "ghost" : "") + '" data-f="' + id + '" data-on="' + (on ? 1 : 0) + '">' + (on ? "Following" : "Follow") + "</button>";
@@ -1088,6 +1151,30 @@ $("rm-list").onclick = async e => {
     if (b.dataset.r === "del"){ if (!confirm("Delete this room? People inside will be disconnected.")) return; await api("/api/admin/rooms/" + b.dataset.id, { method: "DELETE" }); }
     await loadAdminRooms(); loadRooms();
   } catch (err) { alert(err.message); }
+};
+
+/* ---------- room interface v2: goals, view switch, find people, session summary ---------- */
+const TI = {
+  pin: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v1H7v-1l3-3z"/></svg>',
+  smile: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>',
+  info: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'
+};
+let pendingLeave = false;
+function setGoal(v){ v = v.trim().slice(0, 80); me.goal = v; try { localStorage.setItem("chaupal_goal", v); } catch {} if (socket) socket.emit("goal", v); relabel("me"); layout(); }
+$("goal-in").onchange = () => setGoal($("goal-in").value);
+$("goal-in").onkeydown = e => { if (e.key === "Enter") e.target.blur(); };
+$("find").oninput = () => { page = 0; layout(); };
+$("v-grid").onclick = () => { tileView = true; layout(); };
+$("v-pin").onclick = () => { tileView = false; layout(); };
+$("pg-first").onclick = () => { page = 0; layout(); };
+$("pg-last").onclick = () => { page = 1e6; layout(); };
+$("start-work").onclick = () => { if (ps.running) pomoPause(); else { if (ps.phase !== "focus") pomoNext(); pomoStart(); } };
+$("finish").onclick = () => {
+  const m = Math.floor((Date.now() - roomStart) / 60000);
+  $("info-name").textContent = "Session complete";
+  $("info-title").textContent = "You studied for " + (m < 1 ? "less than a minute" : m + " minute" + (m === 1 ? "" : "s")) + ".";
+  $("info-bio").textContent = "Focus sessions finished: " + (me.sessions || 0) + " · Encouragements received: " + (me.cheers || 0) + " · Encouragements sent: " + (me.sent || 0);
+  $("info-close").textContent = "Back to home"; pendingLeave = true; $("info").classList.remove("hidden");
 };
 
 /* ---------- boot ---------- */
