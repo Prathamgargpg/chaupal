@@ -9,10 +9,11 @@ import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import zlib from "zlib";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
-const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 8);
+const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 6);
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "chaupal.db");
 
 let JWT_SECRET = process.env.JWT_SECRET;
@@ -37,7 +38,7 @@ if (process.env.DATABASE_URL) {
   else console.log("No snapshot yet. Starting fresh.");
 } else console.warn("DATABASE_URL not set: data lives only on this server's temporary disk.");
 const db = new Database(DB_PATH);
-db.pragma("journal_mode = WAL");
+db.pragma("journal_mode = WAL"); db.pragma("synchronous = NORMAL"); db.pragma("temp_store = MEMORY"); db.pragma("cache_size = -16000");
 db.exec(`CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE NOT NULL,
@@ -45,7 +46,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
-for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"]])
+for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["banner", "TEXT DEFAULT ''"], ["interests", "TEXT DEFAULT ''"], ["seeking", "TEXT DEFAULT ''"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["notif_seen", "INTEGER DEFAULT 0"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
@@ -62,8 +63,23 @@ db.exec(`CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT,
 db.exec(`CREATE TABLE IF NOT EXISTS dms (id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL, body TEXT NOT NULL, created_at INTEGER NOT NULL, read_at INTEGER);
 CREATE INDEX IF NOT EXISTS idx_dms_to ON dms(to_id, read_at);
 CREATE INDEX IF NOT EXISTS idx_dms_pair ON dms(from_id, to_id);`);
+db.exec(`CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, room TEXT NOT NULL, started_at INTEGER NOT NULL, ended_at INTEGER, video_ms INTEGER DEFAULT 0);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id, started_at);
+CREATE INDEX IF NOT EXISTS idx_sessions_room ON sessions(room, started_at);
+CREATE INDEX IF NOT EXISTS idx_follows_followee ON follows(followee_id);
+CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id, id);
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(user_id, type);
+CREATE INDEX IF NOT EXISTS idx_enc_from ON encouragements(from_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_enc_to ON encouragements(to_id);
+CREATE INDEX IF NOT EXISTS idx_reset_user ON reset_tokens(user_id);`);
+// housekeeping: drop sessions that never closed (server restart) and old timeline rows
+const prune = () => { db.prepare("DELETE FROM sessions WHERE ended_at IS NULL AND started_at < ?").run(Date.now() - 864e5); db.prepare("DELETE FROM events WHERE created_at < ? AND type != 'pomodoro'").run(Date.now() - 90 * 864e5); };
+prune(); setInterval(prune, 6 * 3600e3).unref();
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
-const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
+const findByIdRaw = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, created_at, banner, interests, seeking, instagram, linkedin, last_seen, notif_seen FROM users WHERE id = ?");
+const ucache = new Map();
+const findById = { get(id) { const c = ucache.get(id); if (c && c.t > Date.now()) return c.u; const u = findByIdRaw.get(id); if (u) ucache.set(id, { u, t: Date.now() + 15000 }); else ucache.delete(id); return u; } };
+const dropUser = id => ucache.delete(Number(id));
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
 
 let savedChanges = -1, saving = false;
@@ -79,7 +95,7 @@ async function saveSnapshot(force = false) {
   saving = false;
 }
 if (pool) {
-  setInterval(saveSnapshot, 10000).unref();
+  setInterval(saveSnapshot, 20000).unref();
   for (const sig of ["SIGTERM", "SIGINT"]) process.on(sig, async () => {
     console.log("Saving database before shutdown...");
     while (saving) await new Promise(r => setTimeout(r, 100));
@@ -95,20 +111,34 @@ app.use(express.json({ limit: "10kb" }));
 // Find the front-end folder even if the upload put it somewhere unexpected
 const staticDir = [path.join(__dirname, "public"), path.join(__dirname, "chaupal-app", "public")]
   .find(d => fs.existsSync(path.join(d, "index.html")));
-if (staticDir) app.use(express.static(staticDir));
-app.get("/", (_req, res) => {
-  const rootIndex = path.join(__dirname, "index.html");
-  if (fs.existsSync(rootIndex)) return res.sendFile(rootIndex);   // index.html uploaded next to server.js
+if (staticDir) app.use(express.static(staticDir, { index: false, maxAge: "1h" }));
+// the page is compressed once (brotli + gzip) and cached in memory, so the first load is ~5x smaller and instant
+const pageCache = new Map();
+function servePage(req, res, file) {
+  let st; try { st = fs.statSync(file); } catch { return false; }
+  let c = pageCache.get(file);
+  if (!c || c.mtime !== st.mtimeMs) {
+    const raw = fs.readFileSync(file);
+    c = { mtime: st.mtimeMs, raw, gz: zlib.gzipSync(raw, { level: 9 }), br: zlib.brotliCompressSync(raw), etag: '"' + crypto.createHash("sha1").update(raw).digest("base64url").slice(0, 16) + '"' };
+    pageCache.set(file, c);
+  }
+  const ae = req.headers["accept-encoding"] || "";
+  res.set({ ETag: c.etag, "Cache-Control": "no-cache", Vary: "Accept-Encoding" }); res.type("html");
+  if (/\bbr\b/.test(ae)) { res.set("Content-Encoding", "br"); res.send(c.br); }
+  else if (/\bgzip\b/.test(ae)) { res.set("Content-Encoding", "gzip"); res.send(c.gz); }
+  else res.send(c.raw);
+  return true;
+}
+app.get("/", (req, res) => {
+  const cands = [path.join(__dirname, "index.html"), staticDir && path.join(staticDir, "index.html")].filter(Boolean);
+  for (const f of cands) if (servePage(req, res, f)) return;
   const files = fs.readdirSync(__dirname).filter(f => f !== "node_modules" && !f.startsWith(".env")).join(", ");
-  res.status(500).type("text").send(
-    "Chaupal server is running, but index.html was not found.\n" +
-    "Create the file public/index.html in your GitHub repo.\n\n" +
-    "Files next to server.js: " + files
-  );
+  res.status(500).type("text").send("Chaupal server is running, but index.html was not found.\nCreate the file public/index.html in your GitHub repo.\n\nFiles next to server.js: " + files);
 });
 
+const parseList = v => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } };
 const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
-const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0 });
+const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0, banner: u.banner || "", interests: parseList(u.interests), seeking: parseList(u.seeking), instagram: u.instagram || "", linkedin: u.linkedin || "" });
 
 /* ---------- settings: titles, encouragement rules ---------- */
 const TITLES = ["Student", "Developer", "Designer", "Founder", "Mentor", "Teacher", "Writer", "Job seeker"];
@@ -219,15 +249,23 @@ function auth(req, res, next) {
   } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
 
-app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id) }); });
+app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); touchSeen(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id) }); });
 app.get("/api/titles", auth, (_req, res) => res.json({ titles: TITLES }));
+const SEEK = ["accountability", "study-buddy", "focus-group", "networking"];
+const cl = (v, n) => String(v || "").trim().slice(0, n);
+const handle = v => { const h = String(v || "").trim().replace(/^@/, ""); return /^[A-Za-z0-9._-]{1,40}$/.test(h) ? h : ""; };
 app.put("/api/me", auth, (req, res) => {
-  const { name, title, bio, visibility, show_streak, show_activity } = req.body || {};
+  const b = req.body || {}, { name, title, bio, visibility, show_streak, show_activity } = b;
   const n = String(name || "").trim().slice(0, 40) || req.user.name;
   db.prepare("UPDATE users SET name = ?, title = ?, bio = ? WHERE id = ?")
     .run(n, TITLES.includes(title) ? title : "", String(bio || "").trim().slice(0, 200), req.user.id);
   db.prepare("UPDATE users SET visibility = ?, show_streak = ?, show_activity = ? WHERE id = ?")
     .run(["public", "followers", "private"].includes(visibility) ? visibility : "public", show_streak ? 1 : 0, show_activity ? 1 : 0, req.user.id);
+  const ints = (Array.isArray(b.interests) ? b.interests : String(b.interests || "").split(",")).map(x => cl(x, 24)).filter(Boolean).slice(0, 8);
+  const seek = (Array.isArray(b.seeking) ? b.seeking : []).filter(x => SEEK.includes(x));
+  db.prepare("UPDATE users SET banner = ?, interests = ?, seeking = ?, instagram = ?, linkedin = ? WHERE id = ?")
+    .run(cl(b.banner, 90), JSON.stringify(ints), JSON.stringify(seek), handle(b.instagram), handle(b.linkedin), req.user.id);
+  dropUser(req.user.id);
   res.json({ user: publicUser(findById.get(req.user.id)) });
 });
 
@@ -250,6 +288,14 @@ const follows = (a, b) => !!db.prepare("SELECT 1 FROM follows WHERE follower_id 
 const canView = (v, o) => v.id === o.id || v.role === "admin" || o.visibility === "public" || (o.visibility === "followers" && follows(v.id, o.id));
 const POSTQ = "SELECT p.id, p.body, p.created_at, u.id uid, u.name, u.title, u.visibility FROM posts p JOIN users u ON u.id = p.user_id WHERE u.disabled = 0 AND ";
 
+const TIERS = [365, 200, 100, 75, 50, 25, 7];
+const badgeOf = days => TIERS.find(t => days >= t) || 0;
+const daysOf = uid => db.prepare("SELECT COUNT(*) c FROM login_days WHERE user_id = ?").get(uid).c;
+const seenAt = new Map();
+const touchSeen = uid => { const now = Date.now(); if (now - (seenAt.get(uid) || 0) < 60000) return; seenAt.set(uid, now); db.prepare("UPDATE users SET last_seen = ? WHERE id = ?").run(now, uid); };
+const isOnline = uid => { for (const x of io.sockets.sockets.values()) if (x.user.id === uid) return true; return false; };
+const toMs = t => { const v = Date.parse(String(t || "").replace(" ", "T") + "Z"); return Number.isFinite(v) ? v : null; };
+
 app.get("/api/timeline", auth, (req, res) => res.json({ events: eventsOf(req.user.id, 50), streak: streakOf(req.user.id) }));
 
 app.get("/api/users", auth, (req, res) => {
@@ -262,20 +308,42 @@ app.get("/api/users/:id", auth, (req, res) => {
   const o = findById.get(Number(req.params.id));
   if (!o || o.disabled) return res.status(404).json({ error: "User not found." });
   const cnt = col => db.prepare(`SELECT COUNT(*) c FROM follows WHERE ${col} = ?`).get(o.id).c;
-  const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), isMe: o.id === req.user.id };
+  const online = isOnline(o.id);
+  const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), isMe: o.id === req.user.id, badge: badgeOf(daysOf(o.id)), online, seen: online ? Date.now() : o.last_seen || 0, joined: toMs(o.created_at) };
   if (!canView(req.user, o)) return res.json({ ...base, restricted: true });
-  const self = o.id === req.user.id || req.user.role === "admin";
-  res.json({ ...base, bio: o.bio, streak: self || o.show_streak ? streakOf(o.id) : null,
+  const self = o.id === req.user.id || req.user.role === "admin", detail = self || o.show_activity;
+  const ec = t => db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = ?").get(o.id, t).c;
+  const tot = db.prepare("SELECT COALESCE(SUM(ended_at - started_at), 0) f, COALESCE(SUM(video_ms), 0) v, COUNT(*) n FROM sessions WHERE user_id = ? AND ended_at IS NOT NULL").get(o.id);
+  const week = [];
+  for (let i = 6; i >= 0; i--) week.push({ day: dkey(Date.now() - i * 864e5), focus: 0, video: 0 });
+  for (const r of db.prepare("SELECT started_at s, ended_at - started_at f, video_ms v FROM sessions WHERE user_id = ? AND ended_at IS NOT NULL AND started_at >= ?").all(o.id, dayStart() - 6 * 864e5)) {
+    const w = week.find(x => x.day === dkey(r.s)); if (w) { w.focus += r.f; w.video += r.v; }
+  }
+  res.json({ ...base, bio: o.bio, banner: o.banner || "", interests: parseList(o.interests), seeking: parseList(o.seeking), instagram: o.instagram || "", linkedin: o.linkedin || "",
+    streak: self || o.show_streak ? streakOf(o.id) : null,
     posts: db.prepare(POSTQ + "p.user_id = ? ORDER BY p.id DESC LIMIT 20").all(o.id),
-    activity: self || o.show_activity ? eventsOf(o.id, 20) : null,
-    stats: (() => { const ec = t => db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = ?").get(o.id, t).c; return { focus: ec("pomodoro"), sent: ec("encouraged"), received: ec("encouraged_by"), posts: db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ?").get(o.id).c }; })() });
+    activity: detail ? eventsOf(o.id, 20) : null,
+    totals: { focus_ms: tot.f, video_ms: tot.v, sessions: tot.n }, week,
+    sessions: detail ? db.prepare("SELECT s.started_at, s.ended_at - s.started_at ms, s.video_ms, r.name room FROM sessions s LEFT JOIN rooms r ON r.code = s.room WHERE s.user_id = ? AND s.ended_at IS NOT NULL ORDER BY s.id DESC LIMIT 8").all(o.id) : null,
+    partners: detail ? db.prepare(`SELECT u.id, u.name, u.title, COUNT(*) n, SUM(MIN(a.ended_at, b.ended_at) - MAX(a.started_at, b.started_at)) ms
+      FROM sessions a JOIN sessions b ON b.room = a.room AND b.user_id != a.user_id AND b.started_at < a.ended_at AND b.ended_at > a.started_at
+      JOIN users u ON u.id = b.user_id WHERE a.user_id = ? AND a.ended_at IS NOT NULL AND b.ended_at IS NOT NULL AND u.disabled = 0 AND u.visibility != 'private'
+      GROUP BY u.id ORDER BY ms DESC LIMIT 12`).all(o.id) : null,
+    stats: { focus: ec("pomodoro"), sent: ec("encouraged"), received: ec("encouraged_by"), posts: db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ?").get(o.id).c } });
 });
+
+app.get("/api/notifications", auth, (req, res) => {
+  const seen = req.user.notif_seen || 0;
+  const items = db.prepare("SELECT type, data, created_at FROM events WHERE user_id = ? AND type IN ('encouraged_by','followed_by') ORDER BY id DESC LIMIT 15").all(req.user.id).map(e => ({ ...e, data: JSON.parse(e.data || "{}") }));
+  res.json({ items, unseen: items.filter(i => i.created_at > seen).length });
+});
+app.post("/api/notifications/seen", auth, (req, res) => { db.prepare("UPDATE users SET notif_seen = ? WHERE id = ?").run(Date.now(), req.user.id); dropUser(req.user.id); res.json({ ok: true }); });
 
 app.post("/api/users/:id/follow", auth, (req, res) => {
   const o = findById.get(Number(req.params.id));
   if (!o || o.disabled || o.id === req.user.id) return res.status(400).json({ error: "You can't follow this user." });
   if (o.visibility === "private") return res.status(403).json({ error: "This profile is private." });
-  if (db.prepare("INSERT OR IGNORE INTO follows VALUES (?, ?, ?)").run(req.user.id, o.id, Date.now()).changes) logEvent(req.user.id, "followed", { name: o.name });
+  if (db.prepare("INSERT OR IGNORE INTO follows VALUES (?, ?, ?)").run(req.user.id, o.id, Date.now()).changes) { logEvent(req.user.id, "followed", { name: o.name }); logEvent(o.id, "followed_by", { name: req.user.name, uid: req.user.id }); }
   res.json({ ok: true });
 });
 app.delete("/api/users/:id/follow", auth, (req, res) => {
@@ -314,7 +382,7 @@ app.get("/api/chats", auth, (req, res) => {
     GROUP BY other ORDER BY mid DESC LIMIT 100`).all(me, me, me, me);
   const chats = rows.map(r => {
     const u = findById.get(r.other), m = db.prepare("SELECT body, created_at, from_id FROM dms WHERE id = ?").get(r.mid);
-    return u && !u.disabled ? { id: u.id, name: u.name, title: u.title || "", last: m.body, at: m.created_at, mine: m.from_id === me, unread: r.unread } : null;
+    return u && !u.disabled ? { id: u.id, name: u.name, title: u.title || "", badge: badgeOf(daysOf(u.id)), last: m.body, at: m.created_at, mine: m.from_id === me, unread: r.unread } : null;
   }).filter(Boolean);
   res.json({ chats, unread: unreadOf(me) });
 });
@@ -397,6 +465,7 @@ app.patch("/api/admin/users/:id", auth, admin, wrap(async (req, res) => {
   if (id === req.user.id && (role === "user" || disabled)) return res.status(400).json({ error: "You can't demote or disable yourself." });
   if (role) { const nr = role === "admin" ? "admin" : "user"; db.prepare("UPDATE users SET role = ? WHERE id = ?").run(nr, id); for (const s of io.sockets.sockets.values()) if (s.user.id === id) s.user.role = nr; }
   if (disabled !== undefined) db.prepare("UPDATE users SET disabled = ? WHERE id = ?").run(disabled ? 1 : 0, id);
+  dropUser(id);
   if (password !== undefined) {
     if (String(password).length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
     db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(await bcrypt.hash(String(password), 10), id);
@@ -408,7 +477,7 @@ app.delete("/api/admin/users/:id", auth, admin, (req, res) => {
   const id = Number(req.params.id);
   if (id === req.user.id) return res.status(400).json({ error: "You can't delete yourself." });
   db.prepare("DELETE FROM users WHERE id = ?").run(id);
-  kick(id);
+  dropUser(id); kick(id);
   res.json({ ok: true });
 });
 
@@ -426,6 +495,7 @@ app.get("/api/ice", auth, (req, res) => {
       credential: process.env.TURN_CREDENTIAL
     });
   }
+  res.set("Cache-Control", "private, max-age=300");
   res.json({ iceServers, relay: turnReady() });
 });
 
@@ -445,7 +515,7 @@ process.on("unhandledRejection", e => console.error("Unhandled rejection:", e));
 
 /* ---------- socket.io signaling ---------- */
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: false } });
+const io = new Server(server, { cors: { origin: false }, transports: ["websocket", "polling"], perMessageDeflate: false, maxHttpBufferSize: 1e5, pingInterval: 20000, pingTimeout: 25000 });
 
 io.use((socket, next) => {
   try {
@@ -463,20 +533,39 @@ const peerInfo = s => ({
 });
 const ROOM_RE = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
 
+function endSession(s) {
+  if (!s.sess) return;
+  const now = Date.now(), r = db.prepare("SELECT started_at FROM sessions WHERE id = ?").get(s.sess); s.sess = 0;
+  if (!r) return;
+  if (now - r.started_at < 15000) return void db.prepare("DELETE FROM sessions WHERE id = ?").run(s.sessId);
+  const v = Math.min((s.camMs || 0) + (s.camSince ? now - s.camSince : 0), now - r.started_at);
+  db.prepare("UPDATE sessions SET ended_at = ?, video_ms = ? WHERE id = ?").run(now, v, s.sessId);
+}
+
 io.on("connection", socket => {
+  touchSeen(socket.user.id);
   socket.on("join", async (room, ack) => {
     if (typeof ack !== "function") return;
     if (!ROOM_RE.test(room)) return ack({ error: "Invalid meeting code." });
     if (socket.room) return ack({ error: "Already in a meeting." });
     const rm = db.prepare("SELECT * FROM rooms WHERE code = ?").get(room);
     if (rm && !rm.active) return ack({ error: "This room has been closed by the admin." });
-    const members = await io.in(room).fetchSockets();
+    const ids = io.sockets.adapter.rooms.get(room), members = ids ? [...ids].map(i => io.sockets.sockets.get(i)).filter(Boolean) : [];   // no async hop: answer the join immediately
     if (members.length >= MAX_ROOM_SIZE) return ack({ error: `This meeting is full (${MAX_ROOM_SIZE} people max).` });
     socket.join(room);
     socket.room = room;
+    socket.sessId = Number(db.prepare("INSERT INTO sessions (user_id, room, started_at) VALUES (?, ?, ?)").run(socket.user.id, room, Date.now()).lastInsertRowid); socket.sess = 1; socket.camMs = 0; socket.camSince = null;
     logEvent(socket.user.id, "joined_room", { room });
     socket.to(room).emit("peer-joined", peerInfo(socket));
     ack({ peers: members.map(peerInfo), settings: rm ? { name: rm.name, video: !!rm.video_allowed, audio: !!rm.audio_allowed } : null });
+  });
+
+  // camera on/off, so "video on time" is real
+  socket.on("cam", on => {
+    if (!socket.room) return;
+    const now = Date.now();
+    if (on && !socket.camSince) socket.camSince = now;
+    else if (!on && socket.camSince) { socket.camMs = (socket.camMs || 0) + now - socket.camSince; socket.camSince = null; }
   });
 
   // relay SDP offers/answers and ICE candidates between two peers in the same room
@@ -551,6 +640,7 @@ io.on("connection", socket => {
   });
 
   socket.on("disconnecting", () => {
+    endSession(socket); touchSeen(socket.user.id);
     if (socket.room) socket.to(socket.room).emit("peer-left", { id: socket.id });
   });
 });
