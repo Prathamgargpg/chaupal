@@ -599,6 +599,40 @@
   .nt{padding:30px;text-align:center;color:#6B7699}
   .seekg{display:grid;gap:6px;margin:6px 0}.seekg label{display:flex;gap:8px;align-items:center;font-weight:400;margin:0}.seekg input{width:auto}
   @media (max-width:980px){.pfpage{grid-template-columns:1fr;gap:26px}.ptabs button{font-size:14px;padding:11px 4px}}
+
+  /* ===== profile page v2: top bar, edit mode, post box ===== */
+  .pfbar{display:flex;align-items:center;gap:14px;padding:10px 24px}
+  .pfback{width:42px;height:42px;border-radius:50%;border:1px solid #D7E3FA;background:#fff;color:#3B82F6;display:grid;place-items:center;flex:none;padding:0}
+  .pfback:hover{background:#F1F6FF}.pfback .ic{width:20px;height:20px}
+  .pftitle{font-size:19px;font-weight:500}.pftime{font-size:15px;color:#2A3350;margin-left:6px}.pftime b{font-weight:600}
+  .tbi.sm{width:38px;height:38px}
+  .pen{position:absolute;right:10px;bottom:10px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;box-shadow:0 4px 14px -4px rgba(30,60,140,.35);display:grid;place-items:center;color:#2A3350;padding:0}
+  .pen .ic{width:18px;height:18px}.pbiow{position:relative}.pbiow .pbio{padding-bottom:30px;margin-bottom:0}
+  .pmore{width:44px;height:44px;border-radius:50%;border:0;background:#F1F4FA;color:#52648F;font-size:20px;flex:none;padding:0;position:relative}
+  .pmenu{position:absolute;right:0;bottom:52px;background:#fff;border-radius:14px;box-shadow:0 14px 40px -12px rgba(30,60,140,.4);padding:6px;min-width:170px;z-index:3;text-align:left}
+  .pmenu button{display:block;width:100%;border:0;background:none;padding:10px 12px;border-radius:10px;font:500 15px "Poppins",sans-serif;text-align:left}.pmenu button:hover{background:#F1F6FF}
+  .pact{align-items:center}
+  .pmeta{display:flex;align-items:center;gap:10px;font-size:20px;margin:-4px 0 12px;flex-wrap:wrap}
+  .ptag.pick{border:1.5px dashed #BFD0F2;background:#fff;cursor:pointer}.ptag.pick.on{background:#E1ECFF;border:1.5px solid #3B82F6;color:#1B2440}
+  .pban textarea{width:100%;height:100%;background:transparent;border:1px dashed rgba(255,255,255,.5);color:#fff;font:700 15px/1.25 Georgia,serif;text-align:center;resize:none;padding:6px;border-radius:8px}
+  .pfpage input.ed,.pfpage select.ed,.pfpage textarea.ed{width:100%;border:1.5px solid #D7E3FA;border-radius:12px;padding:10px 12px;background:#fff;font:400 15px "Poppins",sans-serif;margin:4px 0}
+  .pfpage textarea.ed{min-height:130px;resize:vertical;line-height:1.5}
+  .pfpage h2 input.ed{font:600 24px "Poppins",sans-serif}
+  .edrow{display:grid;grid-template-columns:1fr 90px;gap:8px}.edrow3{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .edl{font-size:13px;color:#6B7699;margin:8px 0 0;display:block}
+  .chk{display:flex;gap:10px;align-items:center;margin:10px 0;font-size:15px}.chk input{width:auto}
+  .pbox2{border:1px solid #E3EAF8;border-radius:16px;padding:12px 14px;margin-bottom:16px}
+  .pbox2 textarea{width:100%;border:0;resize:none;min-height:56px;background:transparent;font:400 15px "Poppins",sans-serif;box-shadow:none!important;padding:4px}
+  .pbox2 .bar{display:flex;justify-content:flex-end;gap:10px;align-items:center}
+  .pbox2 .bar button{width:38px;height:38px;border-radius:50%;border:0;background:#EEF3FF;color:#6B8DE8;display:grid;place-items:center;padding:0;font-size:19px}
+  .pbox2 .bar button.send{background:#E8EDF7;color:#52648F}.pbox2 .bar .ic{width:19px;height:19px}
+  .emo{display:flex;gap:6px;flex-wrap:wrap;padding:6px 0}.emo button{border:0;background:none;font-size:22px;padding:2px 4px}
+  .ppost{border:1px solid #EDF1FA;border-radius:18px;padding:16px;margin:0 0 14px;box-shadow:0 4px 18px -12px rgba(30,60,140,.25)}
+  .ppost .h{display:flex;align-items:center;gap:12px;margin-bottom:10px}.ppost .h b{font-weight:500;font-size:17px}.ppost .h small{margin-left:auto;color:#6B7699}
+  .ppost .b{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+  .ppost .lnk{font-size:13px;margin-left:8px}
+  .ptabs{position:sticky;top:64px;z-index:1}
+  @media (max-width:700px){.pftime,.pftitle{display:none}.pfbar{padding:8px 12px}}
 </style>
 </head>
 <body>
@@ -769,22 +803,10 @@
   <form class="dm-form hidden" id="dm-form"><input id="dm-in" maxlength="1000" placeholder="Write a message" autocomplete="off" aria-label="Message"><button class="btn" id="dm-send">Send</button></form>
 </div>
 
-<div id="prof" class="modal hidden"><div class="card">
-  <h2>Your profile</h2>
-  <label for="p-name">Name</label><input id="p-name" maxlength="40">
-  <label for="p-title">Title</label><select id="p-title"></select>
-  <label for="p-bio">Bio (200 characters)</label><textarea id="p-bio" maxlength="200" rows="3"></textarea>
-  <label for="p-vis">Who can see your profile and posts</label>
-  <select id="p-vis"><option value="public">Everyone</option><option value="followers">Only people who follow me</option><option value="private">Only me</option></select>
-  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-streak" style="width:auto"> Show my login streak on my profile</label>
-  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-act" style="width:auto"> Show my recent activity on my profile</label>
-  <label for="p-banner">Banner quote (90 characters)</label><input id="p-banner" maxlength="90" placeholder="A line that keeps you going">
-  <label for="p-int">Interests (comma separated, up to 8)</label><input id="p-int" maxlength="160" placeholder="Music, Reading, Football">
-  <label>Looking for</label><div class="seekg" id="p-seek"><label><input type="checkbox" value="accountability"> Accountability partner(s)</label><label><input type="checkbox" value="study-buddy"> Study buddy</label><label><input type="checkbox" value="focus-group"> A focus group/community</label><label><input type="checkbox" value="networking"> Professional networking</label></div>
-  <label for="p-ig">Instagram username</label><input id="p-ig" maxlength="40" placeholder="yourname">
-  <label for="p-li">LinkedIn username</label><input id="p-li" maxlength="40" placeholder="your-name">
-  <button class="btn full" id="p-save">Save profile</button><button class="btn ghost full" id="p-close">Close</button>
-  <div class="msg" id="p-msg" role="alert"></div>
+<div id="fl" class="modal hidden"><div class="card">
+  <h2>Manage followers</h2>
+  <div class="tabs" id="fl-tabs"><button data-ft="followers" aria-selected="true">Followers</button><button data-ft="following" aria-selected="false">Following</button></div>
+  <div id="fl-body"></div><button class="btn ghost full" id="fl-close">Close</button>
 </div></div>
 
 <div id="enc" class="modal hidden"><div class="card">
@@ -795,7 +817,7 @@
   <div class="msg" id="enc-msg" role="alert"></div>
 </div></div>
 
-<div id="pv" class="hidden"><div class="pfbar"><button class="btn ghost" id="pv-close" type="button">&larr; Back</button></div><div id="pv-body"></div></div>
+<div id="pv" class="hidden"><div class="pfbar"><button class="pfback" id="pv-close" type="button" aria-label="Back"><svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><span class="pftitle" id="pf-title">Your Profile</span><button class="tbi sm" id="pf-search" type="button" aria-label="Find people"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><span class="pftime" id="pf-today"></span><span style="flex:1"></span><button class="tbi" id="bell-btn2" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg><span class="nbadge hidden" id="bell-badge2"></span></button><button class="tbi dm-btn" id="dm-btn3" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge nbadge hidden"></span></button><button class="tbi av" id="me-btn2" type="button" aria-label="My profile"></button></div><div id="pv-body"></div></div>
 
 <div id="act" class="modal hidden"><div class="card"><h2>My activity</h2><p class="sub" id="act-streak"></p><div id="act-body"></div><button class="btn ghost full" id="act-close">Close</button></div></div>
 
@@ -1284,25 +1306,9 @@ $("enc-send").onclick = () => socket && socket.emit("encourage", { to: encTo, me
 $("enc-close").onclick = () => $("enc").classList.add("hidden");
 
 /* ---------- profile + bio ---------- */
-async function openProfile(){
-  if (!TITLES.length) TITLES = (await api("/api/titles")).titles;
-  $("p-title").innerHTML = '<option value="">No title</option>' + TITLES.map(t => "<option>" + esc(t) + "</option>").join("");
-  $("p-name").value = me.name; $("p-title").value = me.title || ""; $("p-vis").value = me.visibility || "public"; $("p-streak").checked = !!me.show_streak; $("p-act").checked = !!me.show_activity; $("p-bio").value = me.bio || ""; $("p-msg").textContent = "";
-  $("p-banner").value = me.banner || ""; $("p-int").value = (me.interests || []).join(", "); $("p-ig").value = me.instagram || ""; $("p-li").value = me.linkedin || "";
-  document.querySelectorAll("#p-seek input").forEach(c => c.checked = (me.seeking || []).includes(c.value));
-  $("prof").classList.remove("hidden");
-}
+function openProfile(){ return openUser(me.id, true).catch(e => alert(e.message)); }
 $("open-profile").onclick = openProfile;
 $("me-btn").onclick = () => openUser(me.id).catch(e => alert(e.message));
-$("p-close").onclick = () => $("prof").classList.add("hidden");
-$("p-save").onclick = async () => {
-  try {
-    const r = await api("/api/me", { method: "PUT", body: { name: $("p-name").value, title: $("p-title").value, bio: $("p-bio").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked,
-      banner: $("p-banner").value, interests: $("p-int").value, instagram: $("p-ig").value, linkedin: $("p-li").value, seeking: [...document.querySelectorAll("#p-seek input:checked")].map(c => c.value) } });
-    Object.assign(me, r.user); $("who").textContent = me.name; paintMe();
-    $("prof").classList.add("hidden"); if (!$("pv").classList.contains("hidden")) openUser(me.id);
-  } catch (e) { $("p-msg").textContent = e.message; }
-};
 function showBio(id){
   const i = info.get(id) || {};
   $("info-name").textContent = i.name || ""; $("info-title").textContent = i.title || "No title"; $("info-bio").textContent = i.bio || "No bio yet.";
@@ -1407,21 +1413,46 @@ const SEEKT = { accountability: ["✅", "Accountability partner(s)"], "study-bud
 const BCOL = { 7: "#60A5FA", 25: "#F87171", 50: "#FB923C", 75: "#FBBF24", 100: "#A78BFA", 200: "#34D399", 365: "#F472B6" };
 const badgeSvg = (n, z = 28) => n ? '<svg class="bdg" width="' + z + '" height="' + Math.round(z * 1.1) + '" viewBox="0 0 24 27" role="img" aria-label="' + n + ' day badge"><path d="M12 1 22 4v10c0 6-5 10.5-10 12C7 24.5 2 20 2 14V4z" fill="' + BCOL[n] + '" stroke="rgba(0,0,0,.12)"/><text x="12" y="16" text-anchor="middle" font-family="Poppins,Inter,sans-serif" font-weight="700" font-size="' + (n > 99 ? 8.5 : 10.5) + '" fill="#fff">' + n + "</text></svg>" : "";
 const dur = ms => { const m = Math.round(ms / 60000); return m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m"; };
+const agoS = t => { const m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? "now" : m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : m < 10080 ? Math.round(m / 1440) + "d" : Math.round(m / 10080) + "w"; };
 const seenTxt = u => u.online ? "Online now" : !u.seen ? "Not seen yet" : new Date(u.seen).toDateString() === new Date().toDateString() ? "Seen today" : "Seen " + ago(u.seen);
+const flag = c => /^[A-Za-z]{2}$/.test(c || "") ? String.fromCodePoint(...[...c.toUpperCase()].map(ch => 127397 + ch.charCodeAt(0))) : "";
 const IGI = '<svg class="ic" viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>';
-let pfMode = "focus";
-function paintMe(){ $("me-btn").innerHTML = avatar(me.name, me.id, 40); }
-async function openUser(id){
+const PEN = '<svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>', SEND = '<svg class="ic" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>';
+let pfMode = "focus", pfEdit = false, pfDraft = null, pfCur = "sum";
+function paintMe(){ const a = avatar(me.name, me.id, 40); $("me-btn").innerHTML = a; $("me-btn2").innerHTML = a; }
+const attr = v => esc(v == null ? "" : v);
+async function openUser(id, edit){
   PF = await api("/api/users/" + id); const u = PF;
-  const sk = SEEKT, tags = (u.seeking || []).filter(k => sk[k]).map(k => '<span class="ptag">' + sk[k][0] + " " + sk[k][1] + "</span>").join("");
+  pfEdit = !!edit && u.isMe; pfCur = "sum";
+  if (pfEdit){
+    if (!TITLES.length) TITLES = (await api("/api/titles")).titles;
+    pfDraft = { name: u.name, title: u.title || "", pronouns: u.pronouns || "", country: u.country || "", banner: u.banner || "", bio: u.bio || "", interests: (u.interests || []).join(", "), seeking: [...(u.seeking || [])], instagram: u.instagram || "", linkedin: u.linkedin || "", visibility: u.visibility || "public", show_streak: !!(me.show_streak), show_activity: !!(me.show_activity) };
+  }
+  $("pf-title").textContent = u.isMe ? (pfEdit ? "Edit Profile" : "Your Profile") : u.name;
+  const today = (u.week && u.week[6]) ? u.week[6].focus : 0; $("pf-today").innerHTML = u.restricted ? "" : "Focused today: <b>" + dur(today) + "</b>";
+  $("pv").classList.remove("hidden"); pfRender(); $("pv").scrollTop = 0;
+}
+function pfRender(){
+  const u = PF, d = pfDraft, E = pfEdit;
+  const tagsView = (u.seeking || []).filter(k => SEEKT[k]).map(k => '<span class="ptag">' + SEEKT[k][0] + " " + SEEKT[k][1] + "</span>").join("");
+  const tagsEdit = Object.keys(SEEKT).map(k => '<span class="ptag pick' + (d && d.seeking.includes(k) ? " on" : "") + '" data-seek="' + k + '" role="checkbox" tabindex="0" aria-checked="' + (d && d.seeking.includes(k)) + '">' + SEEKT[k][0] + " " + SEEKT[k][1] + "</span>").join("");
   const links = (u.instagram ? '<a href="https://instagram.com/' + encodeURIComponent(u.instagram) + '" target="_blank" rel="noopener" aria-label="Instagram">' + IGI + "</a>" : "") + (u.linkedin ? '<a href="https://www.linkedin.com/in/' + encodeURIComponent(u.linkedin) + '" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>' : "");
-  const act = u.isMe ? '<div class="pact"><button class="btn" data-edit="1">Edit profile</button></div>' : '<div class="pact">' + followBtn(u.id, u.isFollowing) + '<button class="btn ghost" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>';
-  $("pv-body").innerHTML = '<div class="pfpage"><aside class="pcard"><div class="pban"><span class="pq">' + esc(u.banner || (u.isMe ? "Add a banner quote in Edit profile" : "Focus today. Thank yourself later.")).replace(/^/, "“").replace(/$/, "”") + '</span><span class="pseen' + (u.online ? " on" : "") + '"><i></i>' + seenTxt(u) + '</span></div><span class="pav">' + avatar(u.name, u.id, 122) + '</span><div class="plinks">' + links + '</div>' +
-    '<div class="pname"><h2>' + esc(u.name) + "</h2>" + badgeSvg(u.badge, 34) + "</div>" + '<div class="psub">' + esc(u.title || "Member") + "</div>" + (tags ? '<div class="ptags">' + tags + "</div>" : "") +
-    (u.restricted ? '<p class="pbio">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>" : '<div class="pbio">' + esc(u.bio || "No bio yet.") + "</div>") +
-    '<div class="pcnt"><div><b>' + u.followers + "</b><span>Followers</span></div><div><b>" + u.following + "</b><span>Following</span></div></div>" + act + "</aside>" +
-    '<section><div class="ptabs" id="pf-tabs" role="tablist"><button data-pt="sum" aria-selected="true">Summary</button><button data-pt="ach" aria-selected="false">Achievements</button><button data-pt="stat" aria-selected="false">Statistics</button><button data-pt="part" aria-selected="false">Focus Partners</button></div><div id="pf-tab"></div></section></div>';
-  $("pv").classList.remove("hidden"); $("pv").scrollTop = 0; pfTab("sum");
+  const quote = E ? '<textarea data-k="banner" maxlength="90" aria-label="Banner quote" placeholder="A line that keeps you going">' + attr(d.banner) + "</textarea>" : '<span class="pq">“' + esc(u.banner || (u.isMe ? "Add a banner quote with the pencil" : "Focus today. Thank yourself later.")) + "”</span>";
+  const head = E
+    ? '<div class="pname"><h2 style="flex:1"><input class="ed" data-k="name" maxlength="40" aria-label="Name" value="' + attr(d.name) + '"></h2></div><div class="edrow"><input class="ed" data-k="pronouns" maxlength="16" aria-label="Pronouns" placeholder="Pronouns (he/him)" value="' + attr(d.pronouns) + '"><input class="ed" data-k="country" maxlength="2" aria-label="Country code" placeholder="IN" value="' + attr(d.country) + '"></div>' +
+      '<select class="ed" data-k="title" aria-label="Title"><option value="">No title</option>' + TITLES.map(t => "<option" + (t === d.title ? " selected" : "") + ">" + esc(t) + "</option>").join("") + "</select>"
+    : '<div class="pname"><h2>' + esc(u.name) + "</h2>" + badgeSvg(u.badge, 34) + '</div><div class="pmeta">' + (u.pronouns ? "<span>(" + esc(u.pronouns.replace(/^\(|\)$/g, "")) + ")</span>" : "") + (flag(u.country) ? "<span>" + flag(u.country) + "</span>" : "") + (u.title ? "<span title=\"" + attr(u.title) + "\">💼</span>" : "") + "</div>" + '<div class="psub">' + esc(u.title || "Member") + "</div>";
+  const bio = u.restricted ? '<p class="pbio">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>"
+    : E ? '<label class="edl">About you (200 characters)</label><textarea class="ed" data-k="bio" maxlength="200">' + esc(d.bio) + "</textarea>"
+    : '<div class="pbiow"><div class="pbio">' + esc(u.bio || "No bio yet.") + "</div>" + (u.isMe ? '<button class="pen" data-edit="1" aria-label="Edit profile" title="Edit profile">' + PEN + "</button>" : "") + "</div>";
+  const social = E ? '<div class="edrow3"><div><label class="edl">Instagram</label><input class="ed" data-k="instagram" maxlength="40" placeholder="username" value="' + attr(d.instagram) + '"></div><div><label class="edl">LinkedIn</label><input class="ed" data-k="linkedin" maxlength="40" placeholder="username" value="' + attr(d.linkedin) + '"></div></div>' : "";
+  const act = E ? '<div class="pact"><button class="btn" data-save="1">Save changes</button><button class="btn ghost" data-cancel="1">Cancel</button></div>'
+    : u.isMe ? '<div class="pact"><button class="btn" data-manage="1">Manage followers</button><span style="position:relative"><button class="pmore" data-more="1" aria-label="More" aria-haspopup="true">&middot;&middot;&middot;</button></span></div>'
+    : '<div class="pact">' + followBtn(u.id, u.isFollowing) + '<button class="btn ghost" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>';
+  $("pv-body").innerHTML = '<div class="pfpage"><aside class="pcard"><div class="pban">' + quote + '<span class="pseen' + (u.online ? " on" : "") + '"><i></i>' + seenTxt(u) + '</span></div><span class="pav">' + avatar(u.name, u.id, 122) + '</span>' +
+    '<div class="plinks">' + (E ? "" : links) + "</div>" + head + (E ? '<label class="edl">Looking for</label><div class="ptags">' + tagsEdit + "</div>" : (tagsView ? '<div class="ptags">' + tagsView + "</div>" : "")) + bio + social +
+    '<div class="pcnt"><div><b>' + u.followers + "</b><span>Followers</span></div><div><b>" + u.following + "</b><span>Following</span></div></div>" + act + '</aside><section><div class="ptabs" id="pf-tabs" role="tablist"><button data-pt="sum">Summary</button><button data-pt="ach">Achievements</button><button data-pt="stat">Statistics</button><button data-pt="part">Focus Partners</button></div><div id="pf-tab"></div></section></div>';
+  pfTab(pfCur);
 }
 function sessionsHtml(u){
   const key = pfMode === "focus" ? "focus" : "video", max = Math.max(1, ...u.week.map(w => w[key]));
@@ -1429,33 +1460,79 @@ function sessionsHtml(u){
   const rows = u.sessions ? (u.sessions.length ? u.sessions.map(r => '<div class="srow"><span>' + esc(r.room || "Open room") + "<small>" + ago(r.started_at) + "</small></span><b>" + dur(pfMode === "focus" ? r.ms : r.video_ms) + "</b></div>").join("") : '<p class="nt">No sessions yet.</p>') : '<p class="nt">Session details are hidden by this user.</p>';
   return '<div class="pseg" id="pf-seg"><button data-m="focus" aria-selected="' + (pfMode === "focus") + '">Focus room time</button><button data-m="video" aria-selected="' + (pfMode === "video") + '">Video on time</button></div>' + bars + rows;
 }
+const EMOJI = ["🙂", "😂", "🔥", "💪", "🎯", "📚", "🙏", "🎉"];
+const pfPost = p => '<div class="ppost"><div class="h">' + avatar(p.name, p.uid, 44) + "<b>" + esc(p.name) + "</b>" + (PF && p.uid === PF.id ? badgeSvg(PF.badge, 20) : "") + "<small>" + agoS(p.created_at) + '</small></div><div class="b">' + esc(p.body) + "</div>" + (p.uid === me.id || me.role === "admin" ? '<a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + "</div>";
 function pfTab(t){
-  document.querySelectorAll("#pf-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.pt === t));
-  const u = PF, s = pfStats(u); let h = "";
+  pfCur = t; document.querySelectorAll("#pf-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.pt === t));
+  const u = PF, s = pfStats(u), E = pfEdit, d = pfDraft; let h = "";
   if (u.restricted) h = '<p class="nt">Posts, achievements and statistics are hidden on this profile.</p>';
   else if (t === "sum"){
     h = '<div class="pstats"><div class="sc"><small>Join date</small><div class="v">' + (u.joined ? new Date(u.joined).toLocaleDateString([], { day: "2-digit", month: "short" }) + "<small>" + new Date(u.joined).getFullYear() + "</small>" : "-") + '</div></div>' +
       '<div class="sc"><small>Highest Badge</small><div class="v">' + (u.badge ? badgeSvg(u.badge, 56) : "<small>None yet</small>") + '</div></div><div class="sc"><small>Focus sessions</small><div class="v">' + s.focus + "</div></div></div>" +
-      '<h3 class="psec">Interests</h3><div class="pint">' + ((u.interests || []).length ? u.interests.map(i => "<span>" + esc(i) + "</span>").join("") : '<small style="color:#6B7699">No interests added yet.</small>') + "</div>" +
-      '<h3 class="psec">Recent Sessions <small>(last 7 days, ' + dur(u.week.reduce((a, w) => a + w[pfMode === "focus" ? "focus" : "video"], 0)) + ")</small></h3><div id=\"pf-sess\">" + sessionsHtml(u) + "</div>" +
-      '<h3 class="psec">Recent Activity</h3>' + (u.isMe ? '<div class="pbox"><input id="pf-post" maxlength="280" placeholder="Post an update…" aria-label="Post an update"><button class="btn" data-pfpost="1">Post</button></div><div class="msg" id="pf-msg"></div>' : "") +
-      (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="nt">No posts yet.</p>') + (u.activity ? u.activity.map(evHtml).join("") : "");
+      '<h3 class="psec">Interests</h3>' + (E ? '<div class="pint" style="display:block"><input class="ed" data-k="interests" maxlength="160" placeholder="Music, Reading, Football (up to 8)" aria-label="Interests" value="' + attr(d.interests) + '"></div>'
+        : '<div class="pint">' + ((u.interests || []).length ? u.interests.map(i => "<span>" + esc(i) + "</span>").join("") : '<small style="color:#6B7699">No interests added yet.</small>') + "</div>");
+    if (E) h += '<h3 class="psec">Privacy</h3><div class="pint" style="display:block"><label class="edl" style="margin:0">Who can see your profile and posts</label><select class="ed" data-k="visibility"><option value="public"' + (d.visibility === "public" ? " selected" : "") + '>Everyone</option><option value="followers"' + (d.visibility === "followers" ? " selected" : "") + '>Only people who follow me</option><option value="private"' + (d.visibility === "private" ? " selected" : "") + '>Only me</option></select>' +
+      '<label class="chk"><input type="checkbox" data-k="show_streak"' + (d.show_streak ? " checked" : "") + '> Show my login streak on my profile</label><label class="chk"><input type="checkbox" data-k="show_activity"' + (d.show_activity ? " checked" : "") + '> Show my sessions, partners and activity</label></div><div class="msg" id="pf-emsg" role="alert"></div>';
+    else h += '<h3 class="psec">Recent Sessions <small>(' + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + " in your timezone)</small></h3><div id=\"pf-sess\">" + sessionsHtml(u) + "</div>" +
+      '<h3 class="psec">Recent Activity</h3>' + (u.isMe ? '<div class="pbox2"><textarea id="pf-post" maxlength="280" placeholder="Post an update…" aria-label="Post an update"></textarea><div class="emo hidden" id="pf-emo">' + EMOJI.map(e => '<button type="button" data-emo="' + e + '">' + e + "</button>").join("") + '</div><div class="bar"><button type="button" data-emotog="1" aria-label="Emoji">🙂</button><button type="button" class="send" data-pfpost="1" aria-label="Post">' + SEND + '</button></div></div><div class="msg" id="pf-msg" role="alert"></div>' : "") +
+      (u.posts.length ? u.posts.map(pfPost).join("") : '<p class="nt">No posts yet.</p>') + (u.activity ? u.activity.slice(0, 6).map(evHtml).join("") : "");
   } else if (t === "ach"){
     const tiers = [7, 25, 50, 75, 100, 200, 365].map(n => '<div class="badge2' + (u.badge >= n ? " got" : "") + '">' + badgeSvg(n, 34) + "<b>" + n + " active days</b><small>Log in on " + n + " different days</small></div>").join("");
-    h = '<div class="bgrid">' + tiers + BADGES.map(([n, d, f]) => '<div class="badge2' + (f(s) ? " got" : "") + '"><b>' + n + "</b><small>" + d + "</small></div>").join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
+    h = '<div class="bgrid">' + tiers + BADGES.map(([n, dd, f]) => '<div class="badge2' + (f(s) ? " got" : "") + '"><b>' + n + "</b><small>" + dd + "</small></div>").join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
   } else if (t === "stat"){
     h = '<div class="sgrid">' + [["Current streak", u.streak ? s.current + " days" : "Hidden"], ["Best streak", u.streak ? s.best + " days" : "Hidden"], ["Days logged in", u.streak ? s.total : "Hidden"], ["Time in focus rooms", dur(u.totals.focus_ms)], ["Video on time", dur(u.totals.video_ms)], ["Room sessions", u.totals.sessions], ["Focus sessions", s.focus], ["Encouragements sent", s.sent], ["Encouragements received", s.received], ["Posts", s.posts], ["Followers", s.followers], ["Following", s.following]].map(([a, b]) => '<div class="stat"><b>' + b + "</b><small>" + a + "</small></div>").join("") + "</div>";
   } else h = u.partners ? (u.partners.length ? u.partners.map(p => '<div class="prt" data-u="' + p.id + '">' + avatar(p.name, p.id, 46) + "<span><b>" + esc(p.name) + "</b><small>" + esc(p.title || "Member") + "</small></span><span style=\"margin-left:auto;text-align:right\"><b>" + dur(p.ms) + "</b><small>" + p.n + " shared session" + (p.n > 1 ? "s" : "") + "</small></span></div>").join("") : '<p class="nt">No focus partners yet. Study in a room with others to see them here.</p>') : '<p class="nt">Focus partners are hidden by this user.</p>';
   $("pf-tab").innerHTML = h;
 }
+async function pfSave(){
+  const d = pfDraft;
+  try {
+    const r = await api("/api/me", { method: "PUT", body: { ...d, interests: d.interests } });
+    Object.assign(me, r.user); $("who").textContent = me.name; paintMe(); await openUser(me.id);
+  } catch (e) { const m = $("pf-emsg"); if (m) m.textContent = e.message; else alert(e.message); }
+}
+async function openConn(tab){
+  $("fl").classList.remove("hidden"); tab = tab || "followers";
+  document.querySelectorAll("#fl-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.ft === tab));
+  $("fl-body").innerHTML = '<p class="sub">Loading...</p>';
+  try {
+    const c = await api("/api/me/connections"), list = c[tab];
+    $("fl-body").innerHTML = list.length ? list.map(x => '<div class="person"><span><a class="lnk" data-u="' + x.id + '">' + esc(x.name) + "</a>" + (x.title ? "<br><small>" + esc(x.title) + "</small>" : "") + '</span><button class="btn ghost" data-fl="' + tab + '" data-id="' + x.id + '">' + (tab === "followers" ? "Remove" : "Unfollow") + "</button></div>").join("") : '<p class="sub">' + (tab === "followers" ? "No followers yet." : "You aren't following anyone yet.") + "</p>";
+  } catch (e) { $("fl-body").innerHTML = '<p class="msg">' + esc(e.message) + "</p>"; }
+}
+$("fl-close").onclick = () => { $("fl").classList.add("hidden"); if (!$("pv").classList.contains("hidden")) openUser(me.id); };
+$("fl-tabs").onclick = e => { const b = e.target.closest("button"); if (b) openConn(b.dataset.ft); };
+$("fl-body").onclick = async e => {
+  const b = e.target.closest("[data-fl]"); if (!b) return;
+  try { await api(b.dataset.fl === "followers" ? "/api/me/followers/" + b.dataset.id : "/api/users/" + b.dataset.id + "/follow", { method: "DELETE" }); openConn(b.dataset.fl); } catch (err) { alert(err.message); }
+};
+$("pv-body").addEventListener("input", e => { const k = e.target.dataset.k; if (k && pfDraft) pfDraft[k] = e.target.type === "checkbox" ? e.target.checked : e.target.value; });
+$("pv-body").addEventListener("change", e => { const k = e.target.dataset.k; if (k && pfDraft) pfDraft[k] = e.target.type === "checkbox" ? e.target.checked : e.target.value; });
 document.addEventListener("click", async e => {
-  const b = e.target.closest("#pf-tabs button"); if (b) return pfTab(b.dataset.pt);
-  const m = e.target.closest("#pf-seg button"); if (m){ pfMode = m.dataset.m; return pfTab("sum"); }
-  if (e.target.closest("[data-pfpost]")){
+  const q = sel => e.target.closest(sel);
+  if (!q("[data-more]") && !q(".pmenu")) document.querySelectorAll(".pmenu").forEach(m => m.remove());
+  let b;
+  if ((b = q("#pf-tabs button"))) return pfTab(b.dataset.pt);
+  if ((b = q("#pf-seg button"))){ pfMode = b.dataset.m; return pfTab("sum"); }
+  if ((b = q("[data-seek]"))){ const k = b.dataset.seek, a = pfDraft.seeking; a.includes(k) ? a.splice(a.indexOf(k), 1) : a.push(k); return pfRender(); }
+  if (q("[data-save]")) return pfSave();
+  if (q("[data-cancel]")){ pfEdit = false; return openUser(me.id); }
+  if (q("[data-manage]")) return openConn("followers");
+  if ((b = q("[data-more]"))){
+    if (b.parentElement.querySelector(".pmenu")) return;
+    b.parentElement.insertAdjacentHTML("beforeend", '<div class="pmenu"><button data-edit="1">Edit profile</button><button data-act="1">My activity</button><button data-out="1">Sign out</button></div>'); return;
+  }
+  if (q("[data-out]")) return logout();
+  if (q("[data-act]")) return $("open-activity").click();
+  if (q("[data-emotog]")) return $("pf-emo").classList.toggle("hidden");
+  if ((b = q("[data-emo]"))){ const t = $("pf-post"); t.value += b.dataset.emo; t.focus(); return; }
+  if (q("[data-pfpost]")){
     try { await api("/api/posts", { body: { body: $("pf-post").value } }); await openUser(PF.id); loadFeed(); } catch (err) { $("pf-msg").textContent = err.message; }
   }
 });
-$("pv-close").onclick = () => $("pv").classList.add("hidden");
+$("pv-close").onclick = () => { pfEdit = false; $("pv").classList.add("hidden"); };
+$("me-btn2").onclick = () => openUser(me.id).catch(e => alert(e.message));
+$("pf-search").onclick = () => { closeDm(); dmView = "new"; dmOpen(); dmRender(); searchNew(); };
 $("open-activity").onclick = async () => {
   const { events, streak } = await api("/api/timeline");
   $("act-streak").textContent = "Current streak " + streak.current + " days · best " + streak.best + " · " + streak.total + " days logged in";
@@ -1468,10 +1545,10 @@ document.addEventListener("click", async e => {
   try {
     if (t.dataset.u) return openUser(t.dataset.u);
     if (t.dataset.dm){ $("pv").classList.add("hidden"); return openThread(t.dataset.dm, t.dataset.name); }
-    if (t.dataset.edit){ $("pv").classList.add("hidden"); return openProfile(); }
+    if (t.dataset.edit){ document.querySelectorAll(".pmenu").forEach(m => m.remove()); return openProfile(); }
     if (t.dataset.del){ await api("/api/posts/" + t.dataset.del, { method: "DELETE" }); }
     if (t.dataset.f){ await api("/api/users/" + t.dataset.f + "/follow", { method: t.dataset.on === "1" ? "DELETE" : "POST" }); if (!$("pv").classList.contains("hidden")) openUser(t.dataset.f); searchPeople().catch(() => {}); }
-    loadFeed(); if (!$("pv").classList.contains("hidden") && t.dataset.del) $("pv").classList.add("hidden");
+    loadFeed(); if (!$("pv").classList.contains("hidden") && t.dataset.del) openUser(PF.id);
   } catch (err) { alert(err.message); }
 });
 
@@ -1898,19 +1975,20 @@ $("dm-form").onsubmit = async e => {
 /* ---------- notifications ---------- */
 const NT = { encouraged_by: d => d.from + " sent you encouragement", followed_by: d => d.name + " started following you" };
 let nots = [];
-async function loadNotifs(){
-  try { const r = await api("/api/notifications"); nots = r.items; $("bell-badge").textContent = r.unseen; $("bell-badge").classList.toggle("hidden", !r.unseen); } catch {}
-}
+const setBell = n => ["bell-badge", "bell-badge2"].forEach(id => { $(id).textContent = n; $(id).classList.toggle("hidden", !n); });
+async function loadNotifs(){ try { const r = await api("/api/notifications"); nots = r.items; setBell(r.unseen); } catch {} }
 function renderNotifs(){
   $("npop").innerHTML = '<div class="dm-head"><span class="dmlogo">' + $("bell-btn").firstElementChild.outerHTML + '</span><b>Notifications</b></div><div class="dm-body">' +
     (nots.length ? nots.map(n => '<div class="dmrow"' + (n.data.uid ? ' data-u="' + n.data.uid + '"' : "") + '><div class="dmmid"><b>' + esc(NT[n.type](n.data)) + "</b><small>" + ago(n.created_at) + "</small></div></div>").join("") : '<p class="sub dmempty">Nothing new yet.</p>') + "</div>";
 }
-$("bell-btn").onclick = async () => {
+const bellToggle = async () => {
   const open = !$("npop").classList.contains("hidden"); closeDm();
   if (open){ $("npop").classList.add("hidden"); return; }
-  await loadNotifs(); renderNotifs(); $("npop").classList.remove("hidden"); $("dm-bg").classList.remove("hidden");
-  if ($("bell-badge").textContent !== "0" && !$("bell-badge").classList.contains("hidden")){ api("/api/notifications/seen", { body: {} }).catch(() => {}); $("bell-badge").classList.add("hidden"); }
+  await loadNotifs(); const had = !$("bell-badge").classList.contains("hidden");
+  renderNotifs(); $("npop").classList.remove("hidden"); $("dm-bg").classList.remove("hidden");
+  if (had){ api("/api/notifications/seen", { body: {} }).catch(() => {}); setBell(0); }
 };
+$("bell-btn").onclick = $("bell-btn2").onclick = bellToggle;
 $("npop").onclick = () => { $("npop").classList.add("hidden"); $("dm-bg").classList.add("hidden"); };
 setInterval(() => { if (me && !document.hidden) loadNotifs(); }, 90000);
 
