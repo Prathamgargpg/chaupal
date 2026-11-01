@@ -341,6 +341,7 @@ app.get("/api/admin/users", auth, admin, (_req, res) => {
       (SELECT COUNT(*) FROM encouragements WHERE from_id = users.id) sent,
       (SELECT COUNT(*) FROM encouragements WHERE to_id = users.id) received FROM users ORDER BY id`).all(),
     online: [...new Set(socks.map(x => x.user.id))],
+    turn: turnReady(),
     live: socks.filter(x => x.room).map(x => ({ room: x.room, name: x.user.name }))
   });
 });
@@ -366,23 +367,25 @@ app.delete("/api/admin/users/:id", auth, admin, (req, res) => {
   res.json({ ok: true });
 });
 
+const turnReady = () => !!(process.env.TURN_URL && process.env.TURN_USERNAME && process.env.TURN_CREDENTIAL);
+if (process.env.TURN_URL && !turnReady()) console.warn("TURN_URL is set but TURN_USERNAME or TURN_CREDENTIAL is missing, so the relay is OFF.");
 app.get("/api/ice", auth, (req, res) => {
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:global.stun.twilio.com:3478" }
   ];
-  if (process.env.TURN_URL) {
+  if (turnReady()) {
     iceServers.push({
       urls: process.env.TURN_URL.split(","),
       username: process.env.TURN_USERNAME,
       credential: process.env.TURN_CREDENTIAL
     });
   }
-  res.json({ iceServers });
+  res.json({ iceServers, relay: turnReady() });
 });
 
 app.get("/healthz", (_req, res) => {
-  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok", permanent: !!pool }); }
+  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok", permanent: !!pool, turn: turnReady() }); }
   catch (e) { res.status(500).json({ ok: false, db: String(e.message) }); }
 });
 
