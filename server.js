@@ -59,6 +59,9 @@ CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id 
 db.exec(`CREATE TABLE IF NOT EXISTS reset_tokens (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL)`);
 db.exec(`CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, description TEXT DEFAULT '',
   video_allowed INTEGER DEFAULT 1, audio_allowed INTEGER DEFAULT 1, active INTEGER DEFAULT 1, created_by INTEGER, created_at INTEGER)`);
+db.exec(`CREATE TABLE IF NOT EXISTS dms (id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL, body TEXT NOT NULL, created_at INTEGER NOT NULL, read_at INTEGER);
+CREATE INDEX IF NOT EXISTS idx_dms_to ON dms(to_id, read_at);
+CREATE INDEX IF NOT EXISTS idx_dms_pair ON dms(from_id, to_id);`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
 const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
@@ -216,7 +219,7 @@ function auth(req, res, next) {
   } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
 
-app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id) }); });
+app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id) }); });
 app.get("/api/titles", auth, (_req, res) => res.json({ titles: TITLES }));
 app.put("/api/me", auth, (req, res) => {
   const { name, title, bio, visibility, show_streak, show_activity } = req.body || {};
@@ -264,7 +267,8 @@ app.get("/api/users/:id", auth, (req, res) => {
   const self = o.id === req.user.id || req.user.role === "admin";
   res.json({ ...base, bio: o.bio, streak: self || o.show_streak ? streakOf(o.id) : null,
     posts: db.prepare(POSTQ + "p.user_id = ? ORDER BY p.id DESC LIMIT 20").all(o.id),
-    activity: self || o.show_activity ? eventsOf(o.id, 20) : null });
+    activity: self || o.show_activity ? eventsOf(o.id, 20) : null,
+    stats: (() => { const ec = t => db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = ?").get(o.id, t).c; return { focus: ec("pomodoro"), sent: ec("encouraged"), received: ec("encouraged_by"), posts: db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ?").get(o.id).c }; })() });
 });
 
 app.post("/api/users/:id/follow", auth, (req, res) => {
@@ -298,6 +302,47 @@ app.delete("/api/posts/:id", auth, (req, res) => {
   if (!p || (p.user_id !== req.user.id && req.user.role !== "admin")) return res.status(404).json({ error: "Post not found." });
   db.prepare("DELETE FROM posts WHERE id = ?").run(Number(req.params.id));
   res.json({ ok: true });
+});
+
+/* ---------- direct messages (1 to 1) ---------- */
+const unreadOf = uid => db.prepare("SELECT COUNT(*) c FROM dms WHERE to_id = ? AND read_at IS NULL").get(uid).c;
+const dmHits = new Map();
+app.get("/api/chats", auth, (req, res) => {
+  const me = req.user.id;
+  const rows = db.prepare(`SELECT other, MAX(id) mid, SUM(CASE WHEN to_id = ? AND read_at IS NULL THEN 1 ELSE 0 END) unread
+    FROM (SELECT id, to_id, read_at, CASE WHEN from_id = ? THEN to_id ELSE from_id END other FROM dms WHERE from_id = ? OR to_id = ?)
+    GROUP BY other ORDER BY mid DESC LIMIT 100`).all(me, me, me, me);
+  const chats = rows.map(r => {
+    const u = findById.get(r.other), m = db.prepare("SELECT body, created_at, from_id FROM dms WHERE id = ?").get(r.mid);
+    return u && !u.disabled ? { id: u.id, name: u.name, title: u.title || "", last: m.body, at: m.created_at, mine: m.from_id === me, unread: r.unread } : null;
+  }).filter(Boolean);
+  res.json({ chats, unread: unreadOf(me) });
+});
+app.post("/api/chats/read-all", auth, (req, res) => {
+  db.prepare("UPDATE dms SET read_at = ? WHERE to_id = ? AND read_at IS NULL").run(Date.now(), req.user.id);
+  res.json({ ok: true, unread: 0 });
+});
+app.get("/api/chats/:id", auth, (req, res) => {
+  const me = req.user.id, o = findById.get(Number(req.params.id));
+  if (!o || o.disabled) return res.status(404).json({ error: "User not found." });
+  db.prepare("UPDATE dms SET read_at = ? WHERE to_id = ? AND from_id = ? AND read_at IS NULL").run(Date.now(), me, o.id);
+  const messages = db.prepare(`SELECT id, from_id, body, created_at FROM (SELECT * FROM dms WHERE (from_id = ? AND to_id = ?) OR (from_id = ? AND to_id = ?) ORDER BY id DESC LIMIT 100) ORDER BY id`).all(me, o.id, o.id, me);
+  res.json({ user: { id: o.id, name: o.name, title: o.title || "" }, messages, unread: unreadOf(me) });
+});
+app.post("/api/chats/:id", auth, (req, res) => {
+  const me = req.user.id, o = findById.get(Number(req.params.id));
+  if (!o || o.disabled || o.id === me) return res.status(400).json({ error: "You can't message this user." });
+  const body = String((req.body || {}).body || "").trim().slice(0, 1000);
+  if (!body) return res.status(400).json({ error: "Write a message first." });
+  if (o.visibility === "private" && !db.prepare("SELECT 1 FROM dms WHERE from_id = ? AND to_id = ?").get(o.id, me))
+    return res.status(403).json({ error: "This user isn't accepting messages." });
+  const now = Date.now(), recent = (dmHits.get(me) || []).filter(t => now - t < 10000);
+  if (recent.length >= 15) return res.status(429).json({ error: "You're sending messages too fast. Wait a few seconds." });
+  recent.push(now); dmHits.set(me, recent);
+  const id = Number(db.prepare("INSERT INTO dms (from_id, to_id, body, created_at) VALUES (?, ?, ?, ?)").run(me, o.id, body, now).lastInsertRowid);
+  const msg = { id, from_id: me, body, created_at: now };
+  for (const s of io.sockets.sockets.values()) if (s.user.id === o.id && s.handshake.query.dm === "1") s.emit("dm", { ...msg, name: req.user.name });
+  res.json({ message: msg });
 });
 
 /* ---------- admin ---------- */
