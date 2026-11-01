@@ -457,6 +457,7 @@
     #room .tgroup input#find{display:none}
     #room .perl{font-size:0;gap:0}
   }
+  .status .retry{pointer-events:auto;margin-top:10px;border:0;border-radius:8px;padding:7px 14px;font-weight:600;background:#2563EB;color:#fff;cursor:pointer}
 </style>
 </head>
 <body>
@@ -789,7 +790,7 @@ window.addEventListener("hashchange", () => { if (me && !socket) route(); });
 let socket = null, localStream = null, camTrack = null, screenStream = null, iceServers = [];
 const peers = new Map(); // socketId -> { pc, name }
 const info = new Map();  // socketId (or "me") -> { name, title, bio, pomo }
-let roomSettings = null, micLocked = false, camLocked = false, pinned = null, tileView = true, perPage = 4, page = 0, roomStart = 0, quota = { left: 3, max: 3, nextAt: 0 }, TITLES = [];
+let relayOn = false, roomSettings = null, micLocked = false, camLocked = false, pinned = null, tileView = true, perPage = 4, page = 0, roomStart = 0, quota = { left: 3, max: 3, nextAt: 0 }, TITLES = [];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 async function getMedia(){
@@ -850,7 +851,7 @@ async function enterRoom(code){
   info.set("me", me);
   addTile("me", localStream, me.name + " (you)", true);
 
-  try { iceServers = (await api("/api/ice")).iceServers; } catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
+  try { const r = await api("/api/ice"); iceServers = r.iceServers; relayOn = !!r.relay; } catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
 
   socket = io({ auth: { token } });
   socket.on("connect_error", err => { if (err.message === "unauthorized") logout(); });
@@ -889,8 +890,19 @@ async function enterRoom(code){
   socket.on("chat", ({ name, text }) => addChat(name, text));
 }
 
+function failMsg(){
+  return relayOn ? "Still can't connect, even with the relay. The TURN settings on the server may be wrong."
+    : "Can't connect. These networks block direct video, so the server needs a TURN relay. " + (me.role === "admin" ? "Add the TURN settings in Render." : "Please ask the admin to set one up.");
+}
+async function retryPeer(id){
+  const p = peers.get(id); if (!p || !localStream) return;
+  if (p.pc) p.pc.close();
+  p.pc = null; await connectTo(id, p.name, true);
+}
 async function handleSignal(from, name, data){
   let p = peers.get(from);
+  // a fresh offer from someone we already had a (failed or old) connection with: start over cleanly
+  if (p && p.pc && data.sdp && data.sdp.type === "offer" && p.pc.connectionState !== "new"){ p.pc.close(); p.pc = null; }
   if (!p || !p.pc) p = await connectTo(from, name, false);
   const pc = p.pc;
   if (data.sdp){
@@ -920,7 +932,8 @@ async function connectTo(id, name, initiator){
     const s = pc.connectionState, el = document.querySelector("#t-" + id + " .status");
     if (s === "closed") return closePeer(id);
     if (!el) return;
-    el.textContent = s === "connected" ? "" : s === "failed" ? "Can't connect. Your networks are blocking direct video. The admin needs to add a TURN server (see README)." : s === "disconnected" ? "Connection lost. Retrying…" : "Connecting…";
+    if (s === "failed") el.innerHTML = esc(failMsg()) + '<br><button class="retry" data-retry="' + esc(id) + '">Try again</button>';
+    else el.textContent = s === "connected" ? "" : s === "disconnected" ? "Connection lost. Reconnecting…" : "Connecting…";
     if (s === "failed") console.warn("WebRTC failed for", id, "– a TURN server is needed");
   };
 
@@ -1119,10 +1132,10 @@ $("pomo-btn").onclick = () => { if (mob()) return openSheet("timer"); const hide
 
 /* ---------- admin ---------- */
 async function loadAdmin(){
-  const { users, online, live } = await api("/api/admin/users");
+  const { users, online, live, turn } = await api("/api/admin/users");
   const on = new Set(online), rooms = {};
   live.forEach(l => (rooms[l.room] = rooms[l.room] || []).push(l.name));
-  $("admin-live").textContent = Object.keys(rooms).length ? "Live now: " + Object.entries(rooms).map(([r, n]) => r + " (" + n.join(", ") + ")").join("; ") : "No live meetings right now.";
+  $("admin-live").textContent = (turn ? "Video relay (TURN): on. " : "Video relay (TURN): NOT set up, so people on different networks may not see each other. ") + (Object.keys(rooms).length ? "Live now: " + Object.entries(rooms).map(([r, n]) => r + " (" + n.join(", ") + ")").join("; ") : "No live meetings right now.");
   $("admin-body").innerHTML = users.map(u => '<tr><td>' + (on.has(u.id) ? '<span class="dot"></span>' : "") + esc(u.name) + "<br><small>" + esc(u.email) + "</small></td><td>" + esc(u.title || "-") + "</td><td>" + u.role + (u.disabled ? " (disabled)" : "") + "</td><td>" + u.sent + " / " + u.received + "</td><td>" +
     '<button class="btn ghost" data-a="role" data-id="' + u.id + '" data-v="' + (u.role === "admin" ? "user" : "admin") + '">' + (u.role === "admin" ? "Remove admin" : "Make admin") + "</button>" +
     '<button class="btn ghost" data-a="dis" data-id="' + u.id + '" data-v="' + (u.disabled ? 0 : 1) + '">' + (u.disabled ? "Enable" : "Disable") + "</button>" +
@@ -1300,7 +1313,7 @@ async function loadRooms(){
       : '<p class="sub">No study rooms yet.' + (me && me.role === "admin" ? " Create one in the Admin portal." : "") + "</p>";
   } catch {}
 }
-document.addEventListener("click", e => { const b = e.target.closest("[data-join]"); if (b) location.hash = b.dataset.join; });
+document.addEventListener("click", e => { const b = e.target.closest("[data-join]"); if (b) location.hash = b.dataset.join; const r = e.target.closest("[data-retry]"); if (r) retryPeer(r.dataset.retry); });
 setInterval(() => { if (me && !$("lobby").classList.contains("hidden")) loadRooms(); }, 15000);
 
 document.querySelectorAll("#ad-tabs button").forEach(b => b.onclick = () => {
