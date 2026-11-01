@@ -6,7 +6,7 @@
 <title>Chaupal – video meetings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="/socket.io/socket.io.js"></script>
 <style>
   :root{
@@ -536,6 +536,69 @@
     .rbtn{width:36px;height:36px;margin-bottom:0}.dm-badge{bottom:-7px;min-width:20px;line-height:14px;font-size:11px}
     .topbar .rbtn{margin-bottom:0}
   }
+
+  /* ===== dashboard redesign: top bar, popovers, profile page ===== */
+  .topbar,#pv,.dmp,.pfbar{font-family:"Poppins","Inter",system-ui,sans-serif}
+  .topbar{background:rgba(255,255,255,.88)}
+  .tb{gap:10px}
+  .tbi{width:42px;height:42px;border-radius:50%;border:0;background:#E6F0FF;color:#3B82F6;display:grid;place-items:center;position:relative;flex:none;padding:0;transition:background .15s,transform .15s}
+  .tbi:hover{background:#D5E5FF;transform:translateY(-1px)}
+  .tbi .ic{width:20px;height:20px}.tbi.av{background:none}
+  .nbadge{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);min-width:26px;padding:1px 7px;border-radius:999px;background:#3B82F6;color:#fff;font-size:12px;font-weight:700;line-height:18px;border:2px solid #fff;box-sizing:content-box;text-align:center}
+  .dm-head{background:#F1F6FF}.dmmid b{display:flex;align-items:center;gap:6px}.dmrow .ub{background:#3B82F6}
+  .bdg{flex:none;display:inline-block;vertical-align:middle}
+  .toast{z-index:80}
+  #pv{position:fixed;inset:0;z-index:40;background:#fff;overflow:auto;animation:pop .18s ease-out both}
+  .pfbar{position:sticky;top:0;z-index:2;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:12px 24px;border-bottom:1px solid #EDF1FA}
+  .pfbar .btn{margin:0;padding:8px 18px}
+  .pfpage{max-width:1180px;margin:26px auto 56px;padding:0 20px;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:44px;align-items:start;color:#1B2440}
+  .pcard{position:relative;background:#fff;border-radius:22px;box-shadow:0 8px 40px -12px rgba(30,60,140,.25);padding:24px}
+  .pban{height:112px;border-radius:14px;background:#000;color:#fff;position:relative;display:flex;align-items:center;justify-content:flex-end;padding:12px 18px 12px 160px;text-align:center}
+  .pq{font:700 15px/1.25 Georgia,"Times New Roman",serif}
+  .pseen{position:absolute;right:10px;bottom:8px;background:#fff;color:#111;border-radius:10px;padding:3px 10px;font-size:13px;display:flex;gap:6px;align-items:center}
+  .pseen i{width:11px;height:11px;border-radius:50%;background:#C8CDD6}.pseen.on i{background:#22C55E}
+  .pav{position:absolute;left:34px;top:70px;width:122px;height:122px;border-radius:50%;border:4px solid #fff;background:#fff;overflow:hidden;display:block;box-shadow:0 4px 14px -6px rgba(0,0,0,.4)}
+  .pav .avc{width:100%!important;height:100%!important;font-size:40px!important}
+  .plinks{display:flex;justify-content:flex-end;gap:10px;min-height:46px;padding-top:12px}
+  .plinks a{width:40px;height:40px;border-radius:50%;background:#EEF1F6;color:#6B7699;display:grid;place-items:center;font-weight:700;text-decoration:none}
+  .plinks a:hover{background:#DDE6F7}
+  .pname{margin-top:14px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+  .pname h2{font:600 30px/1.15 "Poppins",sans-serif;margin:0;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .psub{color:#52648F;font-size:17px;margin:6px 0 14px}
+  .ptags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+  .ptag{background:#F2F5FB;border-radius:999px;padding:5px 14px;color:#4A5675;font-size:15px}
+  .pbio{border-radius:14px;background:#F8FAFF;border:1px solid #EEF2FB;padding:16px;margin:0 0 14px;color:#2A3350;line-height:1.55;overflow-wrap:anywhere}
+  .pcnt{display:flex;justify-content:center;margin:18px 0}
+  .pcnt div{padding:0 34px;text-align:center;display:flex;flex-direction:column;gap:2px}.pcnt div+div{border-left:1px solid #E3EAF8}
+  .pcnt b{font-size:26px;font-weight:600}.pcnt span{color:#52648F}
+  .pact{display:flex;gap:10px}.pact .btn{flex:1;margin:0;height:46px;border-radius:12px}
+  .ptabs{display:flex;background:#F1F6FF;border-radius:14px;padding:4px;margin-bottom:22px}
+  .ptabs button{flex:1;border:0;background:transparent;padding:13px 8px;border-radius:12px;font:500 16px "Poppins",sans-serif;color:#1B2440}
+  .ptabs button[aria-selected=true]{background:#E1ECFF}
+  .pstats{background:#F3F6FC;border-radius:26px;padding:26px 24px;display:flex;gap:20px;flex-wrap:wrap}
+  .sc{background:#fff;border-radius:18px;box-shadow:0 6px 22px -8px rgba(30,60,140,.22);padding:14px 16px;text-align:center;min-width:138px}
+  .sc>small{display:block;font-size:17px;color:#2A3350}
+  .sc .v{margin-top:10px;background:#F8FAFF;border-radius:12px;padding:10px 18px;font-weight:600;font-size:20px;min-height:72px;display:grid;place-items:center;line-height:1.2}
+  .sc .v small{display:block;font-weight:400;font-size:15px;color:#52648F}
+  .psec{font:500 21px "Poppins",sans-serif;margin:30px 0 12px;display:flex;align-items:baseline;gap:10px}
+  .psec small{font:italic 400 15px "Poppins",sans-serif;color:#6B7699}
+  .pint{background:#F3F6FC;border-radius:18px;padding:20px;display:flex;flex-wrap:wrap;gap:12px}
+  .pint span{background:#fff;border-radius:10px;padding:8px 14px;font-size:16px;box-shadow:0 2px 6px -3px rgba(30,60,140,.2)}
+  .pseg{display:flex;background:#F1F6FF;border-radius:12px;padding:3px}
+  .pseg button{flex:1;border:0;background:transparent;padding:11px;border-radius:10px;font:500 16px "Poppins",sans-serif}
+  .pseg button[aria-selected=true]{background:#E1ECFF}
+  .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;height:160px;margin-top:18px;padding:0 6px}
+  .wk div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+  .wk i{display:block;width:100%;max-width:40px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,#60A5FA,#818CF8);min-height:4px}
+  .wk small{color:#6B7699;font-size:12px}
+  .srow{display:flex;justify-content:space-between;gap:12px;padding:12px 4px;border-top:1px solid #EDF1FA}.srow small{color:#6B7699;display:block}
+  .pbox{border:1px solid #E3EAF8;border-radius:16px;padding:12px;display:flex;gap:10px}
+  .pbox input{border:0;box-shadow:none!important;padding:8px;background:transparent}.pbox .btn{margin:0;padding:8px 18px}
+  .pfpage .post,.pfpage .ev{border-top:1px solid #EDF1FA}
+  .prt{display:flex;align-items:center;gap:14px;padding:12px 4px;border-top:1px solid #EDF1FA;cursor:pointer}.prt b{display:block}.prt small{color:#6B7699}
+  .nt{padding:30px;text-align:center;color:#6B7699}
+  .seekg{display:grid;gap:6px;margin:6px 0}.seekg label{display:flex;gap:8px;align-items:center;font-weight:400;margin:0}.seekg input{width:auto}
+  @media (max-width:980px){.pfpage{grid-template-columns:1fr;gap:26px}.ptabs button{font-size:14px;padding:11px 4px}}
 </style>
 </head>
 <body>
@@ -572,7 +635,7 @@
 <div id="lobby" class="hidden">
   <div class="topbar">
     <div class="brand">Chaupal</div>
-    <div class="who"><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
+    <div class="who tb"><button class="tbi" id="bell-btn" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg><span class="nbadge hidden" id="bell-badge"></span></button><button class="tbi dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge nbadge hidden"></span></button><span class="chip" id="streak"></span><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="tbi av" id="me-btn" type="button" aria-label="My profile"></button><button class="btn ghost" id="logout">Sign out</button><span id="who" class="hidden"></span><button class="hidden" id="open-profile" type="button"></button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
   <div class="lobby">
@@ -699,6 +762,7 @@
 </div>
 
 <div id="dm-bg" class="hidden"></div>
+<div id="npop" class="dmp hidden" role="dialog" aria-label="Notifications"></div>
 <div id="dm" class="dmp hidden" role="dialog" aria-label="Messages">
   <div class="dm-head" id="dm-head"></div>
   <div class="dm-body" id="dm-body"></div>
@@ -714,6 +778,11 @@
   <select id="p-vis"><option value="public">Everyone</option><option value="followers">Only people who follow me</option><option value="private">Only me</option></select>
   <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-streak" style="width:auto"> Show my login streak on my profile</label>
   <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-act" style="width:auto"> Show my recent activity on my profile</label>
+  <label for="p-banner">Banner quote (90 characters)</label><input id="p-banner" maxlength="90" placeholder="A line that keeps you going">
+  <label for="p-int">Interests (comma separated, up to 8)</label><input id="p-int" maxlength="160" placeholder="Music, Reading, Football">
+  <label>Looking for</label><div class="seekg" id="p-seek"><label><input type="checkbox" value="accountability"> Accountability partner(s)</label><label><input type="checkbox" value="study-buddy"> Study buddy</label><label><input type="checkbox" value="focus-group"> A focus group/community</label><label><input type="checkbox" value="networking"> Professional networking</label></div>
+  <label for="p-ig">Instagram username</label><input id="p-ig" maxlength="40" placeholder="yourname">
+  <label for="p-li">LinkedIn username</label><input id="p-li" maxlength="40" placeholder="your-name">
   <button class="btn full" id="p-save">Save profile</button><button class="btn ghost full" id="p-close">Close</button>
   <div class="msg" id="p-msg" role="alert"></div>
 </div></div>
@@ -726,7 +795,8 @@
   <div class="msg" id="enc-msg" role="alert"></div>
 </div></div>
 
-<div id="pv" class="modal hidden"><div class="card pfwrap"><div id="pv-body"></div><button class="btn ghost full" id="pv-close">Close</button></div></div>
+<div id="pv" class="hidden"><div class="pfbar"><button class="btn ghost" id="pv-close" type="button">&larr; Back</button></div><div id="pv-body"></div></div>
+
 <div id="act" class="modal hidden"><div class="card"><h2>My activity</h2><p class="sub" id="act-streak"></p><div id="act-body"></div><button class="btn ghost full" id="act-close">Close</button></div></div>
 
 <div id="fx" class="modal hidden"><div class="card fxcard">
@@ -734,7 +804,7 @@
   <video id="fx-prev" autoplay muted playsinline></video>
   <p class="hint" id="fx-note"></p>
   <h3>Size and quality</h3>
-  <div class="fxrow"><label for="fx-q">Video quality</label><select id="fx-q"><option value="auto">Auto (720p)</option><option value="360">Low (360p, saves data)</option><option value="720">Standard (720p)</option><option value="1080">High (1080p)</option></select></div>
+  <div class="fxrow"><label for="fx-q">Video quality</label><select id="fx-q"><option value="auto">Auto (adapts to room size)</option><option value="360">Low (360p, saves data)</option><option value="720">Standard (720p)</option><option value="1080">High (1080p)</option></select></div>
   <div class="fxrow"><label for="fx-fit">Video in tiles</label><select id="fx-fit"><option value="cover">Fill the tile (crops edges)</option><option value="contain">Fit the whole picture</option></select></div>
   <h3>Framing</h3>
   <div class="fxrow"><label for="fx-zoom">Zoom <b id="fx-zoom-v"></b></label><input type="range" id="fx-zoom" min="1" max="3" step="0.1"></div>
@@ -872,9 +942,9 @@ function logout(){
 $("logout").onclick = logout;
 
 function afterLogin(){
-  $("who").textContent = me.name;
+  $("who").textContent = me.name; paintMe(); loadIce().catch(() => {});
   $("open-admin").classList.toggle("hidden", me.role !== "admin"); $("n-admin").classList.toggle("hidden", me.role !== "admin");
-  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); loadFeed(); loadRooms(); connectDm(); }).catch(() => {});
+  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); loadFeed(); loadRooms(); connectDm(); loadNotifs(); }).catch(() => {});
   route();
 }
 
@@ -906,7 +976,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;",
 
 async function getMedia(){
   const q = QUAL[FX.quality] || QUAL.auto, v = { width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.f }, ...(DEV.cam ? { deviceId: { ideal: DEV.cam } } : {}) };
-  const a = { echoCancellation: true, noiseSuppression: true, ...(DEV.mic ? { deviceId: { ideal: DEV.mic } } : {}) };
+  const a = { echoCancellation: true, noiseSuppression: true, autoGainControl: true, ...(DEV.mic ? { deviceId: { ideal: DEV.mic } } : {}) };
   try { return await navigator.mediaDevices.getUserMedia({ video: v, audio: a }); }
   catch { try { return await navigator.mediaDevices.getUserMedia({ audio: a }); } catch { return null; } }
 }
@@ -943,18 +1013,66 @@ function relabel(id, fallback){
 function removeTile(id){ const t = document.getElementById("t-" + id); if (t) t.remove(); if (pinned === id) { pinned = null; tileView = true; } info.delete(id); updateCount(); layout(); }
 function updateCount(){ const n = $("grid").children.length; $("count").textContent = n + (n === 1 ? " person" : " people"); }
 
+let iceCache = null;
+async function loadIce(){
+  if (iceCache && Date.now() - iceCache.t < 3e5){ iceServers = iceCache.s; relayOn = iceCache.r; return; }
+  try { const r = await api("/api/ice"); iceServers = r.iceServers; relayOn = !!r.relay; iceCache = { s: iceServers, r: relayOn, t: Date.now() }; }
+  catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
+}
+let lastCam = null;
+function sendCam(){ const on = !!(camTrack && camTrack.enabled); if (socket && on !== lastCam){ lastCam = on; socket.emit("cam", on); } }
+
 async function enterRoom(code){
   show("room"); roomStart = Date.now(); closeSheet();
   $("room-code").textContent = code;
   $("grid").innerHTML = ""; $("log").innerHTML = "";
-  roomSettings = null; micLocked = camLocked = false; $("room-name").textContent = "Study Room";
+  roomSettings = null; micLocked = camLocked = false; $("room-name").textContent = "Study Room"; lastCam = null;
 
-  localStream = await getMedia();
+  // start camera, ICE servers and the signaling connection together instead of one after the other
+  const mediaP = getMedia(), iceP = loadIce();
+  const sk = socket = io({ auth: { token }, forceNew: true, transports: ["websocket", "polling"] });
+  let joined = false;
+  const doJoin = () => { joined = true; sk.emit("join", code, async res => {
+    if (socket !== sk) return;
+    if (res.error){ alert(res.error); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
+    roomSettings = res.settings; applyBlocks();
+    // the newcomer starts a connection to everyone already inside, all at once
+    for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); }
+    await Promise.all(res.peers.map(p => connectTo(p.id, p.name, true).catch(e => console.warn("connect failed", e))));
+    lastCam = null; sendCam(); tuneSenders(); pomoSend(); if (me.goal) sk.emit("goal", me.goal);
+  }); };
+  sk.on("connect_error", err => { if (err.message === "unauthorized") logout(); });
+  // after a dropped connection the server forgets us: rebuild every peer link and rejoin
+  sk.on("connect", () => { if (joined && localStream){ for (const id of [...peers.keys()]) closePeer(id); doJoin(); } });
+
+  sk.on("peer-joined", p => { info.set(p.id, p); if (!peers.has(p.id)) peers.set(p.id, { pc: null, name: p.name, chain: Promise.resolve() }); });
+  sk.on("peer-left", ({ id }) => closePeer(id));
+  sk.on("peer-updated", p => { const i = info.get(p.id) || {}; info.set(p.id, { ...i, ...p, pomo: i.pomo }); relabel(p.id); layout(); });
+  sk.on("pomo", ({ id, pomo }) => { const i = info.get(id); if (i) i.pomo = pomo && { ...pomo, at: Date.now() }; });
+  sk.on("encouraged", d => { me.cheers = (me.cheers || 0) + 1; relabel("me"); toast(d.from + ": " + d.message); });
+  sk.on("room-settings", s => { roomSettings = s; applyBlocks(); toast("Room settings changed: video " + (s.video ? "on" : "off") + ", audio " + (s.audio ? "on" : "off")); });
+  sk.on("room-closed", () => { alert("This room was closed by the admin."); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); });
+  sk.on("forced", ({ action }) => {
+    if (action === "remove"){ alert("An admin removed you from this meeting."); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
+    const what = action.startsWith("mic") ? "microphone" : "camera";
+    if (what === "microphone") micLocked = action === "mic-off"; else camLocked = action === "cam-off";
+    applyBlocks(); toast(action.endsWith("-off") ? "An admin turned off your " + what + "." : "An admin allowed your " + what + " again.");
+  });
+  sk.on("signal", ({ from, name, data }) => {
+    let p = peers.get(from);
+    if (!p){ p = { pc: null, name, chain: Promise.resolve() }; peers.set(from, p); }
+    p.chain = p.chain.then(() => handleSignal(from, name, data)).catch(e => console.warn("signal error", e));   // one message at a time per peer, in order
+  });
+  sk.on("chat", ({ name, text }) => addChat(name, text));
+
+  localStream = await mediaP;
+  if (socket !== sk){ if (localStream) localStream.getTracks().forEach(t => t.stop()); localStream = null; return; }   // left while the camera was starting
   if (!localStream){
     alert("Chaupal needs camera or microphone access. Allow it in your browser and try again.");
     leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return;
   }
   camTrack = localStream.getVideoTracks()[0] || null;
+  if (camTrack) camTrack.contentHint = "motion";
   await fxApply();
   syncButtons();
   me.sessions = 0; me.cheers = 0; me.sent = 0;
@@ -962,44 +1080,25 @@ async function enterRoom(code){
   $("goal-in").value = me.goal; $("me-av").textContent = (me.name || "Y")[0].toUpperCase();
   info.set("me", me);
   addTile("me", localStream, me.name + " (you)", true);
+  await iceP;
+  if (socket !== sk) return;
+  if (sk.connected) doJoin(); else sk.once("connect", doJoin);
+}
 
-  try { const r = await api("/api/ice"); iceServers = r.iceServers; relayOn = !!r.relay; } catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
-
-  socket = io({ auth: { token }, forceNew: true });
-  socket.on("connect_error", err => { if (err.message === "unauthorized") logout(); });
-
-  socket.on("connect", () => {
-    socket.emit("join", code, async res => {
-      if (res.error){ alert(res.error); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
-      roomSettings = res.settings; applyBlocks();
-      // the newcomer starts a connection to everyone already inside
-      for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); await connectTo(p.id, p.name, true); }
-      pomoSend(); if (me.goal) socket.emit("goal", me.goal);
-    });
-  });
-
-  socket.on("peer-joined", p => { info.set(p.id, p); if (!peers.has(p.id)) peers.set(p.id, { pc: null, name: p.name, chain: Promise.resolve() }); });
-  socket.on("peer-left", ({ id }) => closePeer(id));
-  socket.on("peer-updated", p => { const i = info.get(p.id) || {}; info.set(p.id, { ...i, ...p, pomo: i.pomo }); relabel(p.id); layout(); });
-  socket.on("pomo", ({ id, pomo }) => { const i = info.get(id); if (i) i.pomo = pomo && { ...pomo, at: Date.now() }; });
-  socket.on("encouraged", d => { me.cheers = (me.cheers || 0) + 1; relabel("me"); toast(d.from + ": " + d.message); });
-  socket.on("room-settings", s => { roomSettings = s; applyBlocks(); toast("Room settings changed: video " + (s.video ? "on" : "off") + ", audio " + (s.audio ? "on" : "off")); });
-  socket.on("room-closed", () => { alert("This room was closed by the admin."); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); });
-  socket.on("forced", ({ action }) => {
-    if (action === "remove"){ alert("An admin removed you from this meeting."); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
-    const what = action.startsWith("mic") ? "microphone" : "camera";
-    if (what === "microphone") micLocked = action === "mic-off"; else camLocked = action === "cam-off";
-    applyBlocks(); toast(action.endsWith("-off") ? "An admin turned off your " + what + "." : "An admin allowed your " + what + " again.");
-  });
-
-  socket.on("signal", ({ from, name, data }) => {
-    let p = peers.get(from);
-    if (!p){ p = { pc: null, name, chain: Promise.resolve() }; peers.set(from, p); }
-    // handle one message at a time per peer, in arrival order
-    p.chain = p.chain.then(() => handleSignal(from, name, data)).catch(e => console.warn("signal error", e));
-  });
-
-  socket.on("chat", ({ name, text }) => addChat(name, text));
+/* In a mesh every person uploads one copy of your video to each other person. Share a fixed upload budget
+   between the connections and shrink resolution/frame rate as the room fills, so nobody's link or CPU chokes. */
+const UP_BUDGET = 1400000;
+let tuneT = null;
+function tuneSenders(){
+  const n = Math.max(1, peers.size), q = QUAL[FX.quality] || QUAL.auto;
+  const per = Math.max(120000, Math.min(q.bps, Math.round(UP_BUDGET / n))), scale = screenStream ? 1 : n >= 5 ? 2 : n >= 3 ? 1.5 : 1, fps = n >= 4 ? 20 : q.f;
+  for (const { pc } of peers.values()){
+    if (!pc) continue;
+    const s = pc.getSenders().find(x => x.track && x.track.kind === "video"); if (!s) continue;
+    const p = s.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+    Object.assign(p.encodings[0], { maxBitrate: per, scaleResolutionDownBy: scale, maxFramerate: fps });
+    s.setParameters(p).catch(() => {});
+  }
 }
 
 function failMsg(){
@@ -1030,7 +1129,7 @@ async function handleSignal(from, name, data){
 }
 
 async function connectTo(id, name, initiator){
-  const pc = new RTCPeerConnection({ iceServers });
+  const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle", iceCandidatePoolSize: 2 });
   const entry = peers.get(id) || { name, chain: Promise.resolve() };
   entry.pc = pc; entry.name = name;
   peers.set(id, entry);
@@ -1043,7 +1142,8 @@ async function connectTo(id, name, initiator){
   pc.onconnectionstatechange = () => {
     const s = pc.connectionState, el = document.querySelector("#t-" + id + " .status");
     if (s === "closed") return closePeer(id);
-    if (s === "connected") capBitrate(pc);
+    if (s === "connected"){ entry.retried = false; capBitrate(pc); }
+    if (s === "failed" && !entry.retried && socket && socket.id < id){ entry.retried = true; setTimeout(() => peers.get(id) === entry && retryPeer(id), 1200); }   // one automatic retry (only one side starts it)
     if (!el) return;
     if (s === "failed") el.innerHTML = esc(failMsg()) + '<br><button class="retry" data-retry="' + esc(id) + '">Try again</button>';
     else el.textContent = s === "connected" ? "" : s === "disconnected" ? "Connection lost. Reconnecting…" : "Connecting…";
@@ -1062,7 +1162,7 @@ function closePeer(id){
   const p = peers.get(id);
   if (p && p.pc) p.pc.close();
   peers.delete(id);
-  removeTile(id);
+  removeTile(id); capBitrate();
 }
 
 function leaveRoom(){
@@ -1084,7 +1184,7 @@ function setBtn(id, on, onText, offText){
 function syncButtons(){
   const a = localStream.getAudioTracks()[0];
   setBtn("mic", a && a.enabled, "Mic on", "Mic off");
-  setBtn("cam", camTrack && camTrack.enabled, "Camera on", "Camera off");
+  setBtn("cam", camTrack && camTrack.enabled, "Camera on", "Camera off"); sendCam();
 }
 $("mic").onclick = () => { const a = localStream.getAudioTracks()[0]; if (blocked("mic")) return toast("The admin has turned off microphones here."); if (a){ a.enabled = !a.enabled; syncButtons(); } };
 $("cam").onclick = () => { if (blocked("cam")) return toast("The admin has turned off video here."); if (camTrack){ camTrack.enabled = !camTrack.enabled; syncButtons(); } };
@@ -1099,8 +1199,8 @@ function swapVideoTrack(track){
 $("share").onclick = async () => {
   if (screenStream){ stopShare(); return; }
   try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); } catch { return; }
-  const track = screenStream.getVideoTracks()[0];
-  swapVideoTrack(track);
+  const track = screenStream.getVideoTracks()[0]; track.contentHint = "detail";
+  swapVideoTrack(track); capBitrate();
   const tile = $("t-me");
   tile.querySelector("video").srcObject = screenStream;
   tile.classList.add("sharing");
@@ -1111,6 +1211,7 @@ function stopShare(){
   if (!screenStream) return;
   screenStream.getTracks().forEach(t => t.stop()); screenStream = null;
   if (camTrack) swapVideoTrack(camTrack);
+  capBitrate();
   const tile = $("t-me");
   if (tile){ tile.querySelector("video").srcObject = localStream; tile.classList.remove("sharing"); }
   $("share").setAttribute("aria-pressed", "false"); $("share").title = "Share screen";
@@ -1148,6 +1249,7 @@ function layout(){
   all.forEach(t => {
     const id = t.id.slice(2);
     t.classList.toggle("pinned", id === pid); t.classList.toggle("off", !vis.has(t));
+    const vv = t.querySelector("video"); if (vv && id !== "me"){ if (vis.has(t)){ if (vv.paused) vv.play().catch(() => {}); } else if (!vv.paused) vv.pause(); }
     const b = t.querySelector("[data-a=pin]"); if (b){ b.title = id === pinned ? "Unpin" : "Pin"; b.classList.toggle("on", id === pinned); }
   });
   const n = Math.max(1, vis.size), cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 6 ? 3 : 4;
@@ -1186,15 +1288,19 @@ async function openProfile(){
   if (!TITLES.length) TITLES = (await api("/api/titles")).titles;
   $("p-title").innerHTML = '<option value="">No title</option>' + TITLES.map(t => "<option>" + esc(t) + "</option>").join("");
   $("p-name").value = me.name; $("p-title").value = me.title || ""; $("p-vis").value = me.visibility || "public"; $("p-streak").checked = !!me.show_streak; $("p-act").checked = !!me.show_activity; $("p-bio").value = me.bio || ""; $("p-msg").textContent = "";
+  $("p-banner").value = me.banner || ""; $("p-int").value = (me.interests || []).join(", "); $("p-ig").value = me.instagram || ""; $("p-li").value = me.linkedin || "";
+  document.querySelectorAll("#p-seek input").forEach(c => c.checked = (me.seeking || []).includes(c.value));
   $("prof").classList.remove("hidden");
 }
 $("open-profile").onclick = openProfile;
+$("me-btn").onclick = () => openUser(me.id).catch(e => alert(e.message));
 $("p-close").onclick = () => $("prof").classList.add("hidden");
 $("p-save").onclick = async () => {
   try {
-    const r = await api("/api/me", { method: "PUT", body: { name: $("p-name").value, title: $("p-title").value, bio: $("p-bio").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked } });
-    Object.assign(me, r.user); $("who").textContent = me.name;
-    $("prof").classList.add("hidden");
+    const r = await api("/api/me", { method: "PUT", body: { name: $("p-name").value, title: $("p-title").value, bio: $("p-bio").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked,
+      banner: $("p-banner").value, interests: $("p-int").value, instagram: $("p-ig").value, linkedin: $("p-li").value, seeking: [...document.querySelectorAll("#p-seek input:checked")].map(c => c.value) } });
+    Object.assign(me, r.user); $("who").textContent = me.name; paintMe();
+    $("prof").classList.add("hidden"); if (!$("pv").classList.contains("hidden")) openUser(me.id);
   } catch (e) { $("p-msg").textContent = e.message; }
 };
 function showBio(id){
@@ -1276,7 +1382,7 @@ const setStreak = s => { const c = s && s.current ? s.current : 0; $("streak").t
 const postHtml = p => '<div class="post"><a class="lnk" data-u="' + p.uid + '">' + esc(p.name) + "</a>" + (p.title ? " · " + esc(p.title) : "") + " <small>" + ago(p.created_at) + "</small>" +
   (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + "<div>" + esc(p.body) + "</div></div>";
 const followBtn = (id, on) => '<button class="btn ' + (on ? "ghost" : "") + '" data-f="' + id + '" data-on="' + (on ? 1 : 0) + '">' + (on ? "Following" : "Follow") + "</button>";
-const LABEL = { daily_login: () => "Logged in", joined_room: () => "Joined a meeting", pomodoro: () => "Finished a focus session", posted: () => "Shared a post",
+const LABEL = { followed_by: d => d.name + " followed you", daily_login: () => "Logged in", joined_room: () => "Joined a meeting", pomodoro: () => "Finished a focus session", posted: () => "Shared a post",
   encouraged: d => "Encouraged " + d.to, encouraged_by: d => d.from + " encouraged you", followed: d => "Followed " + d.name };
 const evHtml = e => '<div class="ev">' + esc((LABEL[e.type] || (() => e.type))(e.data)) + " <small>" + ago(e.created_at) + "</small></div>";
 
@@ -1297,26 +1403,58 @@ $("post-send").onclick = async () => {
 let PF = null;
 const BADGES = [["First steps", "Log in on your first day", s => s.total >= 1], ["3-day streak", "Log in 3 days in a row", s => s.best >= 3], ["Week warrior", "Reach a 7-day streak", s => s.best >= 7], ["Focus starter", "Finish a focus session", s => s.focus >= 1], ["Deep worker", "Finish 10 focus sessions", s => s.focus >= 10], ["Cheerleader", "Send 3 encouragements", s => s.sent >= 3], ["Well loved", "Receive 5 encouragements", s => s.received >= 5], ["Storyteller", "Share your first post", s => s.posts >= 1], ["Connector", "Get 5 followers", s => s.followers >= 5]];
 const pfStats = u => { const st = u.stats || {}, sk = u.streak || {}; return { total: sk.total || 0, best: sk.best || 0, current: sk.current || 0, focus: st.focus || 0, sent: st.sent || 0, received: st.received || 0, posts: st.posts || 0, followers: u.followers || 0, following: u.following || 0 }; };
+const SEEKT = { accountability: ["✅", "Accountability partner(s)"], "study-buddy": ["📚", "Study buddy"], "focus-group": ["🧠", "A focus group/community"], networking: ["🤝", "Professional networking"] };
+const BCOL = { 7: "#60A5FA", 25: "#F87171", 50: "#FB923C", 75: "#FBBF24", 100: "#A78BFA", 200: "#34D399", 365: "#F472B6" };
+const badgeSvg = (n, z = 28) => n ? '<svg class="bdg" width="' + z + '" height="' + Math.round(z * 1.1) + '" viewBox="0 0 24 27" role="img" aria-label="' + n + ' day badge"><path d="M12 1 22 4v10c0 6-5 10.5-10 12C7 24.5 2 20 2 14V4z" fill="' + BCOL[n] + '" stroke="rgba(0,0,0,.12)"/><text x="12" y="16" text-anchor="middle" font-family="Poppins,Inter,sans-serif" font-weight="700" font-size="' + (n > 99 ? 8.5 : 10.5) + '" fill="#fff">' + n + "</text></svg>" : "";
+const dur = ms => { const m = Math.round(ms / 60000); return m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m"; };
+const seenTxt = u => u.online ? "Online now" : !u.seen ? "Not seen yet" : new Date(u.seen).toDateString() === new Date().toDateString() ? "Seen today" : "Seen " + ago(u.seen);
+const IGI = '<svg class="ic" viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>';
+let pfMode = "focus";
+function paintMe(){ $("me-btn").innerHTML = avatar(me.name, me.id, 40); }
 async function openUser(id){
   PF = await api("/api/users/" + id); const u = PF;
-  const act = u.isMe ? '<button class="btn full" data-edit="1">Edit profile</button>' : '<div class="pfact">' + followBtn(u.id, u.isFollowing) + '<button class="btn" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>';
-  $("pv-body").innerHTML = '<div class="pfgrid"><div class="pfl"><div class="pfcover"></div><div class="pfin"><span class="pfav">' + avatar(u.name, u.id, 88) + "</span><h2>" + esc(u.name) + "</h2>" + (u.title ? '<span class="tag">' + esc(u.title) + "</span>" : "") +
-    (u.streak ? '<p style="margin:12px 0 0"><span class="chip">' + u.streak.current + "-day streak</span></p>" : "") +
-    (u.restricted ? '<p class="sub" style="margin-top:14px">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>" : '<div class="pfbio">' + esc(u.bio || "No bio yet.") + "</div>") +
-    '<div class="pfcount"><div><b>' + u.followers + "</b><span>Followers</span></div><div><b>" + u.following + "</b><span>Following</span></div></div>" + act + "</div></div>" +
-    '<div class="pfr"><div class="tabs" id="pf-tabs"><button data-pt="sum" aria-selected="true">Summary</button><button data-pt="ach" aria-selected="false">Achievements</button><button data-pt="stat" aria-selected="false">Statistics</button></div><div id="pf-tab"></div></div></div>';
-  $("pv").classList.remove("hidden"); pfTab("sum");
+  const sk = SEEKT, tags = (u.seeking || []).filter(k => sk[k]).map(k => '<span class="ptag">' + sk[k][0] + " " + sk[k][1] + "</span>").join("");
+  const links = (u.instagram ? '<a href="https://instagram.com/' + encodeURIComponent(u.instagram) + '" target="_blank" rel="noopener" aria-label="Instagram">' + IGI + "</a>" : "") + (u.linkedin ? '<a href="https://www.linkedin.com/in/' + encodeURIComponent(u.linkedin) + '" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>' : "");
+  const act = u.isMe ? '<div class="pact"><button class="btn" data-edit="1">Edit profile</button></div>' : '<div class="pact">' + followBtn(u.id, u.isFollowing) + '<button class="btn ghost" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>';
+  $("pv-body").innerHTML = '<div class="pfpage"><aside class="pcard"><div class="pban"><span class="pq">' + esc(u.banner || (u.isMe ? "Add a banner quote in Edit profile" : "Focus today. Thank yourself later.")).replace(/^/, "“").replace(/$/, "”") + '</span><span class="pseen' + (u.online ? " on" : "") + '"><i></i>' + seenTxt(u) + '</span></div><span class="pav">' + avatar(u.name, u.id, 122) + '</span><div class="plinks">' + links + '</div>' +
+    '<div class="pname"><h2>' + esc(u.name) + "</h2>" + badgeSvg(u.badge, 34) + "</div>" + '<div class="psub">' + esc(u.title || "Member") + "</div>" + (tags ? '<div class="ptags">' + tags + "</div>" : "") +
+    (u.restricted ? '<p class="pbio">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>" : '<div class="pbio">' + esc(u.bio || "No bio yet.") + "</div>") +
+    '<div class="pcnt"><div><b>' + u.followers + "</b><span>Followers</span></div><div><b>" + u.following + "</b><span>Following</span></div></div>" + act + "</aside>" +
+    '<section><div class="ptabs" id="pf-tabs" role="tablist"><button data-pt="sum" aria-selected="true">Summary</button><button data-pt="ach" aria-selected="false">Achievements</button><button data-pt="stat" aria-selected="false">Statistics</button><button data-pt="part" aria-selected="false">Focus Partners</button></div><div id="pf-tab"></div></section></div>';
+  $("pv").classList.remove("hidden"); $("pv").scrollTop = 0; pfTab("sum");
+}
+function sessionsHtml(u){
+  const key = pfMode === "focus" ? "focus" : "video", max = Math.max(1, ...u.week.map(w => w[key]));
+  const bars = '<div class="wk">' + u.week.map(w => '<div title="' + dur(w[key]) + '"><i style="height:' + Math.max(3, Math.round(w[key] / max * 100)) + '%"></i><small>' + new Date(w.day + "T12:00:00").toLocaleDateString([], { weekday: "short" }) + "</small></div>").join("") + "</div>";
+  const rows = u.sessions ? (u.sessions.length ? u.sessions.map(r => '<div class="srow"><span>' + esc(r.room || "Open room") + "<small>" + ago(r.started_at) + "</small></span><b>" + dur(pfMode === "focus" ? r.ms : r.video_ms) + "</b></div>").join("") : '<p class="nt">No sessions yet.</p>') : '<p class="nt">Session details are hidden by this user.</p>';
+  return '<div class="pseg" id="pf-seg"><button data-m="focus" aria-selected="' + (pfMode === "focus") + '">Focus room time</button><button data-m="video" aria-selected="' + (pfMode === "video") + '">Video on time</button></div>' + bars + rows;
 }
 function pfTab(t){
   document.querySelectorAll("#pf-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.pt === t));
   const u = PF, s = pfStats(u); let h = "";
-  if (u.restricted) h = '<p class="sub" style="padding:20px 4px">Posts, achievements and statistics are hidden on this profile.</p>';
-  else if (t === "sum") h = (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="sub" style="padding:20px 4px">No posts yet.</p>') + (u.activity ? '<h3 class="pfh">Recent activity</h3>' + u.activity.map(evHtml).join("") : "");
-  else if (t === "ach") h = '<div class="bgrid">' + BADGES.map(([n, d, f]) => '<div class="badge2' + (f(s) ? " got" : "") + '"><b>' + n + "</b><small>" + d + "</small></div>").join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
-  else h = '<div class="sgrid">' + [["Current streak", u.streak ? s.current + " days" : "Hidden"], ["Best streak", u.streak ? s.best + " days" : "Hidden"], ["Days logged in", u.streak ? s.total : "Hidden"], ["Focus sessions", s.focus], ["Encouragements sent", s.sent], ["Encouragements received", s.received], ["Posts", s.posts], ["Followers", s.followers], ["Following", s.following]].map(([k, v]) => '<div class="stat"><b>' + v + "</b><small>" + k + "</small></div>").join("") + "</div>";
+  if (u.restricted) h = '<p class="nt">Posts, achievements and statistics are hidden on this profile.</p>';
+  else if (t === "sum"){
+    h = '<div class="pstats"><div class="sc"><small>Join date</small><div class="v">' + (u.joined ? new Date(u.joined).toLocaleDateString([], { day: "2-digit", month: "short" }) + "<small>" + new Date(u.joined).getFullYear() + "</small>" : "-") + '</div></div>' +
+      '<div class="sc"><small>Highest Badge</small><div class="v">' + (u.badge ? badgeSvg(u.badge, 56) : "<small>None yet</small>") + '</div></div><div class="sc"><small>Focus sessions</small><div class="v">' + s.focus + "</div></div></div>" +
+      '<h3 class="psec">Interests</h3><div class="pint">' + ((u.interests || []).length ? u.interests.map(i => "<span>" + esc(i) + "</span>").join("") : '<small style="color:#6B7699">No interests added yet.</small>') + "</div>" +
+      '<h3 class="psec">Recent Sessions <small>(last 7 days, ' + dur(u.week.reduce((a, w) => a + w[pfMode === "focus" ? "focus" : "video"], 0)) + ")</small></h3><div id=\"pf-sess\">" + sessionsHtml(u) + "</div>" +
+      '<h3 class="psec">Recent Activity</h3>' + (u.isMe ? '<div class="pbox"><input id="pf-post" maxlength="280" placeholder="Post an update…" aria-label="Post an update"><button class="btn" data-pfpost="1">Post</button></div><div class="msg" id="pf-msg"></div>' : "") +
+      (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="nt">No posts yet.</p>') + (u.activity ? u.activity.map(evHtml).join("") : "");
+  } else if (t === "ach"){
+    const tiers = [7, 25, 50, 75, 100, 200, 365].map(n => '<div class="badge2' + (u.badge >= n ? " got" : "") + '">' + badgeSvg(n, 34) + "<b>" + n + " active days</b><small>Log in on " + n + " different days</small></div>").join("");
+    h = '<div class="bgrid">' + tiers + BADGES.map(([n, d, f]) => '<div class="badge2' + (f(s) ? " got" : "") + '"><b>' + n + "</b><small>" + d + "</small></div>").join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
+  } else if (t === "stat"){
+    h = '<div class="sgrid">' + [["Current streak", u.streak ? s.current + " days" : "Hidden"], ["Best streak", u.streak ? s.best + " days" : "Hidden"], ["Days logged in", u.streak ? s.total : "Hidden"], ["Time in focus rooms", dur(u.totals.focus_ms)], ["Video on time", dur(u.totals.video_ms)], ["Room sessions", u.totals.sessions], ["Focus sessions", s.focus], ["Encouragements sent", s.sent], ["Encouragements received", s.received], ["Posts", s.posts], ["Followers", s.followers], ["Following", s.following]].map(([a, b]) => '<div class="stat"><b>' + b + "</b><small>" + a + "</small></div>").join("") + "</div>";
+  } else h = u.partners ? (u.partners.length ? u.partners.map(p => '<div class="prt" data-u="' + p.id + '">' + avatar(p.name, p.id, 46) + "<span><b>" + esc(p.name) + "</b><small>" + esc(p.title || "Member") + "</small></span><span style=\"margin-left:auto;text-align:right\"><b>" + dur(p.ms) + "</b><small>" + p.n + " shared session" + (p.n > 1 ? "s" : "") + "</small></span></div>").join("") : '<p class="nt">No focus partners yet. Study in a room with others to see them here.</p>') : '<p class="nt">Focus partners are hidden by this user.</p>';
   $("pf-tab").innerHTML = h;
 }
-document.addEventListener("click", e => { const b = e.target.closest("#pf-tabs button"); if (b) pfTab(b.dataset.pt); });
+document.addEventListener("click", async e => {
+  const b = e.target.closest("#pf-tabs button"); if (b) return pfTab(b.dataset.pt);
+  const m = e.target.closest("#pf-seg button"); if (m){ pfMode = m.dataset.m; return pfTab("sum"); }
+  if (e.target.closest("[data-pfpost]")){
+    try { await api("/api/posts", { body: { body: $("pf-post").value } }); await openUser(PF.id); loadFeed(); } catch (err) { $("pf-msg").textContent = err.message; }
+  }
+});
 $("pv-close").onclick = () => $("pv").classList.add("hidden");
 $("open-activity").onclick = async () => {
   const { events, streak } = await api("/api/timeline");
@@ -1526,7 +1664,7 @@ window.addEventListener("resize", () => { if (!mob()) closeSheet(); });
 if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) $("share").classList.add("hidden");   // phones can't share screens
 
 /* ---------- video effects: quality, zoom / auto-frame, enhance, filters, face effects ---------- */
-const QUAL = { auto: { w: 1280, h: 720, f: 30, bps: 1500000 }, "360": { w: 640, h: 360, f: 15, bps: 400000 }, "720": { w: 1280, h: 720, f: 30, bps: 1500000 }, "1080": { w: 1920, h: 1080, f: 30, bps: 3000000 } };
+const QUAL = { auto: { w: 960, h: 540, f: 24, bps: 900000 }, "360": { w: 640, h: 360, f: 15, bps: 400000 }, "720": { w: 1280, h: 720, f: 30, bps: 1500000 }, "1080": { w: 1920, h: 1080, f: 30, bps: 3000000 } };
 const FXD = { quality: "auto", fit: "cover", zoom: 1, auto: false, bright: 1, contrast: 1, sat: 1, smooth: 0, filter: "none", face: "none" };
 const FX = (() => { try { return { ...FXD, ...JSON.parse(localStorage.getItem("chaupal_fx")) }; } catch { return { ...FXD }; } })();
 const FILTERS = { none: "", warm: "sepia(.25) saturate(1.2) hue-rotate(-8deg)", cool: "saturate(1.1) hue-rotate(12deg) brightness(1.03)", vivid: "saturate(1.6) contrast(1.1)", bw: "grayscale(1)", noir: "grayscale(1) contrast(1.4) brightness(.9)", vintage: "sepia(.6) contrast(.95) brightness(1.05)", dream: "brightness(1.1) saturate(1.2) contrast(.92) blur(.6px)" };
@@ -1637,15 +1775,11 @@ function drawFace(ctx, lm, sx, sy, sw, sh, vw, vh){
     for (const e of [eR, eL]) at(e, ang, () => { ctx.fillStyle = "#E5484D"; ctx.strokeStyle = "#fff"; ctx.lineWidth = ed * .02; heart(ed * .3 * k); ctx.fill(); ctx.stroke(); });
   }
 }
-function capBitrate(pc){
-  const s = pc.getSenders().find(x => x.track && x.track.kind === "video"); if (!s) return;
-  const p = s.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}];
-  p.encodings[0].maxBitrate = (QUAL[FX.quality] || QUAL.auto).bps; s.setParameters(p).catch(() => {});
-}
+function capBitrate(){ clearTimeout(tuneT); tuneT = setTimeout(tuneSenders, 80); }
 function applyQuality(){
   const q = QUAL[FX.quality] || QUAL.auto, t = fx.on ? fx.raw : camTrack;
   if (t && t.applyConstraints) t.applyConstraints({ width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.f } }).catch(() => {});
-  for (const { pc } of peers.values()) if (pc) capBitrate(pc);
+  capBitrate();
 }
 function fxUI(){
   $("fx-q").value = FX.quality; $("fx-fit").value = FX.fit; $("fx-zoom").value = FX.zoom; $("fx-zoom").disabled = FX.auto; $("fx-zoom-v").textContent = FX.auto ? "(auto)" : FX.zoom.toFixed(1) + "x";
@@ -1711,14 +1845,14 @@ function onDm(m){
 }
 const msgHtml = m => '<div class="dmb' + (m.from_id === me.id ? " me" : "") + '"><span>' + esc(m.body) + "</span><small>" + hhmm(m.created_at) + "</small></div>";
 function appendMsg(m){ const b = $("dm-body"); if (b.querySelector(".dmempty")) b.innerHTML = ""; b.insertAdjacentHTML("beforeend", msgHtml(m)); b.scrollTop = 1e9; }
-function dmOpen(){ $("dm").classList.remove("hidden"); $("dm-bg").classList.remove("hidden"); }
+function dmOpen(){ $("npop").classList.add("hidden"); $("dm").classList.remove("hidden"); $("dm-bg").classList.remove("hidden"); }
 function closeDm(){ $("dm").classList.add("hidden"); $("dm-bg").classList.add("hidden"); dmView = "list"; dmWith = null; }
 function dmRender(){
   const head = $("dm-head"), body = $("dm-body");
   $("dm-form").classList.toggle("hidden", dmView !== "thread");
   if (dmView === "list"){
     head.innerHTML = '<span class="dmlogo">' + IC.chat + '</span><b>Chats</b><span class="sp"></span><button class="dmi" data-dm-readall title="Mark all as read">' + IC.mail + '</button><button class="dmi" data-dm-new title="New chat">' + IC.plus + "</button>";
-    body.innerHTML = dmChats.length ? dmChats.map(c => '<div class="dmrow" data-chat="' + c.id + '" data-name="' + esc(c.name) + '">' + avatar(c.name, c.id) + '<div class="dmmid"><b>' + esc(c.name) + "</b><small>" + (c.mine ? "You: " : "") + esc(c.last) + '</small></div><div class="dmr"><small>' + dmDate(c.at) + "</small>" + (c.unread ? '<i class="ub">' + c.unread + "</i>" : "") + "</div></div>").join("")
+    body.innerHTML = dmChats.length ? dmChats.map(c => '<div class="dmrow" data-chat="' + c.id + '" data-name="' + esc(c.name) + '">' + avatar(c.name, c.id) + '<div class="dmmid"><b>' + esc(c.name) + badgeSvg(c.badge, 18) + "</b><small>" + (c.mine ? "You: " : "") + esc(c.last) + '</small></div><div class="dmr"><small>' + dmDate(c.at) + "</small>" + (c.unread ? '<i class="ub">' + c.unread + "</i>" : "") + "</div></div>").join("")
       : '<p class="sub dmempty">No chats yet. Tap + to start one, or open someone\'s video tile and choose Message.</p>';
   } else if (dmView === "new"){
     head.innerHTML = '<button class="dmi" data-dm-back title="Back">' + IC.back + '</button><b>New chat</b><span class="sp"></span><button class="dmi" data-dm-close title="Close">' + IC.x + "</button>";
@@ -1744,7 +1878,7 @@ async function openThread(id, name){
 }
 function dmToggle(){ if (dmShow()) return closeDm(); dmView = "list"; dmOpen(); dmRender(); refreshChats(); }
 document.querySelectorAll(".dm-btn").forEach(b => b.onclick = dmToggle);
-$("dm-bg").onclick = closeDm;
+$("dm-bg").onclick = () => { closeDm(); $("npop").classList.add("hidden"); };
 $("dm").onclick = e => {
   const t = e.target.closest("[data-chat],[data-pick],[data-dm-new],[data-dm-readall],[data-dm-back],[data-dm-close]"); if (!t) return;
   if (t.dataset.chat) return openThread(t.dataset.chat, t.dataset.name);
@@ -1760,6 +1894,25 @@ $("dm-form").onsubmit = async e => {
   try { const r = await api("/api/chats/" + dmWith.id, { body: { body: t } }); appendMsg(r.message); refreshChats(); }
   catch (err) { toast(err.message); $("dm-in").value = t; }
 };
+
+/* ---------- notifications ---------- */
+const NT = { encouraged_by: d => d.from + " sent you encouragement", followed_by: d => d.name + " started following you" };
+let nots = [];
+async function loadNotifs(){
+  try { const r = await api("/api/notifications"); nots = r.items; $("bell-badge").textContent = r.unseen; $("bell-badge").classList.toggle("hidden", !r.unseen); } catch {}
+}
+function renderNotifs(){
+  $("npop").innerHTML = '<div class="dm-head"><span class="dmlogo">' + $("bell-btn").firstElementChild.outerHTML + '</span><b>Notifications</b></div><div class="dm-body">' +
+    (nots.length ? nots.map(n => '<div class="dmrow"' + (n.data.uid ? ' data-u="' + n.data.uid + '"' : "") + '><div class="dmmid"><b>' + esc(NT[n.type](n.data)) + "</b><small>" + ago(n.created_at) + "</small></div></div>").join("") : '<p class="sub dmempty">Nothing new yet.</p>') + "</div>";
+}
+$("bell-btn").onclick = async () => {
+  const open = !$("npop").classList.contains("hidden"); closeDm();
+  if (open){ $("npop").classList.add("hidden"); return; }
+  await loadNotifs(); renderNotifs(); $("npop").classList.remove("hidden"); $("dm-bg").classList.remove("hidden");
+  if ($("bell-badge").textContent !== "0" && !$("bell-badge").classList.contains("hidden")){ api("/api/notifications/seen", { body: {} }).catch(() => {}); $("bell-badge").classList.add("hidden"); }
+};
+$("npop").onclick = () => { $("npop").classList.add("hidden"); $("dm-bg").classList.add("hidden"); };
+setInterval(() => { if (me && !document.hidden) loadNotifs(); }, 90000);
 
 /* ---------- boot ---------- */
 (async () => {
