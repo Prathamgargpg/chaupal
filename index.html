@@ -458,6 +458,84 @@
     #room .perl{font-size:0;gap:0}
   }
   .status .retry{pointer-events:auto;margin-top:10px;border:0;border-radius:8px;padding:7px 14px;font-weight:600;background:#2563EB;color:#fff;cursor:pointer}
+  /* video effects panel */
+  .fxcard{width:min(560px,100%)!important}
+  .fxcard h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px}
+  #fx-prev{position:sticky;top:0;z-index:3;width:100%;height:190px;border-radius:12px;background:#0F1B3D;object-fit:cover;transform:scaleX(-1);display:block;box-shadow:0 8px 18px -10px rgba(15,27,61,.5)}
+  input[type=range],input[type=checkbox]{accent-color:#2563EB}
+  .fxrow{display:flex;align-items:center;gap:12px;margin:8px 0}
+  .fxrow label{flex:0 0 130px;margin:0;font-weight:500}
+  .fxrow input[type=range]{flex:1;padding:0;border:0;height:28px;background:none}
+  .fxrow select{flex:1}
+  .fxchk{display:flex;gap:8px;align-items:flex-start;font-weight:400;margin:10px 0}
+  .fxchk input{width:auto;margin-top:3px}
+  .fxbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .fxbtns .btn{padding:8px 12px;font-size:13px;margin:0}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chips button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 14px;font-weight:600;font-size:13px;color:var(--ink);transition:background .15s}
+  .chips button:hover{background:#F0F4FB}
+  .chips button.on{background:#2563EB;border-color:#2563EB;color:#fff}
+  #grid.fit .tile video{object-fit:contain}
+  /* chat button + panel (top-right, like the reference) */
+  .rbtn{width:42px;height:42px;border-radius:50%;border:0;background:#DBEAFE;color:#2563EB;display:grid;place-items:center;position:relative;flex:none;margin-bottom:6px;transition:background .15s,transform .15s}
+  .rbtn:hover{background:#C9DEFD;transform:translateY(-1px)}
+  .rbtn .ic{width:20px;height:20px}
+  .dm-badge{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);min-width:26px;padding:1px 7px;border-radius:999px;background:#2563EB;color:#fff;font-size:12px;font-weight:700;line-height:18px;border:2px solid #fff;box-sizing:content-box;text-align:center}
+  #dm-bg{position:fixed;inset:0;z-index:58;background:transparent}
+  .dmp{position:fixed;top:68px;right:20px;width:384px;max-height:min(580px,calc(100dvh - 90px));background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 60px -20px rgba(15,27,61,.45);z-index:60;display:flex;flex-direction:column;overflow:hidden;animation:pop .18s ease-out both}
+  .dm-head{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#EEF3FF;border-bottom:1px solid #E1E9FB;font-size:16px}
+  .dm-head .sp{flex:1}
+  .dmlogo{width:30px;height:30px;border-radius:50%;background:#DBEAFE;color:#2563EB;display:grid;place-items:center}
+  .dmlogo .ic,.dmi .ic{width:18px;height:18px}
+  .dmi{width:34px;height:34px;border-radius:10px;border:0;background:transparent;color:#6B86C9;display:grid;place-items:center;transition:background .15s,color .15s}
+  .dmi:hover{background:#DBEAFE;color:#2563EB}
+  .dmname{cursor:pointer}
+  .dm-body{flex:1;overflow-y:auto;min-height:120px}
+  .dmrow{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .12s}
+  .dmrow:hover{background:#F4F7FE}
+  .avc{border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:700;flex:none;letter-spacing:.02em}
+  .dmmid{flex:1;min-width:0;display:flex;flex-direction:column}
+  .dmmid b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dmmid small{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dmr{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none;color:var(--muted)}
+  .ub{font-style:normal;min-width:22px;height:22px;border-radius:999px;background:#2563EB;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;padding:0 6px}
+  .dmempty{padding:28px 20px;text-align:center;margin:0}
+  .dmsearch{padding:12px 16px}
+  .dm-body#dm-body{display:flex;flex-direction:column}
+  .dmb{max-width:80%;align-self:flex-start;margin:6px 14px;padding:9px 12px;border-radius:14px 14px 14px 4px;background:#EEF2FA;display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+  .dmb.me{align-self:flex-end;background:#2563EB;color:#fff;border-radius:14px 14px 4px 14px}
+  .dmb small{font-size:11px;opacity:.65;align-self:flex-end}
+  .dm-form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+  .dm-form input{height:40px;border-radius:10px}
+  .dm-form .btn{height:40px;padding:0 16px;margin:0}
+  /* profile page */
+  .pfwrap{width:min(980px,100%)!important;padding:20px!important}
+  .pfgrid{display:grid;grid-template-columns:310px minmax(0,1fr);gap:20px;align-items:start}
+  .pfl{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+  .pfcover{height:92px;background:linear-gradient(135deg,#1D4ED8,#38BDF8)}
+  .pfin{padding:0 18px 18px}
+  .pfav{display:block;margin-top:-44px;width:88px;border-radius:50%;border:4px solid #fff;background:#fff}
+  .pfin h2{margin:10px 0 6px;font-size:24px}
+  .pfbio{margin:14px 0;padding:12px;border-radius:12px;background:#F4F7FE;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+  .pfcount{display:flex;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:12px 0}
+  .pfcount div{flex:1;text-align:center;padding:12px 0;display:flex;flex-direction:column}
+  .pfcount b{font-size:22px}.pfcount span{font-size:13px;color:var(--muted)}
+  .pfact{display:flex;gap:8px}.pfact .btn{flex:1;margin:0}
+  .pfr{min-width:0}
+  .pfh{font-size:16px;margin:18px 0 6px}
+  .bgrid,.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px}
+  .badge2{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;opacity:.5;display:flex;flex-direction:column;gap:4px}
+  .badge2.got{opacity:1;background:linear-gradient(145deg,#EEF4FF,#DCEBFF);border-color:#BFD6FB}
+  .badge2 small{color:var(--muted)}
+  .stat{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;display:flex;flex-direction:column;gap:2px}
+  .stat b{font-size:24px;font-family:"Plus Jakarta Sans","Inter",sans-serif}.stat small{color:var(--muted)}
+  @media (max-width:820px){
+    .pfgrid{grid-template-columns:1fr}
+    .dmp{left:0;right:0;top:auto;bottom:0;width:auto;max-height:82dvh;border-radius:20px 20px 0 0}
+    #dm-bg{background:rgba(15,27,61,.45)}
+    .rbtn{width:36px;height:36px;margin-bottom:0}.dm-badge{bottom:-7px;min-width:20px;line-height:14px;font-size:11px}
+    .topbar .rbtn{margin-bottom:0}
+  }
 </style>
 </head>
 <body>
@@ -494,7 +572,7 @@
 <div id="lobby" class="hidden">
   <div class="topbar">
     <div class="brand">Chaupal</div>
-    <div class="who"><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
+    <div class="who"><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
   <div class="lobby">
@@ -543,6 +621,7 @@
     <button class="nav" id="n-home" aria-label="Home"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg><span class="lbl">Home</span></button>
     <button class="nav" id="n-prof" aria-label="Profile"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="lbl">Profile</span></button>
     <button class="nav" id="n-act" aria-label="Activity"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg><span class="lbl">Activity</span></button>
+    <button class="nav" id="n-fx" aria-label="Video effects"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg><span class="lbl">Video effects</span></button>
     <button class="nav" id="n-dev" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span class="lbl">Settings</span></button>
     <button class="nav hidden" id="n-admin" aria-label="Admin portal"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg><span class="lbl">Admin portal</span></button>
     <div class="rcard" ><svg class="ic" viewBox="0 0 24 24" style="color:#F97316"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><span id="rail-num">0</span><span class="lbl">day streak</span><small id="rail-streak" class="hidden"></small><i id="rail-bar" class="hidden"></i></div>
@@ -561,6 +640,7 @@
         <span class="rchip" id="count"></span>
         <button class="rchip pomo-chip" id="pomo-chip" type="button" aria-label="Open study timer"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg><span id="pomo-chip-t">25:00</span></button>
         <button class="btn sm" id="copy">Share room</button>
+        <button class="rbtn dm-btn" id="dm-btn2" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button>
       </div>
     </header>
 
@@ -583,6 +663,7 @@
       <button class="ctl" id="view" aria-pressed="true" aria-label="Layout" title="Tile view"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
       <button class="ctl" id="pomo-btn" aria-pressed="true" aria-label="Study timer" title="Study timer"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></button>
       <button class="ctl" id="toggle-chat" aria-pressed="true" aria-label="Chat" title="Chat"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/></svg></button>
+      <button class="ctl" id="fx-btn" aria-label="Video effects" title="Video effects"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></button>
       <button class="ctl" id="dev-btn" aria-label="Audio and video settings" title="Audio and video settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
       <button class="ctl leave" id="leave"><svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Leave Room</button>
     </div>
@@ -617,6 +698,13 @@
   <div id="sheet-bg" class="hidden"></div>
 </div>
 
+<div id="dm-bg" class="hidden"></div>
+<div id="dm" class="dmp hidden" role="dialog" aria-label="Messages">
+  <div class="dm-head" id="dm-head"></div>
+  <div class="dm-body" id="dm-body"></div>
+  <form class="dm-form hidden" id="dm-form"><input id="dm-in" maxlength="1000" placeholder="Write a message" autocomplete="off" aria-label="Message"><button class="btn" id="dm-send">Send</button></form>
+</div>
+
 <div id="prof" class="modal hidden"><div class="card">
   <h2>Your profile</h2>
   <label for="p-name">Name</label><input id="p-name" maxlength="40">
@@ -638,8 +726,31 @@
   <div class="msg" id="enc-msg" role="alert"></div>
 </div></div>
 
-<div id="pv" class="modal hidden"><div class="card"><div id="pv-body"></div><button class="btn ghost full" id="pv-close">Close</button></div></div>
+<div id="pv" class="modal hidden"><div class="card pfwrap"><div id="pv-body"></div><button class="btn ghost full" id="pv-close">Close</button></div></div>
 <div id="act" class="modal hidden"><div class="card"><h2>My activity</h2><p class="sub" id="act-streak"></p><div id="act-body"></div><button class="btn ghost full" id="act-close">Close</button></div></div>
+
+<div id="fx" class="modal hidden"><div class="card fxcard">
+  <h2>Video effects</h2>
+  <video id="fx-prev" autoplay muted playsinline></video>
+  <p class="hint" id="fx-note"></p>
+  <h3>Size and quality</h3>
+  <div class="fxrow"><label for="fx-q">Video quality</label><select id="fx-q"><option value="auto">Auto (720p)</option><option value="360">Low (360p, saves data)</option><option value="720">Standard (720p)</option><option value="1080">High (1080p)</option></select></div>
+  <div class="fxrow"><label for="fx-fit">Video in tiles</label><select id="fx-fit"><option value="cover">Fill the tile (crops edges)</option><option value="contain">Fit the whole picture</option></select></div>
+  <h3>Framing</h3>
+  <div class="fxrow"><label for="fx-zoom">Zoom <b id="fx-zoom-v"></b></label><input type="range" id="fx-zoom" min="1" max="3" step="0.1"></div>
+  <label class="fxchk"><input type="checkbox" id="fx-auto"> Auto-frame: follow my face and zoom to keep me centered</label>
+  <h3>Enhance</h3>
+  <div class="fxrow"><label for="fx-b">Brightness</label><input type="range" id="fx-b" min="0.6" max="1.6" step="0.05"></div>
+  <div class="fxrow"><label for="fx-c">Contrast</label><input type="range" id="fx-c" min="0.6" max="1.6" step="0.05"></div>
+  <div class="fxrow"><label for="fx-s">Color</label><input type="range" id="fx-s" min="0.4" max="1.8" step="0.05"></div>
+  <div class="fxrow"><label for="fx-sm">Smooth skin</label><input type="range" id="fx-sm" min="0" max="1" step="0.05"></div>
+  <div class="fxbtns"><button class="btn ghost" id="fx-enh" type="button">Auto enhance</button><button class="btn ghost" id="fx-low" type="button">Low-light boost</button><button class="btn ghost" id="fx-reset" type="button">Reset all</button></div>
+  <h3>Filters</h3>
+  <div class="chips" id="fx-filters"><button type="button" data-f="none">Normal</button><button type="button" data-f="warm">Warm</button><button type="button" data-f="cool">Cool</button><button type="button" data-f="vivid">Vivid</button><button type="button" data-f="bw">B&amp;W</button><button type="button" data-f="noir">Noir</button><button type="button" data-f="vintage">Vintage</button><button type="button" data-f="dream">Dream</button></div>
+  <h3>Face effects</h3>
+  <div class="chips" id="fx-faces"><button type="button" data-face="none">None</button><button type="button" data-face="glasses">Sunglasses</button><button type="button" data-face="crown">Crown</button><button type="button" data-face="cat">Cat</button><button type="button" data-face="hearts">Hearts</button></div>
+  <button class="btn ghost full" id="fx-close" type="button">Done</button>
+</div></div>
 
 <div id="dev" class="modal hidden"><div class="card">
   <h2>Audio &amp; video settings</h2><p class="sub">Choose the devices Chaupal uses. Changes apply right away during a meeting.</p>
@@ -752,7 +863,7 @@ $("auth-btn").onclick = submitAuth;
 ["email","pass","dname"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") submitAuth(); }));
 
 function logout(){
-  leaveRoom();
+  leaveRoom(); closeDmSock();
   token = null; me = null;
   localStorage.removeItem("chaupal_token");
   history.replaceState(null, "", location.pathname);
@@ -763,7 +874,7 @@ $("logout").onclick = logout;
 function afterLogin(){
   $("who").textContent = me.name;
   $("open-admin").classList.toggle("hidden", me.role !== "admin"); $("n-admin").classList.toggle("hidden", me.role !== "admin");
-  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); loadFeed(); loadRooms(); }).catch(() => {});
+  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); loadFeed(); loadRooms(); connectDm(); }).catch(() => {});
   route();
 }
 
@@ -794,7 +905,7 @@ let relayOn = false, roomSettings = null, micLocked = false, camLocked = false, 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 async function getMedia(){
-  const v = { width: 1280, height: 720, ...(DEV.cam ? { deviceId: { ideal: DEV.cam } } : {}) };
+  const q = QUAL[FX.quality] || QUAL.auto, v = { width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.f }, ...(DEV.cam ? { deviceId: { ideal: DEV.cam } } : {}) };
   const a = { echoCancellation: true, noiseSuppression: true, ...(DEV.mic ? { deviceId: { ideal: DEV.mic } } : {}) };
   try { return await navigator.mediaDevices.getUserMedia({ video: v, audio: a }); }
   catch { try { return await navigator.mediaDevices.getUserMedia({ audio: a }); } catch { return null; } }
@@ -807,11 +918,11 @@ function addTile(id, stream, label, local){
     t.className = "tile" + (local ? " local" : "");
     t.id = "t-" + id;
     t.innerHTML = '<video autoplay playsinline></video><button class="pinb" data-a="pin" title="Pin">' + TI.pin + '</button><div class="badge"></div><div class="status"></div><div class="name"></div><div class="tact">' +
-      (local ? "" : '<button data-a="enc" title="Encourage">' + TI.smile + '</button><button data-a="bio" title="Profile and bio">' + TI.info + "</button>" +
+      (local ? "" : '<button data-a="enc" title="Encourage">' + TI.smile + '</button><button data-a="msg" title="Message">' + TI.msg + '</button><button data-a="bio" title="View profile">' + TI.info + "</button>" +
         (me.role === "admin" ? '<button data-a="a-mic">Mute</button><button data-a="a-cam">Stop cam</button><button data-a="a-rm">Remove</button>' : "")) + "</div>";
     t.onclick = e => {
       const bt = e.target.closest("[data-a]"); if (!bt) return; const a = bt.dataset.a;
-      if (a === "pin") togglePin(id); if (a === "enc") openEnc(id); if (a === "bio") showBio(id); if (a.startsWith("a-")) adminAct(id, a, bt);
+      if (a === "pin") togglePin(id); if (a === "enc") openEnc(id); if (a === "bio"){ const i = info.get(id); if (i && i.userId) openUser(i.userId); } if (a === "msg"){ const i = info.get(id); if (i && i.userId) openThread(i.userId, i.name); } if (a.startsWith("a-")) adminAct(id, a, bt);
     };
     $("grid").appendChild(t);
   }
@@ -844,6 +955,7 @@ async function enterRoom(code){
     leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return;
   }
   camTrack = localStream.getVideoTracks()[0] || null;
+  await fxApply();
   syncButtons();
   me.sessions = 0; me.cheers = 0; me.sent = 0;
   try { me.goal = localStorage.getItem("chaupal_goal") || ""; } catch { me.goal = ""; }
@@ -853,7 +965,7 @@ async function enterRoom(code){
 
   try { const r = await api("/api/ice"); iceServers = r.iceServers; relayOn = !!r.relay; } catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
 
-  socket = io({ auth: { token } });
+  socket = io({ auth: { token }, forceNew: true });
   socket.on("connect_error", err => { if (err.message === "unauthorized") logout(); });
 
   socket.on("connect", () => {
@@ -931,6 +1043,7 @@ async function connectTo(id, name, initiator){
   pc.onconnectionstatechange = () => {
     const s = pc.connectionState, el = document.querySelector("#t-" + id + " .status");
     if (s === "closed") return closePeer(id);
+    if (s === "connected") capBitrate(pc);
     if (!el) return;
     if (s === "failed") el.innerHTML = esc(failMsg()) + '<br><button class="retry" data-retry="' + esc(id) + '">Try again</button>';
     else el.textContent = s === "connected" ? "" : s === "disconnected" ? "Connection lost. Reconnecting…" : "Connecting…";
@@ -953,6 +1066,7 @@ function closePeer(id){
 }
 
 function leaveRoom(){
+  fxStop(true);
   if (socket){ socket.disconnect(); socket = null; }
   for (const id of [...peers.keys()]) closePeer(id);
   [localStream, screenStream].forEach(s => s && s.getTracks().forEach(t => t.stop()));
@@ -1180,18 +1294,29 @@ $("post-send").onclick = async () => {
   try { await api("/api/posts", { body: { body: $("post-in").value } }); $("post-in").value = ""; $("post-count").textContent = "0 / 280"; loadFeed(); }
   catch (e) { $("post-msg").textContent = e.message; }
 };
+let PF = null;
+const BADGES = [["First steps", "Log in on your first day", s => s.total >= 1], ["3-day streak", "Log in 3 days in a row", s => s.best >= 3], ["Week warrior", "Reach a 7-day streak", s => s.best >= 7], ["Focus starter", "Finish a focus session", s => s.focus >= 1], ["Deep worker", "Finish 10 focus sessions", s => s.focus >= 10], ["Cheerleader", "Send 3 encouragements", s => s.sent >= 3], ["Well loved", "Receive 5 encouragements", s => s.received >= 5], ["Storyteller", "Share your first post", s => s.posts >= 1], ["Connector", "Get 5 followers", s => s.followers >= 5]];
+const pfStats = u => { const st = u.stats || {}, sk = u.streak || {}; return { total: sk.total || 0, best: sk.best || 0, current: sk.current || 0, focus: st.focus || 0, sent: st.sent || 0, received: st.received || 0, posts: st.posts || 0, followers: u.followers || 0, following: u.following || 0 }; };
 async function openUser(id){
-  const u = await api("/api/users/" + id);
-  let h = "<h2>" + esc(u.name) + "</h2><p class=\"sub\">" + esc(u.title || "No title") + "</p>" +
-    '<div class="stats"><span>' + u.followers + " followers</span><span>" + u.following + " following</span></div>" + (u.isMe ? "" : followBtn(u.id, u.isFollowing));
-  if (u.restricted) h += '<p class="sub" style="margin-top:16px">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>";
-  else {
-    if (u.streak) h += '<p style="margin-top:14px"><span class="chip">' + u.streak.current + "-day streak</span> best " + u.streak.best + "</p>";
-    h += "<p>" + esc(u.bio || "No bio yet.") + "</p><h2 style=\"font-size:18px;margin-top:16px\">Posts</h2>" + (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="sub">No posts yet.</p>');
-    if (u.activity) h += "<h2 style=\"font-size:18px;margin-top:16px\">Recent activity</h2>" + u.activity.map(evHtml).join("");
-  }
-  $("pv-body").innerHTML = h; $("pv").classList.remove("hidden");
+  PF = await api("/api/users/" + id); const u = PF;
+  const act = u.isMe ? '<button class="btn full" data-edit="1">Edit profile</button>' : '<div class="pfact">' + followBtn(u.id, u.isFollowing) + '<button class="btn" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>';
+  $("pv-body").innerHTML = '<div class="pfgrid"><div class="pfl"><div class="pfcover"></div><div class="pfin"><span class="pfav">' + avatar(u.name, u.id, 88) + "</span><h2>" + esc(u.name) + "</h2>" + (u.title ? '<span class="tag">' + esc(u.title) + "</span>" : "") +
+    (u.streak ? '<p style="margin:12px 0 0"><span class="chip">' + u.streak.current + "-day streak</span></p>" : "") +
+    (u.restricted ? '<p class="sub" style="margin-top:14px">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>" : '<div class="pfbio">' + esc(u.bio || "No bio yet.") + "</div>") +
+    '<div class="pfcount"><div><b>' + u.followers + "</b><span>Followers</span></div><div><b>" + u.following + "</b><span>Following</span></div></div>" + act + "</div></div>" +
+    '<div class="pfr"><div class="tabs" id="pf-tabs"><button data-pt="sum" aria-selected="true">Summary</button><button data-pt="ach" aria-selected="false">Achievements</button><button data-pt="stat" aria-selected="false">Statistics</button></div><div id="pf-tab"></div></div></div>';
+  $("pv").classList.remove("hidden"); pfTab("sum");
 }
+function pfTab(t){
+  document.querySelectorAll("#pf-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.pt === t));
+  const u = PF, s = pfStats(u); let h = "";
+  if (u.restricted) h = '<p class="sub" style="padding:20px 4px">Posts, achievements and statistics are hidden on this profile.</p>';
+  else if (t === "sum") h = (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="sub" style="padding:20px 4px">No posts yet.</p>') + (u.activity ? '<h3 class="pfh">Recent activity</h3>' + u.activity.map(evHtml).join("") : "");
+  else if (t === "ach") h = '<div class="bgrid">' + BADGES.map(([n, d, f]) => '<div class="badge2' + (f(s) ? " got" : "") + '"><b>' + n + "</b><small>" + d + "</small></div>").join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
+  else h = '<div class="sgrid">' + [["Current streak", u.streak ? s.current + " days" : "Hidden"], ["Best streak", u.streak ? s.best + " days" : "Hidden"], ["Days logged in", u.streak ? s.total : "Hidden"], ["Focus sessions", s.focus], ["Encouragements sent", s.sent], ["Encouragements received", s.received], ["Posts", s.posts], ["Followers", s.followers], ["Following", s.following]].map(([k, v]) => '<div class="stat"><b>' + v + "</b><small>" + k + "</small></div>").join("") + "</div>";
+  $("pf-tab").innerHTML = h;
+}
+document.addEventListener("click", e => { const b = e.target.closest("#pf-tabs button"); if (b) pfTab(b.dataset.pt); });
 $("pv-close").onclick = () => $("pv").classList.add("hidden");
 $("open-activity").onclick = async () => {
   const { events, streak } = await api("/api/timeline");
@@ -1201,9 +1326,11 @@ $("open-activity").onclick = async () => {
 };
 $("act-close").onclick = () => $("act").classList.add("hidden");
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-u],[data-del],[data-f]"); if (!t) return;
+  const t = e.target.closest("[data-u],[data-del],[data-f],[data-dm],[data-edit]"); if (!t) return;
   try {
     if (t.dataset.u) return openUser(t.dataset.u);
+    if (t.dataset.dm){ $("pv").classList.add("hidden"); return openThread(t.dataset.dm, t.dataset.name); }
+    if (t.dataset.edit){ $("pv").classList.add("hidden"); return openProfile(); }
     if (t.dataset.del){ await api("/api/posts/" + t.dataset.del, { method: "DELETE" }); }
     if (t.dataset.f){ await api("/api/users/" + t.dataset.f + "/follow", { method: t.dataset.on === "1" ? "DELETE" : "POST" }); if (!$("pv").classList.contains("hidden")) openUser(t.dataset.f); searchPeople().catch(() => {}); }
     loadFeed(); if (!$("pv").classList.contains("hidden") && t.dataset.del) $("pv").classList.add("hidden");
@@ -1265,6 +1392,7 @@ function swapSender(kind, track){
 }
 async function switchDevice(kind){
   if (!localStream) return;
+  if (kind === "video" && fx.on) return fxSwitchSource();
   const old = kind === "video" ? camTrack : localStream.getAudioTracks()[0], id = kind === "video" ? DEV.cam : DEV.mic;
   try {
     const s = await navigator.mediaDevices.getUserMedia(kind === "video" ? { video: { deviceId: { exact: id } } } : { audio: { deviceId: { exact: id }, echoCancellation: true, noiseSuppression: true } });
@@ -1355,7 +1483,8 @@ $("rm-list").onclick = async e => {
 const TI = {
   pin: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v1H7v-1l3-3z"/></svg>',
   smile: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>',
-  info: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'
+  info: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+  msg: '<svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg>'
 };
 let pendingLeave = false;
 function setGoal(v){ v = v.trim().slice(0, 80); me.goal = v; try { localStorage.setItem("chaupal_goal", v); } catch {} if (socket) socket.emit("goal", v); relabel("me"); layout(); }
@@ -1395,6 +1524,242 @@ $("pomo-chip").onclick = () => openSheet("timer");
 $("sheet-bg").onclick = closeSheet; $("sheet-x").onclick = closeSheet;
 window.addEventListener("resize", () => { if (!mob()) closeSheet(); });
 if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) $("share").classList.add("hidden");   // phones can't share screens
+
+/* ---------- video effects: quality, zoom / auto-frame, enhance, filters, face effects ---------- */
+const QUAL = { auto: { w: 1280, h: 720, f: 30, bps: 1500000 }, "360": { w: 640, h: 360, f: 15, bps: 400000 }, "720": { w: 1280, h: 720, f: 30, bps: 1500000 }, "1080": { w: 1920, h: 1080, f: 30, bps: 3000000 } };
+const FXD = { quality: "auto", fit: "cover", zoom: 1, auto: false, bright: 1, contrast: 1, sat: 1, smooth: 0, filter: "none", face: "none" };
+const FX = (() => { try { return { ...FXD, ...JSON.parse(localStorage.getItem("chaupal_fx")) }; } catch { return { ...FXD }; } })();
+const FILTERS = { none: "", warm: "sepia(.25) saturate(1.2) hue-rotate(-8deg)", cool: "saturate(1.1) hue-rotate(12deg) brightness(1.03)", vivid: "saturate(1.6) contrast(1.1)", bw: "grayscale(1)", noir: "grayscale(1) contrast(1.4) brightness(.9)", vintage: "sepia(.6) contrast(.95) brightness(1.05)", dream: "brightness(1.1) saturate(1.2) contrast(.92) blur(.6px)" };
+const fxSupported = "filter" in CanvasRenderingContext2D.prototype && typeof HTMLCanvasElement.prototype.captureStream === "function" && typeof Worker !== "undefined";
+const fx = { on: false, raw: null, out: null, src: null, cv: null, ctx: null, timer: null, lm: null, lmr: null, loading: false, failed: false, last: 0, gap: 30, frame: 0, z: 1, cx: .5, cy: .5 };
+const saveFx = () => { try { localStorage.setItem("chaupal_fx", JSON.stringify(FX)); } catch {} };
+const fxActive = () => FX.zoom > 1 || FX.auto || FX.bright !== 1 || FX.contrast !== 1 || FX.sat !== 1 || FX.smooth > 0 || FX.filter !== "none" || FX.face !== "none";
+const fxFilter = () => ("brightness(" + FX.bright + ") contrast(" + FX.contrast + ") saturate(" + FX.sat + ") " + (FILTERS[FX.filter] || "")).trim();
+const fxNote = t => { $("fx-note").textContent = t; };
+function refreshLocalTile(){
+  const v = document.querySelector("#t-me video"); if (v && !screenStream){ v.srcObject = null; v.srcObject = localStream; }
+  if (!$("fx").classList.contains("hidden")) $("fx-prev").srcObject = localStream;
+}
+function fxStart(){
+  fx.raw = camTrack;
+  fx.src = document.createElement("video"); fx.src.muted = true; fx.src.playsInline = true; fx.src.srcObject = new MediaStream([fx.raw]); fx.src.play().catch(() => {});
+  fx.cv = document.createElement("canvas"); fx.ctx = fx.cv.getContext("2d");
+  const s = fx.raw.getSettings(); fx.cv.width = s.width || 1280; fx.cv.height = s.height || 720;
+  fx.out = fx.cv.captureStream(30).getVideoTracks()[0]; fx.out.enabled = fx.raw.enabled;
+  localStream.removeTrack(fx.raw); localStream.addTrack(fx.out); camTrack = fx.out;
+  if (!screenStream) swapSender("video", fx.out);
+  fx.z = 1; fx.cx = .5; fx.cy = .5; fx.on = true;
+  fx.timer = new Worker(URL.createObjectURL(new Blob(["setInterval(()=>postMessage(0),33)"])));   // a worker keeps ticking when the tab is in the background
+  fx.timer.onmessage = fxDraw; refreshLocalTile();
+}
+function fxStop(full){
+  if (!fx.on) return;
+  fx.timer.terminate(); fx.on = false;
+  if (!full){ fx.raw.enabled = fx.out.enabled; localStream.removeTrack(fx.out); localStream.addTrack(fx.raw); camTrack = fx.raw; if (!screenStream) swapSender("video", fx.raw); }
+  fx.out.stop(); if (full) fx.raw.stop();
+  fx.src.srcObject = null; if (!full) refreshLocalTile();
+}
+async function fxApply(){
+  if (!fxSupported || !localStream || !camTrack) return;
+  if (fxActive() && !fx.on) fxStart(); else if (!fxActive() && fx.on) fxStop();
+  if (fx.on && (FX.auto || FX.face !== "none")) fxLoadModel();
+}
+async function fxSwitchSource(){
+  try {
+    const t = (await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: DEV.cam } } })).getTracks()[0];
+    t.enabled = fx.raw.enabled; fx.raw.stop(); fx.raw = t; fx.src.srcObject = new MediaStream([t]); applyQuality();
+  } catch { toast("Couldn't switch to that camera. It may be in use by another app."); }
+}
+async function fxLoadModel(){
+  if (fx.lmr || fx.loading || fx.failed) return;
+  fx.loading = true; fxNote("Loading face tracking (about 4 MB, first time only)...");
+  try {
+    const V = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+    const { FilesetResolver, FaceLandmarker } = await import(V + "/vision_bundle.mjs");
+    const files = await FilesetResolver.forVisionTasks(V + "/wasm");
+    const opts = d => ({ baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate: d }, runningMode: "VIDEO", numFaces: 1 });
+    try { fx.lmr = await FaceLandmarker.createFromOptions(files, opts("GPU")); } catch { fx.lmr = await FaceLandmarker.createFromOptions(files, opts("CPU")); }
+    fxNote("Face tracking is ready.");
+  } catch { fx.failed = true; fxNote("Face tracking couldn't load, so auto-frame and face effects are off. Reload the page to try again. Zoom, enhance and filters still work."); }
+  fx.loading = false;
+}
+function fxDraw(){
+  const t0 = performance.now(); if (t0 - fx.last < fx.gap) return;   // skip queued ticks so a slow computer never freezes the page
+  const v = fx.src, cv = fx.cv, ctx = fx.ctx; if (!v || !v.videoWidth) return;
+  const vw = v.videoWidth, vh = v.videoHeight;
+  if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; return; }
+  fx.frame++;
+  if (fx.lmr && (FX.auto || FX.face !== "none") && fx.frame % 3 === 0){ try { const r = fx.lmr.detectForVideo(v, performance.now()); fx.lm = (r.faceLandmarks && r.faceLandmarks[0]) || null; } catch {} }
+  let z = FX.zoom, tx = .5, ty = .5;
+  if (FX.auto){
+    z = 1;
+    if (fx.lm){ let a = 1, b = 0, c = 1, d = 0; for (const p of fx.lm){ if (p.x < a) a = p.x; if (p.x > b) b = p.x; if (p.y < c) c = p.y; if (p.y > d) d = p.y; } z = Math.min(2.2, Math.max(1, .42 / (d - c))); tx = (a + b) / 2; ty = (c + d) / 2; }
+  }
+  const k = 1 - Math.pow(.92, Math.min(8, (t0 - (fx.prev || t0 - 33)) / 33)); fx.prev = t0;   // smoothing that does not depend on frame rate
+  fx.z += (z - fx.z) * k; fx.cx += (tx - fx.cx) * k; fx.cy += (ty - fx.cy) * k;
+  const sw = vw / fx.z, sh = vh / fx.z, sx = Math.min(vw - sw, Math.max(0, fx.cx * vw - sw / 2)), sy = Math.min(vh - sh, Math.max(0, fx.cy * vh - sh / 2));
+  const base = fxFilter();
+  ctx.filter = base || "none"; ctx.drawImage(v, sx, sy, sw, sh, 0, 0, vw, vh);
+  if (FX.smooth > 0){ ctx.globalAlpha = FX.smooth * .6; ctx.filter = (base + " blur(" + Math.max(1, Math.round(vh / 240)) + "px)").trim(); ctx.drawImage(v, sx, sy, sw, sh, 0, 0, vw, vh); ctx.globalAlpha = 1; }
+  ctx.filter = "none";
+  if (FX.face !== "none" && fx.lm) drawFace(ctx, fx.lm, sx, sy, sw, sh, vw, vh);
+  fx.gap = Math.max(30, Math.min(250, (performance.now() - t0) * 1.6)); fx.last = performance.now();   // slower machine = lower frame rate
+}
+function drawFace(ctx, lm, sx, sy, sw, sh, vw, vh){
+  const P = i => ({ x: (lm[i].x * vw - sx) * vw / sw, y: (lm[i].y * vh - sy) * vh / sh });
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y), mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const eR = mid(P(33), P(133)), eL = mid(P(263), P(362)), ed = dist(eR, eL), ang = Math.atan2(eL.y - eR.y, eL.x - eR.x), fw = dist(P(234), P(454)), c = mid(eR, eL);
+  const at = (p, a, fn) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a); fn(); ctx.restore(); };
+  const heart = s => { ctx.beginPath(); ctx.moveTo(0, s * .35); ctx.bezierCurveTo(-s, -s * .2, -s * .6, -s, 0, -s * .45); ctx.bezierCurveTo(s * .6, -s, s, -s * .2, 0, s * .35); ctx.closePath(); };
+  const tri = (x1, y1, x2, y2, x3, y3, col) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.closePath(); ctx.fill(); };
+  const F = FX.face;
+  if (F === "glasses") at(c, ang, () => {
+    const w = ed * .66, h = ed * .42; ctx.lineWidth = ed * .05; ctx.strokeStyle = "#0b0f1d"; ctx.fillStyle = "rgba(10,14,30,.9)";
+    for (const sgn of [-1, 1]){ ctx.beginPath(); ctx.roundRect(sgn * ed / 2 - w / 2, -h / 2, w, h, h * .38); ctx.fill(); ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.22)"; ctx.fillRect(sgn * ed / 2 - w * .32, -h * .32, w * .22, h * .12); ctx.fillStyle = "rgba(10,14,30,.9)"; }
+    ctx.beginPath(); ctx.moveTo(-ed / 2 + w / 2, -h * .1); ctx.quadraticCurveTo(0, -h * .45, ed / 2 - w / 2, -h * .1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-ed / 2 - w / 2, -h * .1); ctx.lineTo(-fw * .56, -h * .05); ctx.moveTo(ed / 2 + w / 2, -h * .1); ctx.lineTo(fw * .56, -h * .05); ctx.stroke();
+  });
+  if (F === "crown"){ const t = P(10); at({ x: t.x, y: t.y + fw * .03 }, ang, () => {
+    const w = fw * .62, h = fw * .3, g = ctx.createLinearGradient(0, -h, 0, 0); g.addColorStop(0, "#FFE27A"); g.addColorStop(1, "#D9951C");
+    ctx.fillStyle = g; ctx.strokeStyle = "#8A5A0B"; ctx.lineWidth = fw * .012; ctx.beginPath();
+    [[-w / 2, 0], [-w / 2, -h * .7], [-w / 4, -h * .38], [0, -h], [w / 4, -h * .38], [w / 2, -h * .7], [w / 2, 0]].forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    [[-w / 2, -h * .7, "#E5484D"], [0, -h, "#3B82F6"], [w / 2, -h * .7, "#22C55E"]].forEach(([x, y, col]) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, fw * .025, 0, 7); ctx.fill(); });
+  }); }
+  if (F === "cat"){
+    for (const [i, s] of [[103, -1], [332, 1]]){ const p = P(i); at(p, ang + s * .25, () => { const w = fw * .24, h = fw * .3; tri(-w / 2, 0, w / 2, 0, s * w * .1, -h, "#3a3a4a"); tri(-w / 4, -h * .05, w / 4, -h * .05, s * w * .08, -h * .62, "#FF9DB8"); }); }
+    const n = P(1); at(n, ang, () => { tri(-ed * .13, -ed * .08, ed * .13, -ed * .08, 0, ed * .08, "#FF7A9C"); ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = Math.max(2, ed * .02); ctx.beginPath();
+      for (const s of [-1, 1]) for (const dy of [-.08, .02, .12]){ ctx.moveTo(s * ed * .25, dy * ed); ctx.lineTo(s * ed * .85, (dy + dy * .8) * ed); } ctx.stroke(); });
+  }
+  if (F === "hearts"){
+    const k = 1 + .08 * Math.sin(performance.now() / 180);
+    ctx.fillStyle = "rgba(255,110,150,.35)"; for (const i of [205, 425]){ const p = P(i); ctx.beginPath(); ctx.arc(p.x, p.y, ed * .22, 0, 7); ctx.fill(); }
+    for (const e of [eR, eL]) at(e, ang, () => { ctx.fillStyle = "#E5484D"; ctx.strokeStyle = "#fff"; ctx.lineWidth = ed * .02; heart(ed * .3 * k); ctx.fill(); ctx.stroke(); });
+  }
+}
+function capBitrate(pc){
+  const s = pc.getSenders().find(x => x.track && x.track.kind === "video"); if (!s) return;
+  const p = s.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+  p.encodings[0].maxBitrate = (QUAL[FX.quality] || QUAL.auto).bps; s.setParameters(p).catch(() => {});
+}
+function applyQuality(){
+  const q = QUAL[FX.quality] || QUAL.auto, t = fx.on ? fx.raw : camTrack;
+  if (t && t.applyConstraints) t.applyConstraints({ width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.f } }).catch(() => {});
+  for (const { pc } of peers.values()) if (pc) capBitrate(pc);
+}
+function fxUI(){
+  $("fx-q").value = FX.quality; $("fx-fit").value = FX.fit; $("fx-zoom").value = FX.zoom; $("fx-zoom").disabled = FX.auto; $("fx-zoom-v").textContent = FX.auto ? "(auto)" : FX.zoom.toFixed(1) + "x";
+  $("fx-auto").checked = FX.auto; $("fx-b").value = FX.bright; $("fx-c").value = FX.contrast; $("fx-s").value = FX.sat; $("fx-sm").value = FX.smooth;
+  document.querySelectorAll("#fx-filters button").forEach(b => b.classList.toggle("on", b.dataset.f === FX.filter));
+  document.querySelectorAll("#fx-faces button").forEach(b => b.classList.toggle("on", b.dataset.face === FX.face));
+  $("grid").classList.toggle("fit", FX.fit === "contain");
+}
+const fxChanged = () => { saveFx(); fxUI(); fxApply(); };
+const num = id => +$(id).value;
+$("fx-q").onchange = () => { FX.quality = $("fx-q").value; saveFx(); applyQuality(); };
+$("fx-fit").onchange = () => { FX.fit = $("fx-fit").value; fxChanged(); };
+$("fx-zoom").oninput = () => { FX.zoom = num("fx-zoom"); fxChanged(); };
+$("fx-auto").onchange = () => { FX.auto = $("fx-auto").checked; fxChanged(); };
+$("fx-b").oninput = () => { FX.bright = num("fx-b"); fxChanged(); };
+$("fx-c").oninput = () => { FX.contrast = num("fx-c"); fxChanged(); };
+$("fx-s").oninput = () => { FX.sat = num("fx-s"); fxChanged(); };
+$("fx-sm").oninput = () => { FX.smooth = num("fx-sm"); fxChanged(); };
+$("fx-enh").onclick = () => { Object.assign(FX, { bright: 1.08, contrast: 1.1, sat: 1.12, smooth: Math.max(FX.smooth, .15) }); fxChanged(); };
+$("fx-low").onclick = () => { Object.assign(FX, { bright: 1.4, contrast: 1.12, sat: 1.05 }); fxChanged(); };
+$("fx-reset").onclick = () => { Object.assign(FX, { ...FXD, quality: FX.quality, fit: FX.fit }); fxChanged(); };
+$("fx-filters").onclick = e => { const b = e.target.closest("[data-f]"); if (b){ FX.filter = b.dataset.f; fxChanged(); } };
+$("fx-faces").onclick = e => { const b = e.target.closest("[data-face]"); if (b){ FX.face = b.dataset.face; fxChanged(); } };
+const openFx = () => {
+  $("fx").classList.remove("hidden"); fxUI();
+  $("fx-prev").srcObject = localStream;
+  fxNote(fxSupported ? "" : "Your browser can't process video, so zoom, filters and face effects are unavailable here. Quality and tile fit still work. Chrome, Edge and Firefox support everything.");
+};
+$("fx-btn").onclick = openFx; $("n-fx").onclick = openFx;
+$("fx-close").onclick = () => { $("fx").classList.add("hidden"); $("fx-prev").srcObject = null; };
+fxUI();
+
+/* ---------- direct messages ---------- */
+const PAL = ["#2563EB", "#0EA5E9", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#14B8A6"];
+const avatar = (name, id, size = 40) => '<span class="avc" style="width:' + size + "px;height:" + size + "px;background:" + PAL[Number(id) % PAL.length] + ";font-size:" + Math.round(size * .4) + 'px">' + esc((name || "?").trim().slice(0, 2).toUpperCase()) + "</span>";
+const hhmm = t => new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const dmDate = t => { const d = new Date(t); return d.toDateString() === new Date().toDateString() ? hhmm(t) : String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0"); };
+const IC = {
+  chat: '<svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg>',
+  mail: '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  plus: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  back: '<svg class="ic" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+  x: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
+let dmSock = null, dmView = "list", dmWith = null, dmChats = [], dqt = null;
+const dmShow = () => !$("dm").classList.contains("hidden");
+function setUnread(n){ document.querySelectorAll(".dm-badge").forEach(b => { b.textContent = n > 99 ? "99+" : n; b.classList.toggle("hidden", !n); }); }
+async function refreshChats(){
+  try { const r = await api("/api/chats"); dmChats = r.chats; setUnread(r.unread); if (dmShow() && dmView === "list") dmRender(); } catch {}
+}
+function connectDm(){
+  if (dmSock) return;
+  dmSock = io({ auth: { token }, query: { dm: "1" }, forceNew: true });   // a separate connection so messages arrive anywhere in the app
+  dmSock.on("dm", onDm);
+  dmSock.on("connect_error", e => { if (e.message === "unauthorized") logout(); });
+  setInterval(() => { if (me && dmSock) refreshChats(); }, 60000);
+}
+function closeDmSock(){ if (dmSock){ dmSock.disconnect(); dmSock = null; } setUnread(0); closeDm(); }
+function onDm(m){
+  if (dmShow() && dmView === "thread" && dmWith && dmWith.id === m.from_id){ appendMsg(m); api("/api/chats/" + m.from_id).then(r => setUnread(r.unread)).catch(() => {}); }
+  else toast(m.name + ": " + m.body.slice(0, 60));
+  refreshChats();
+}
+const msgHtml = m => '<div class="dmb' + (m.from_id === me.id ? " me" : "") + '"><span>' + esc(m.body) + "</span><small>" + hhmm(m.created_at) + "</small></div>";
+function appendMsg(m){ const b = $("dm-body"); if (b.querySelector(".dmempty")) b.innerHTML = ""; b.insertAdjacentHTML("beforeend", msgHtml(m)); b.scrollTop = 1e9; }
+function dmOpen(){ $("dm").classList.remove("hidden"); $("dm-bg").classList.remove("hidden"); }
+function closeDm(){ $("dm").classList.add("hidden"); $("dm-bg").classList.add("hidden"); dmView = "list"; dmWith = null; }
+function dmRender(){
+  const head = $("dm-head"), body = $("dm-body");
+  $("dm-form").classList.toggle("hidden", dmView !== "thread");
+  if (dmView === "list"){
+    head.innerHTML = '<span class="dmlogo">' + IC.chat + '</span><b>Chats</b><span class="sp"></span><button class="dmi" data-dm-readall title="Mark all as read">' + IC.mail + '</button><button class="dmi" data-dm-new title="New chat">' + IC.plus + "</button>";
+    body.innerHTML = dmChats.length ? dmChats.map(c => '<div class="dmrow" data-chat="' + c.id + '" data-name="' + esc(c.name) + '">' + avatar(c.name, c.id) + '<div class="dmmid"><b>' + esc(c.name) + "</b><small>" + (c.mine ? "You: " : "") + esc(c.last) + '</small></div><div class="dmr"><small>' + dmDate(c.at) + "</small>" + (c.unread ? '<i class="ub">' + c.unread + "</i>" : "") + "</div></div>").join("")
+      : '<p class="sub dmempty">No chats yet. Tap + to start one, or open someone\'s video tile and choose Message.</p>';
+  } else if (dmView === "new"){
+    head.innerHTML = '<button class="dmi" data-dm-back title="Back">' + IC.back + '</button><b>New chat</b><span class="sp"></span><button class="dmi" data-dm-close title="Close">' + IC.x + "</button>";
+    body.innerHTML = '<div class="dmsearch"><input id="dm-q" placeholder="Search people" autocomplete="off" aria-label="Search people"></div><div id="dm-res"></div>';
+  } else {
+    head.innerHTML = '<button class="dmi" data-dm-back title="Back">' + IC.back + "</button>" + avatar(dmWith.name, dmWith.id, 34) + '<b class="dmname" data-u="' + dmWith.id + '">' + esc(dmWith.name) + '</b><span class="sp"></span><button class="dmi" data-dm-close title="Close">' + IC.x + "</button>";
+  }
+}
+async function searchNew(){
+  try {
+    const { users } = await api("/api/users?q=" + encodeURIComponent($("dm-q") ? $("dm-q").value : ""));
+    $("dm-res").innerHTML = users.length ? users.map(u => '<div class="dmrow" data-pick="' + u.id + '" data-name="' + esc(u.name) + '">' + avatar(u.name, u.id) + '<div class="dmmid"><b>' + esc(u.name) + "</b><small>" + esc(u.title || "") + "</small></div></div>").join("") : '<p class="sub dmempty">No one found.</p>';
+  } catch {}
+}
+async function openThread(id, name){
+  dmView = "thread"; dmWith = { id: Number(id), name: name || "" }; dmOpen(); dmRender();
+  $("dm-body").innerHTML = '<p class="sub dmempty">Loading...</p>';
+  try {
+    const r = await api("/api/chats/" + id); dmWith = r.user; setUnread(r.unread); dmRender();
+    $("dm-body").innerHTML = r.messages.length ? r.messages.map(msgHtml).join("") : '<p class="sub dmempty">Say hello to ' + esc(r.user.name) + ".</p>";
+    $("dm-body").scrollTop = 1e9; $("dm-in").focus(); refreshChats();
+  } catch (e) { $("dm-body").innerHTML = '<p class="sub dmempty">' + esc(e.message) + "</p>"; }
+}
+function dmToggle(){ if (dmShow()) return closeDm(); dmView = "list"; dmOpen(); dmRender(); refreshChats(); }
+document.querySelectorAll(".dm-btn").forEach(b => b.onclick = dmToggle);
+$("dm-bg").onclick = closeDm;
+$("dm").onclick = e => {
+  const t = e.target.closest("[data-chat],[data-pick],[data-dm-new],[data-dm-readall],[data-dm-back],[data-dm-close]"); if (!t) return;
+  if (t.dataset.chat) return openThread(t.dataset.chat, t.dataset.name);
+  if (t.dataset.pick) return openThread(t.dataset.pick, t.dataset.name);
+  if (t.hasAttribute("data-dm-new")){ dmView = "new"; dmRender(); searchNew(); return; }
+  if (t.hasAttribute("data-dm-readall")){ api("/api/chats/read-all", { body: {} }).then(refreshChats).catch(() => {}); return; }
+  if (t.hasAttribute("data-dm-back")){ dmView = "list"; dmWith = null; dmRender(); refreshChats(); return; }
+  closeDm();
+};
+$("dm").oninput = e => { if (e.target.id === "dm-q"){ clearTimeout(dqt); dqt = setTimeout(searchNew, 250); } };
+$("dm-form").onsubmit = async e => {
+  e.preventDefault(); const t = $("dm-in").value.trim(); if (!t || !dmWith) return; $("dm-in").value = "";
+  try { const r = await api("/api/chats/" + dmWith.id, { body: { body: t } }); appendMsg(r.message); refreshChats(); }
+  catch (err) { toast(err.message); $("dm-in").value = t; }
+};
 
 /* ---------- boot ---------- */
 (async () => {
