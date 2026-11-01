@@ -46,7 +46,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
-for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["banner", "TEXT DEFAULT ''"], ["interests", "TEXT DEFAULT ''"], ["seeking", "TEXT DEFAULT ''"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["notif_seen", "INTEGER DEFAULT 0"]])
+for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["banner", "TEXT DEFAULT ''"], ["interests", "TEXT DEFAULT ''"], ["seeking", "TEXT DEFAULT ''"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["notif_seen", "INTEGER DEFAULT 0"], ["pronouns", "TEXT DEFAULT ''"], ["country", "TEXT DEFAULT ''"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
@@ -76,7 +76,7 @@ CREATE INDEX IF NOT EXISTS idx_reset_user ON reset_tokens(user_id);`);
 const prune = () => { db.prepare("DELETE FROM sessions WHERE ended_at IS NULL AND started_at < ?").run(Date.now() - 864e5); db.prepare("DELETE FROM events WHERE created_at < ? AND type != 'pomodoro'").run(Date.now() - 90 * 864e5); };
 prune(); setInterval(prune, 6 * 3600e3).unref();
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
-const findByIdRaw = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, created_at, banner, interests, seeking, instagram, linkedin, last_seen, notif_seen FROM users WHERE id = ?");
+const findByIdRaw = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, created_at, banner, interests, seeking, instagram, linkedin, last_seen, notif_seen, pronouns, country FROM users WHERE id = ?");
 const ucache = new Map();
 const findById = { get(id) { const c = ucache.get(id); if (c && c.t > Date.now()) return c.u; const u = findByIdRaw.get(id); if (u) ucache.set(id, { u, t: Date.now() + 15000 }); else ucache.delete(id); return u; } };
 const dropUser = id => ucache.delete(Number(id));
@@ -138,7 +138,7 @@ app.get("/", (req, res) => {
 
 const parseList = v => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } };
 const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
-const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0, banner: u.banner || "", interests: parseList(u.interests), seeking: parseList(u.seeking), instagram: u.instagram || "", linkedin: u.linkedin || "" });
+const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0, banner: u.banner || "", interests: parseList(u.interests), seeking: parseList(u.seeking), instagram: u.instagram || "", linkedin: u.linkedin || "", pronouns: u.pronouns || "", country: u.country || "" });
 
 /* ---------- settings: titles, encouragement rules ---------- */
 const TITLES = ["Student", "Developer", "Designer", "Founder", "Mentor", "Teacher", "Writer", "Job seeker"];
@@ -263,8 +263,8 @@ app.put("/api/me", auth, (req, res) => {
     .run(["public", "followers", "private"].includes(visibility) ? visibility : "public", show_streak ? 1 : 0, show_activity ? 1 : 0, req.user.id);
   const ints = (Array.isArray(b.interests) ? b.interests : String(b.interests || "").split(",")).map(x => cl(x, 24)).filter(Boolean).slice(0, 8);
   const seek = (Array.isArray(b.seeking) ? b.seeking : []).filter(x => SEEK.includes(x));
-  db.prepare("UPDATE users SET banner = ?, interests = ?, seeking = ?, instagram = ?, linkedin = ? WHERE id = ?")
-    .run(cl(b.banner, 90), JSON.stringify(ints), JSON.stringify(seek), handle(b.instagram), handle(b.linkedin), req.user.id);
+  db.prepare("UPDATE users SET banner = ?, interests = ?, seeking = ?, instagram = ?, linkedin = ?, pronouns = ?, country = ? WHERE id = ?")
+    .run(cl(b.banner, 90), JSON.stringify(ints), JSON.stringify(seek), handle(b.instagram), handle(b.linkedin), cl(b.pronouns, 16), /^[A-Za-z]{2}$/.test(String(b.country || "").trim()) ? String(b.country).trim().toUpperCase() : "", req.user.id);
   dropUser(req.user.id);
   res.json({ user: publicUser(findById.get(req.user.id)) });
 });
@@ -309,7 +309,7 @@ app.get("/api/users/:id", auth, (req, res) => {
   if (!o || o.disabled) return res.status(404).json({ error: "User not found." });
   const cnt = col => db.prepare(`SELECT COUNT(*) c FROM follows WHERE ${col} = ?`).get(o.id).c;
   const online = isOnline(o.id);
-  const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), isMe: o.id === req.user.id, badge: badgeOf(daysOf(o.id)), online, seen: online ? Date.now() : o.last_seen || 0, joined: toMs(o.created_at) };
+  const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), isMe: o.id === req.user.id, pronouns: o.pronouns || "", country: o.country || "", badge: badgeOf(daysOf(o.id)), online, seen: online ? Date.now() : o.last_seen || 0, joined: toMs(o.created_at) };
   if (!canView(req.user, o)) return res.json({ ...base, restricted: true });
   const self = o.id === req.user.id || req.user.role === "admin", detail = self || o.show_activity;
   const ec = t => db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = ?").get(o.id, t).c;
@@ -330,6 +330,15 @@ app.get("/api/users/:id", auth, (req, res) => {
       JOIN users u ON u.id = b.user_id WHERE a.user_id = ? AND a.ended_at IS NOT NULL AND b.ended_at IS NOT NULL AND u.disabled = 0 AND u.visibility != 'private'
       GROUP BY u.id ORDER BY ms DESC LIMIT 12`).all(o.id) : null,
     stats: { focus: ec("pomodoro"), sent: ec("encouraged"), received: ec("encouraged_by"), posts: db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ?").get(o.id).c } });
+});
+
+app.get("/api/me/connections", auth, (req, res) => {
+  const q = (col, other) => db.prepare(`SELECT u.id, u.name, u.title FROM follows f JOIN users u ON u.id = f.${other} WHERE f.${col} = ? AND u.disabled = 0 ORDER BY f.created_at DESC LIMIT 200`).all(req.user.id);
+  res.json({ followers: q("followee_id", "follower_id"), following: q("follower_id", "followee_id") });
+});
+app.delete("/api/me/followers/:id", auth, (req, res) => {
+  db.prepare("DELETE FROM follows WHERE follower_id = ? AND followee_id = ?").run(Number(req.params.id), req.user.id);
+  res.json({ ok: true });
 });
 
 app.get("/api/notifications", auth, (req, res) => {
