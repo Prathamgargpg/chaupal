@@ -9,11 +9,10 @@ import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import zlib from "zlib";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
-const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 6);
+const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 8);
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "chaupal.db");
 
 let JWT_SECRET = process.env.JWT_SECRET;
@@ -38,7 +37,7 @@ if (process.env.DATABASE_URL) {
   else console.log("No snapshot yet. Starting fresh.");
 } else console.warn("DATABASE_URL not set: data lives only on this server's temporary disk.");
 const db = new Database(DB_PATH);
-db.pragma("journal_mode = WAL"); db.pragma("synchronous = NORMAL"); db.pragma("temp_store = MEMORY"); db.pragma("cache_size = -16000");
+db.pragma("journal_mode = WAL");
 db.exec(`CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE NOT NULL,
@@ -46,7 +45,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
-for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["banner", "TEXT DEFAULT ''"], ["interests", "TEXT DEFAULT ''"], ["seeking", "TEXT DEFAULT ''"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["notif_seen", "INTEGER DEFAULT 0"], ["pronouns", "TEXT DEFAULT ''"], ["country", "TEXT DEFAULT ''"]])
+for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["daily_goal", "INTEGER DEFAULT 4"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
@@ -63,23 +62,10 @@ db.exec(`CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT,
 db.exec(`CREATE TABLE IF NOT EXISTS dms (id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL, body TEXT NOT NULL, created_at INTEGER NOT NULL, read_at INTEGER);
 CREATE INDEX IF NOT EXISTS idx_dms_to ON dms(to_id, read_at);
 CREATE INDEX IF NOT EXISTS idx_dms_pair ON dms(from_id, to_id);`);
-db.exec(`CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, room TEXT NOT NULL, started_at INTEGER NOT NULL, ended_at INTEGER, video_ms INTEGER DEFAULT 0);
-CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id, started_at);
-CREATE INDEX IF NOT EXISTS idx_sessions_room ON sessions(room, started_at);
-CREATE INDEX IF NOT EXISTS idx_follows_followee ON follows(followee_id);
-CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id, id);
-CREATE INDEX IF NOT EXISTS idx_events_type ON events(user_id, type);
-CREATE INDEX IF NOT EXISTS idx_enc_from ON encouragements(from_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_enc_to ON encouragements(to_id);
-CREATE INDEX IF NOT EXISTS idx_reset_user ON reset_tokens(user_id);`);
-// housekeeping: drop sessions that never closed (server restart) and old timeline rows
-const prune = () => { db.prepare("DELETE FROM sessions WHERE ended_at IS NULL AND started_at < ?").run(Date.now() - 864e5); db.prepare("DELETE FROM events WHERE created_at < ? AND type != 'pomodoro'").run(Date.now() - 90 * 864e5); };
-prune(); setInterval(prune, 6 * 3600e3).unref();
+db.exec(`CREATE TABLE IF NOT EXISTS blocks (blocker_id INTEGER NOT NULL, blocked_id INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (blocker_id, blocked_id));
+CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, reporter_id INTEGER NOT NULL, target_id INTEGER NOT NULL, kind TEXT NOT NULL, ref_id INTEGER, reason TEXT, context TEXT, status TEXT DEFAULT 'open', created_at INTEGER NOT NULL);`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
-const findByIdRaw = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, created_at, banner, interests, seeking, instagram, linkedin, last_seen, notif_seen, pronouns, country FROM users WHERE id = ?");
-const ucache = new Map();
-const findById = { get(id) { const c = ucache.get(id); if (c && c.t > Date.now()) return c.u; const u = findByIdRaw.get(id); if (u) ucache.set(id, { u, t: Date.now() + 15000 }); else ucache.delete(id); return u; } };
-const dropUser = id => ucache.delete(Number(id));
+const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
 
 let savedChanges = -1, saving = false;
@@ -95,7 +81,7 @@ async function saveSnapshot(force = false) {
   saving = false;
 }
 if (pool) {
-  setInterval(saveSnapshot, 20000).unref();
+  setInterval(saveSnapshot, 10000).unref();
   for (const sig of ["SIGTERM", "SIGINT"]) process.on(sig, async () => {
     console.log("Saving database before shutdown...");
     while (saving) await new Promise(r => setTimeout(r, 100));
@@ -111,34 +97,20 @@ app.use(express.json({ limit: "10kb" }));
 // Find the front-end folder even if the upload put it somewhere unexpected
 const staticDir = [path.join(__dirname, "public"), path.join(__dirname, "chaupal-app", "public")]
   .find(d => fs.existsSync(path.join(d, "index.html")));
-if (staticDir) app.use(express.static(staticDir, { index: false, maxAge: "1h" }));
-// the page is compressed once (brotli + gzip) and cached in memory, so the first load is ~5x smaller and instant
-const pageCache = new Map();
-function servePage(req, res, file) {
-  let st; try { st = fs.statSync(file); } catch { return false; }
-  let c = pageCache.get(file);
-  if (!c || c.mtime !== st.mtimeMs) {
-    const raw = fs.readFileSync(file);
-    c = { mtime: st.mtimeMs, raw, gz: zlib.gzipSync(raw, { level: 9 }), br: zlib.brotliCompressSync(raw), etag: '"' + crypto.createHash("sha1").update(raw).digest("base64url").slice(0, 16) + '"' };
-    pageCache.set(file, c);
-  }
-  const ae = req.headers["accept-encoding"] || "";
-  res.set({ ETag: c.etag, "Cache-Control": "no-cache", Vary: "Accept-Encoding" }); res.type("html");
-  if (/\bbr\b/.test(ae)) { res.set("Content-Encoding", "br"); res.send(c.br); }
-  else if (/\bgzip\b/.test(ae)) { res.set("Content-Encoding", "gzip"); res.send(c.gz); }
-  else res.send(c.raw);
-  return true;
-}
-app.get("/", (req, res) => {
-  const cands = [path.join(__dirname, "index.html"), staticDir && path.join(staticDir, "index.html")].filter(Boolean);
-  for (const f of cands) if (servePage(req, res, f)) return;
+if (staticDir) app.use(express.static(staticDir));
+app.get("/", (_req, res) => {
+  const rootIndex = path.join(__dirname, "index.html");
+  if (fs.existsSync(rootIndex)) return res.sendFile(rootIndex);   // index.html uploaded next to server.js
   const files = fs.readdirSync(__dirname).filter(f => f !== "node_modules" && !f.startsWith(".env")).join(", ");
-  res.status(500).type("text").send("Chaupal server is running, but index.html was not found.\nCreate the file public/index.html in your GitHub repo.\n\nFiles next to server.js: " + files);
+  res.status(500).type("text").send(
+    "Chaupal server is running, but index.html was not found.\n" +
+    "Create the file public/index.html in your GitHub repo.\n\n" +
+    "Files next to server.js: " + files
+  );
 });
 
-const parseList = v => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } };
 const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
-const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0, banner: u.banner || "", interests: parseList(u.interests), seeking: parseList(u.seeking), instagram: u.instagram || "", linkedin: u.linkedin || "", pronouns: u.pronouns || "", country: u.country || "" });
+const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0 });
 
 /* ---------- settings: titles, encouragement rules ---------- */
 const TITLES = ["Student", "Developer", "Designer", "Founder", "Mentor", "Teacher", "Writer", "Job seeker"];
@@ -249,23 +221,15 @@ function auth(req, res, next) {
   } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
 
-app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); touchSeen(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id) }); });
+app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id) }); });
 app.get("/api/titles", auth, (_req, res) => res.json({ titles: TITLES }));
-const SEEK = ["accountability", "study-buddy", "focus-group", "networking"];
-const cl = (v, n) => String(v || "").trim().slice(0, n);
-const handle = v => { const h = String(v || "").trim().replace(/^@/, ""); return /^[A-Za-z0-9._-]{1,40}$/.test(h) ? h : ""; };
 app.put("/api/me", auth, (req, res) => {
-  const b = req.body || {}, { name, title, bio, visibility, show_streak, show_activity } = b;
+  const { name, title, bio, visibility, show_streak, show_activity } = req.body || {};
   const n = String(name || "").trim().slice(0, 40) || req.user.name;
   db.prepare("UPDATE users SET name = ?, title = ?, bio = ? WHERE id = ?")
     .run(n, TITLES.includes(title) ? title : "", String(bio || "").trim().slice(0, 200), req.user.id);
   db.prepare("UPDATE users SET visibility = ?, show_streak = ?, show_activity = ? WHERE id = ?")
     .run(["public", "followers", "private"].includes(visibility) ? visibility : "public", show_streak ? 1 : 0, show_activity ? 1 : 0, req.user.id);
-  const ints = (Array.isArray(b.interests) ? b.interests : String(b.interests || "").split(",")).map(x => cl(x, 24)).filter(Boolean).slice(0, 8);
-  const seek = (Array.isArray(b.seeking) ? b.seeking : []).filter(x => SEEK.includes(x));
-  db.prepare("UPDATE users SET banner = ?, interests = ?, seeking = ?, instagram = ?, linkedin = ?, pronouns = ?, country = ? WHERE id = ?")
-    .run(cl(b.banner, 90), JSON.stringify(ints), JSON.stringify(seek), handle(b.instagram), handle(b.linkedin), cl(b.pronouns, 16), /^[A-Za-z]{2}$/.test(String(b.country || "").trim()) ? String(b.country).trim().toUpperCase() : "", req.user.id);
-  dropUser(req.user.id);
   res.json({ user: publicUser(findById.get(req.user.id)) });
 });
 
@@ -288,19 +252,11 @@ const follows = (a, b) => !!db.prepare("SELECT 1 FROM follows WHERE follower_id 
 const canView = (v, o) => v.id === o.id || v.role === "admin" || o.visibility === "public" || (o.visibility === "followers" && follows(v.id, o.id));
 const POSTQ = "SELECT p.id, p.body, p.created_at, u.id uid, u.name, u.title, u.visibility FROM posts p JOIN users u ON u.id = p.user_id WHERE u.disabled = 0 AND ";
 
-const TIERS = [365, 200, 100, 75, 50, 25, 7];
-const badgeOf = days => TIERS.find(t => days >= t) || 0;
-const daysOf = uid => db.prepare("SELECT COUNT(*) c FROM login_days WHERE user_id = ?").get(uid).c;
-const seenAt = new Map();
-const touchSeen = uid => { const now = Date.now(); if (now - (seenAt.get(uid) || 0) < 60000) return; seenAt.set(uid, now); db.prepare("UPDATE users SET last_seen = ? WHERE id = ?").run(now, uid); };
-const isOnline = uid => { for (const x of io.sockets.sockets.values()) if (x.user.id === uid) return true; return false; };
-const toMs = t => { const v = Date.parse(String(t || "").replace(" ", "T") + "Z"); return Number.isFinite(v) ? v : null; };
-
 app.get("/api/timeline", auth, (req, res) => res.json({ events: eventsOf(req.user.id, 50), streak: streakOf(req.user.id) }));
 
 app.get("/api/users", auth, (req, res) => {
   const q = "%" + String(req.query.q || "").trim().replace(/[%_]/g, "") + "%";
-  const rows = db.prepare("SELECT id, name, title FROM users WHERE disabled = 0 AND visibility != 'private' AND id != ? AND name LIKE ? LIMIT 10").all(req.user.id, q);
+  const rows = db.prepare("SELECT id, name, title FROM users WHERE disabled = 0 AND visibility != 'private' AND id != ? AND name LIKE ? AND id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = ?) AND id NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = ?) LIMIT 10").all(req.user.id, q, req.user.id, req.user.id);
   res.json({ users: rows.map(r => ({ ...r, isFollowing: follows(req.user.id, r.id) })) });
 });
 
@@ -308,51 +264,22 @@ app.get("/api/users/:id", auth, (req, res) => {
   const o = findById.get(Number(req.params.id));
   if (!o || o.disabled) return res.status(404).json({ error: "User not found." });
   const cnt = col => db.prepare(`SELECT COUNT(*) c FROM follows WHERE ${col} = ?`).get(o.id).c;
-  const online = isOnline(o.id);
-  const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), isMe: o.id === req.user.id, pronouns: o.pronouns || "", country: o.country || "", badge: badgeOf(daysOf(o.id)), online, seen: online ? Date.now() : o.last_seen || 0, joined: toMs(o.created_at) };
+  const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), isMe: o.id === req.user.id, iBlocked: !!db.prepare("SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?").get(req.user.id, o.id) };
+  if (blockedEither(req.user.id, o.id) && req.user.role !== "admin") return res.json({ ...base, restricted: true, blocked: true });
   if (!canView(req.user, o)) return res.json({ ...base, restricted: true });
-  const self = o.id === req.user.id || req.user.role === "admin", detail = self || o.show_activity;
-  const ec = t => db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = ?").get(o.id, t).c;
-  const tot = db.prepare("SELECT COALESCE(SUM(ended_at - started_at), 0) f, COALESCE(SUM(video_ms), 0) v, COUNT(*) n FROM sessions WHERE user_id = ? AND ended_at IS NOT NULL").get(o.id);
-  const week = [];
-  for (let i = 6; i >= 0; i--) week.push({ day: dkey(Date.now() - i * 864e5), focus: 0, video: 0 });
-  for (const r of db.prepare("SELECT started_at s, ended_at - started_at f, video_ms v FROM sessions WHERE user_id = ? AND ended_at IS NOT NULL AND started_at >= ?").all(o.id, dayStart() - 6 * 864e5)) {
-    const w = week.find(x => x.day === dkey(r.s)); if (w) { w.focus += r.f; w.video += r.v; }
-  }
-  res.json({ ...base, bio: o.bio, banner: o.banner || "", interests: parseList(o.interests), seeking: parseList(o.seeking), instagram: o.instagram || "", linkedin: o.linkedin || "",
-    streak: self || o.show_streak ? streakOf(o.id) : null,
+  const self = o.id === req.user.id || req.user.role === "admin";
+  res.json({ ...base, bio: o.bio, streak: self || o.show_streak ? streakOf(o.id) : null,
     posts: db.prepare(POSTQ + "p.user_id = ? ORDER BY p.id DESC LIMIT 20").all(o.id),
-    activity: detail ? eventsOf(o.id, 20) : null,
-    totals: { focus_ms: tot.f, video_ms: tot.v, sessions: tot.n }, week,
-    sessions: detail ? db.prepare("SELECT s.started_at, s.ended_at - s.started_at ms, s.video_ms, r.name room FROM sessions s LEFT JOIN rooms r ON r.code = s.room WHERE s.user_id = ? AND s.ended_at IS NOT NULL ORDER BY s.id DESC LIMIT 8").all(o.id) : null,
-    partners: detail ? db.prepare(`SELECT u.id, u.name, u.title, COUNT(*) n, SUM(MIN(a.ended_at, b.ended_at) - MAX(a.started_at, b.started_at)) ms
-      FROM sessions a JOIN sessions b ON b.room = a.room AND b.user_id != a.user_id AND b.started_at < a.ended_at AND b.ended_at > a.started_at
-      JOIN users u ON u.id = b.user_id WHERE a.user_id = ? AND a.ended_at IS NOT NULL AND b.ended_at IS NOT NULL AND u.disabled = 0 AND u.visibility != 'private'
-      GROUP BY u.id ORDER BY ms DESC LIMIT 12`).all(o.id) : null,
-    stats: { focus: ec("pomodoro"), sent: ec("encouraged"), received: ec("encouraged_by"), posts: db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ?").get(o.id).c } });
+    activity: self || o.show_activity ? eventsOf(o.id, 20) : null,
+    stats: (() => { const ec = t => db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = ?").get(o.id, t).c; return { focus: ec("pomodoro"), sent: ec("encouraged"), received: ec("encouraged_by"), posts: db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ?").get(o.id).c }; })() });
 });
-
-app.get("/api/me/connections", auth, (req, res) => {
-  const q = (col, other) => db.prepare(`SELECT u.id, u.name, u.title FROM follows f JOIN users u ON u.id = f.${other} WHERE f.${col} = ? AND u.disabled = 0 ORDER BY f.created_at DESC LIMIT 200`).all(req.user.id);
-  res.json({ followers: q("followee_id", "follower_id"), following: q("follower_id", "followee_id") });
-});
-app.delete("/api/me/followers/:id", auth, (req, res) => {
-  db.prepare("DELETE FROM follows WHERE follower_id = ? AND followee_id = ?").run(Number(req.params.id), req.user.id);
-  res.json({ ok: true });
-});
-
-app.get("/api/notifications", auth, (req, res) => {
-  const seen = req.user.notif_seen || 0;
-  const items = db.prepare("SELECT type, data, created_at FROM events WHERE user_id = ? AND type IN ('encouraged_by','followed_by') ORDER BY id DESC LIMIT 15").all(req.user.id).map(e => ({ ...e, data: JSON.parse(e.data || "{}") }));
-  res.json({ items, unseen: items.filter(i => i.created_at > seen).length });
-});
-app.post("/api/notifications/seen", auth, (req, res) => { db.prepare("UPDATE users SET notif_seen = ? WHERE id = ?").run(Date.now(), req.user.id); dropUser(req.user.id); res.json({ ok: true }); });
 
 app.post("/api/users/:id/follow", auth, (req, res) => {
   const o = findById.get(Number(req.params.id));
   if (!o || o.disabled || o.id === req.user.id) return res.status(400).json({ error: "You can't follow this user." });
+  if (blockedEither(req.user.id, o.id)) return res.status(403).json({ error: "You can't follow this user." });
   if (o.visibility === "private") return res.status(403).json({ error: "This profile is private." });
-  if (db.prepare("INSERT OR IGNORE INTO follows VALUES (?, ?, ?)").run(req.user.id, o.id, Date.now()).changes) { logEvent(req.user.id, "followed", { name: o.name }); logEvent(o.id, "followed_by", { name: req.user.name, uid: req.user.id }); }
+  if (db.prepare("INSERT OR IGNORE INTO follows VALUES (?, ?, ?)").run(req.user.id, o.id, Date.now()).changes) logEvent(req.user.id, "followed", { name: o.name });
   res.json({ ok: true });
 });
 app.delete("/api/users/:id/follow", auth, (req, res) => {
@@ -372,7 +299,7 @@ app.post("/api/posts", auth, (req, res) => {
 app.get("/api/feed", auth, (req, res) => {
   const me = req.user.id;
   const rows = db.prepare(POSTQ + "(p.user_id = ? OR p.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?)) ORDER BY p.id DESC LIMIT 50").all(me, me);
-  res.json({ posts: rows.filter(r => r.uid === me || r.visibility !== "private") });
+  res.json({ posts: rows.filter(r => (r.uid === me || r.visibility !== "private") && !blockedEither(me, r.uid)) });
 });
 app.delete("/api/posts/:id", auth, (req, res) => {
   const p = db.prepare("SELECT user_id FROM posts WHERE id = ?").get(Number(req.params.id));
@@ -391,7 +318,7 @@ app.get("/api/chats", auth, (req, res) => {
     GROUP BY other ORDER BY mid DESC LIMIT 100`).all(me, me, me, me);
   const chats = rows.map(r => {
     const u = findById.get(r.other), m = db.prepare("SELECT body, created_at, from_id FROM dms WHERE id = ?").get(r.mid);
-    return u && !u.disabled ? { id: u.id, name: u.name, title: u.title || "", badge: badgeOf(daysOf(u.id)), last: m.body, at: m.created_at, mine: m.from_id === me, unread: r.unread } : null;
+    return u && !u.disabled && !blockedEither(me, u.id) ? { id: u.id, name: u.name, title: u.title || "", last: m.body, at: m.created_at, mine: m.from_id === me, unread: r.unread } : null;
   }).filter(Boolean);
   res.json({ chats, unread: unreadOf(me) });
 });
@@ -408,7 +335,7 @@ app.get("/api/chats/:id", auth, (req, res) => {
 });
 app.post("/api/chats/:id", auth, (req, res) => {
   const me = req.user.id, o = findById.get(Number(req.params.id));
-  if (!o || o.disabled || o.id === me) return res.status(400).json({ error: "You can't message this user." });
+  if (!o || o.disabled || o.id === me || blockedEither(me, o.id)) return res.status(400).json({ error: "You can't message this user." });
   const body = String((req.body || {}).body || "").trim().slice(0, 1000);
   if (!body) return res.status(400).json({ error: "Write a message first." });
   if (o.visibility === "private" && !db.prepare("SELECT 1 FROM dms WHERE from_id = ? AND to_id = ?").get(o.id, me))
@@ -420,6 +347,49 @@ app.post("/api/chats/:id", auth, (req, res) => {
   const msg = { id, from_id: me, body, created_at: now };
   for (const s of io.sockets.sockets.values()) if (s.user.id === o.id && s.handshake.query.dm === "1") s.emit("dm", { ...msg, name: req.user.name });
   res.json({ message: msg });
+});
+
+/* ---------- safety: block and report ---------- */
+const blockedEither = (a, b) => !!db.prepare("SELECT 1 FROM blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)").get(a, b, b, a);
+app.get("/api/blocks", auth, (req, res) => res.json({ ids: db.prepare("SELECT blocked_id FROM blocks WHERE blocker_id = ?").all(req.user.id).map(r => r.blocked_id) }));
+app.post("/api/block/:id", auth, (req, res) => {
+  const me = req.user.id, o = findById.get(Number(req.params.id));
+  if (!o || o.id === me) return res.status(400).json({ error: "You can't block this user." });
+  db.prepare("INSERT OR IGNORE INTO blocks VALUES (?, ?, ?)").run(me, o.id, Date.now());
+  db.prepare("DELETE FROM follows WHERE (follower_id = ? AND followee_id = ?) OR (follower_id = ? AND followee_id = ?)").run(me, o.id, o.id, me);
+  res.json({ ok: true });
+});
+app.delete("/api/block/:id", auth, (req, res) => { db.prepare("DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?").run(req.user.id, Number(req.params.id)); res.json({ ok: true }); });
+const repHits = new Map();
+app.post("/api/report", auth, (req, res) => {
+  const me = req.user.id, b = req.body || {}, target = findById.get(Number(b.userId));
+  if (!target || target.id === me) return res.status(400).json({ error: "You can't report this user." });
+  const kind = b.kind === "post" ? "post" : "user"; let context = "", ref = null;
+  if (kind === "post"){
+    const p = db.prepare("SELECT id, user_id, body FROM posts WHERE id = ?").get(Number(b.refId));
+    if (!p || p.user_id !== target.id) return res.status(400).json({ error: "Post not found." });
+    ref = p.id; context = p.body;
+  }
+  const now = Date.now(), recent = (repHits.get(me) || []).filter(t => now - t < 3600000);
+  if (recent.length >= 10) return res.status(429).json({ error: "You've sent a lot of reports. Please try again later." });
+  recent.push(now); repHits.set(me, recent);
+  db.prepare("INSERT INTO reports (reporter_id, target_id, kind, ref_id, reason, context, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").run(me, target.id, kind, ref, String(b.reason || "").trim().slice(0, 300), context.slice(0, 280), now);
+  res.json({ ok: true });
+});
+
+/* ---------- study dashboard ---------- */
+app.get("/api/dashboard", auth, (req, res) => {
+  const me = req.user.id, today = dkey(Date.now()), days = [];
+  for (let i = 6; i >= 0; i--) days.push(dkey(Date.now() - i * 864e5));
+  const per = Object.fromEntries(days.map(d => [d, 0]));
+  db.prepare("SELECT created_at FROM events WHERE user_id = ? AND type = 'pomodoro' AND created_at >= ?").all(me, Date.now() - 9 * 864e5).forEach(r => { const k = dkey(r.created_at); if (k in per) per[k]++; });
+  const week = days.map(d => ({ day: d, sessions: per[d] }));
+  res.json({ goal: db.prepare("SELECT daily_goal g FROM users WHERE id = ?").get(me).g || 4, today: per[today], week, weekTotal: week.reduce((a, d) => a + d.sessions, 0),
+    total: db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = 'pomodoro'").get(me).c, minutesPerSession: 25, streak: streakOf(me) });
+});
+app.put("/api/goal", auth, (req, res) => {
+  const g = Math.max(1, Math.min(12, Math.round(Number((req.body || {}).goal) || 4)));
+  db.prepare("UPDATE users SET daily_goal = ? WHERE id = ?").run(g, req.user.id); res.json({ goal: g });
 });
 
 /* ---------- admin ---------- */
@@ -456,6 +426,15 @@ app.delete("/api/admin/rooms/:id", auth, admin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get("/api/admin/reports", auth, admin, (req, res) => {
+  res.json({ reports: db.prepare(`SELECT r.id, r.kind, r.reason, r.context, r.status, r.created_at, r.target_id, a.name reporter, t.name target, t.disabled target_disabled
+    FROM reports r LEFT JOIN users a ON a.id = r.reporter_id LEFT JOIN users t ON t.id = r.target_id ${req.query.status === "all" ? "" : "WHERE r.status = 'open'"} ORDER BY r.id DESC LIMIT 200`).all() });
+});
+app.patch("/api/admin/reports/:id", auth, admin, (req, res) => {
+  const st = (req.body || {}).status;
+  if (!["resolved", "dismissed"].includes(st)) return res.status(400).json({ error: "Bad status." });
+  db.prepare("UPDATE reports SET status = ? WHERE id = ?").run(st, Number(req.params.id)); res.json({ ok: true });
+});
 app.get("/api/admin/users", auth, admin, (_req, res) => {
   const socks = [...io.sockets.sockets.values()];
   res.json({
@@ -463,7 +442,7 @@ app.get("/api/admin/users", auth, admin, (_req, res) => {
       (SELECT COUNT(*) FROM encouragements WHERE from_id = users.id) sent,
       (SELECT COUNT(*) FROM encouragements WHERE to_id = users.id) received FROM users ORDER BY id`).all(),
     online: [...new Set(socks.map(x => x.user.id))],
-    turn: turnReady(),
+    turn: turnReady(), turnMissing: turnConfig().missing,
     live: socks.filter(x => x.room).map(x => ({ room: x.room, name: x.user.name }))
   });
 });
@@ -474,7 +453,6 @@ app.patch("/api/admin/users/:id", auth, admin, wrap(async (req, res) => {
   if (id === req.user.id && (role === "user" || disabled)) return res.status(400).json({ error: "You can't demote or disable yourself." });
   if (role) { const nr = role === "admin" ? "admin" : "user"; db.prepare("UPDATE users SET role = ? WHERE id = ?").run(nr, id); for (const s of io.sockets.sockets.values()) if (s.user.id === id) s.user.role = nr; }
   if (disabled !== undefined) db.prepare("UPDATE users SET disabled = ? WHERE id = ?").run(disabled ? 1 : 0, id);
-  dropUser(id);
   if (password !== undefined) {
     if (String(password).length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
     db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(await bcrypt.hash(String(password), 10), id);
@@ -486,30 +464,38 @@ app.delete("/api/admin/users/:id", auth, admin, (req, res) => {
   const id = Number(req.params.id);
   if (id === req.user.id) return res.status(400).json({ error: "You can't delete yourself." });
   db.prepare("DELETE FROM users WHERE id = ?").run(id);
-  dropUser(id); kick(id);
+  kick(id);
   res.json({ ok: true });
 });
 
-const turnReady = () => !!(process.env.TURN_URL && process.env.TURN_USERNAME && process.env.TURN_CREDENTIAL);
-if (process.env.TURN_URL && !turnReady()) console.warn("TURN_URL is set but TURN_USERNAME or TURN_CREDENTIAL is missing, so the relay is OFF.");
+// reads TURN_URL / TURN_USERNAME / TURN_CREDENTIAL forgivingly: quotes, spaces, a bare hostname, or host:port all work
+function turnConfig(){
+  const clean = v => String(v || "").trim().replace(/^["']+|["']+$/g, "").trim();
+  const url = clean(process.env.TURN_URL), user = clean(process.env.TURN_USERNAME), cred = clean(process.env.TURN_CREDENTIAL);
+  const missing = [["TURN_URL", url], ["TURN_USERNAME", user], ["TURN_CREDENTIAL", cred]].filter(x => !x[1]).map(x => x[0]);
+  const urls = url.split(/[\s,]+/).filter(Boolean).map(u => u.replace(/^https?:\/\//i, "").replace(/\/+$/, "")).flatMap(u =>
+    /^(turns?|stuns?):/i.test(u) ? [u]
+    : /^[\w.-]+:\d+$/.test(u) ? ["turn:" + u]
+    : ["turn:" + u + ":80", "turn:" + u + ":80?transport=tcp", "turn:" + u + ":443", "turns:" + u + ":443?transport=tcp"]);
+  return { ready: !missing.length && urls.length > 0, missing, urls, user, cred };
+}
+const turnReady = () => turnConfig().ready;
+if (process.env.TURN_URL || process.env.TURN_USERNAME || process.env.TURN_CREDENTIAL){
+  const c = turnConfig();
+  console.log(c.ready ? "TURN relay is ON (" + c.urls.length + " addresses)." : "TURN relay is OFF. Missing: " + c.missing.join(", "));
+}
 app.get("/api/ice", auth, (req, res) => {
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:global.stun.twilio.com:3478" }
   ];
-  if (turnReady()) {
-    iceServers.push({
-      urls: process.env.TURN_URL.split(","),
-      username: process.env.TURN_USERNAME,
-      credential: process.env.TURN_CREDENTIAL
-    });
-  }
-  res.set("Cache-Control", "private, max-age=300");
-  res.json({ iceServers, relay: turnReady() });
+  const c = turnConfig();
+  if (c.ready) iceServers.push({ urls: c.urls, username: c.user, credential: c.cred });
+  res.json({ iceServers, relay: c.ready, missing: c.missing });
 });
 
 app.get("/healthz", (_req, res) => {
-  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok", permanent: !!pool, turn: turnReady() }); }
+  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok", permanent: !!pool, turn: turnReady(), turnMissing: turnConfig().missing }); }
   catch (e) { res.status(500).json({ ok: false, db: String(e.message) }); }
 });
 
@@ -524,7 +510,7 @@ process.on("unhandledRejection", e => console.error("Unhandled rejection:", e));
 
 /* ---------- socket.io signaling ---------- */
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: false }, transports: ["websocket", "polling"], perMessageDeflate: false, maxHttpBufferSize: 1e5, pingInterval: 20000, pingTimeout: 25000 });
+const io = new Server(server, { cors: { origin: false } });
 
 io.use((socket, next) => {
   try {
@@ -540,41 +526,34 @@ const peerInfo = s => ({
   id: s.id, userId: s.user.id, name: s.user.name, title: s.user.title, bio: s.user.bio, goal: s.goal || "", sessions: s.sessions || 0, cheers: s.cheers || 0,
   pomo: s.pomo ? { ...s.pomo, left: s.pomo.running ? Math.max(0, s.pomo.left - (Date.now() - s.pomo.at)) : s.pomo.left } : null
 });
+/* group timer: one shared Pomodoro clock per room, kept by the server so everyone stays in sync */
+const GTS = Number(process.env.GT_SCALE || 1), GT_MS = { focus: 25 * 60000 * GTS, short: 5 * 60000 * GTS, long: 15 * 60000 * GTS };
+const GT = new Map();
+const gtLeft = g => g.running ? Math.max(0, g.left - (Date.now() - g.at)) : g.left;
+const gtOut = room => { const g = GT.get(room); return g ? { host: g.host, hostName: g.hostName, phase: g.phase, running: g.running, left: gtLeft(g), done: g.done } : null; };
+function gtArm(room){ const g = GT.get(room); if (!g) return; clearTimeout(g.timer); if (g.running) g.timer = setTimeout(() => gtEnd(room), gtLeft(g)); }
+function gtEnd(room){
+  const g = GT.get(room); if (!g) return; const was = g.phase;
+  if (was === "focus"){ g.done++; g.phase = g.done % 4 === 0 ? "long" : "short"; } else g.phase = "focus";
+  g.left = GT_MS[g.phase]; g.at = Date.now(); g.running = true; gtArm(room);
+  io.in(room).emit("rt-state", { ...gtOut(room), completed: was });
+}
 const ROOM_RE = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
 
-function endSession(s) {
-  if (!s.sess) return;
-  const now = Date.now(), r = db.prepare("SELECT started_at FROM sessions WHERE id = ?").get(s.sess); s.sess = 0;
-  if (!r) return;
-  if (now - r.started_at < 15000) return void db.prepare("DELETE FROM sessions WHERE id = ?").run(s.sessId);
-  const v = Math.min((s.camMs || 0) + (s.camSince ? now - s.camSince : 0), now - r.started_at);
-  db.prepare("UPDATE sessions SET ended_at = ?, video_ms = ? WHERE id = ?").run(now, v, s.sessId);
-}
-
 io.on("connection", socket => {
-  touchSeen(socket.user.id);
   socket.on("join", async (room, ack) => {
     if (typeof ack !== "function") return;
     if (!ROOM_RE.test(room)) return ack({ error: "Invalid meeting code." });
     if (socket.room) return ack({ error: "Already in a meeting." });
     const rm = db.prepare("SELECT * FROM rooms WHERE code = ?").get(room);
     if (rm && !rm.active) return ack({ error: "This room has been closed by the admin." });
-    const ids = io.sockets.adapter.rooms.get(room), members = ids ? [...ids].map(i => io.sockets.sockets.get(i)).filter(Boolean) : [];   // no async hop: answer the join immediately
+    const members = await io.in(room).fetchSockets();
     if (members.length >= MAX_ROOM_SIZE) return ack({ error: `This meeting is full (${MAX_ROOM_SIZE} people max).` });
     socket.join(room);
     socket.room = room;
-    socket.sessId = Number(db.prepare("INSERT INTO sessions (user_id, room, started_at) VALUES (?, ?, ?)").run(socket.user.id, room, Date.now()).lastInsertRowid); socket.sess = 1; socket.camMs = 0; socket.camSince = null;
     logEvent(socket.user.id, "joined_room", { room });
     socket.to(room).emit("peer-joined", peerInfo(socket));
-    ack({ peers: members.map(peerInfo), settings: rm ? { name: rm.name, video: !!rm.video_allowed, audio: !!rm.audio_allowed } : null });
-  });
-
-  // camera on/off, so "video on time" is real
-  socket.on("cam", on => {
-    if (!socket.room) return;
-    const now = Date.now();
-    if (on && !socket.camSince) socket.camSince = now;
-    else if (!on && socket.camSince) { socket.camMs = (socket.camMs || 0) + now - socket.camSince; socket.camSince = null; }
+    ack({ peers: members.map(peerInfo), timer: gtOut(room), settings: rm ? { name: rm.name, video: !!rm.video_allowed, audio: !!rm.audio_allowed } : null });
   });
 
   // relay SDP offers/answers and ICE candidates between two peers in the same room
@@ -630,6 +609,28 @@ io.on("connection", socket => {
     if (action === "remove") setTimeout(() => t.disconnect(true), 300);
   });
 
+  socket.on("rt-start", () => {
+    if (!socket.room || GT.has(socket.room)) return;
+    GT.set(socket.room, { host: socket.user.id, hostName: socket.user.name, phase: "focus", running: false, left: GT_MS.focus, at: Date.now(), done: 0, timer: null });
+    io.in(socket.room).emit("rt-state", gtOut(socket.room));
+  });
+  socket.on("rt-act", ({ action } = {}) => {
+    const room = socket.room, g = room && GT.get(room);
+    if (!g || (g.host !== socket.user.id && socket.user.role !== "admin")) return;
+    if (action === "start" && !g.running){ g.running = true; g.at = Date.now(); gtArm(room); }
+    else if (action === "pause" && g.running){ g.left = gtLeft(g); g.running = false; clearTimeout(g.timer); }
+    else if (action === "reset"){ g.running = false; clearTimeout(g.timer); g.left = GT_MS[g.phase]; }
+    else if (action === "skip"){ return gtEnd(room); }
+    else if (action === "stop"){ clearTimeout(g.timer); GT.delete(room); return io.in(room).emit("rt-state", null); }
+    else return;
+    io.in(room).emit("rt-state", gtOut(room));
+  });
+  socket.on("disconnect", () => {   // if the host leaves, the next person takes over; an empty room clears its timer
+    const room = socket.room, g = room && GT.get(room); if (!g) return;
+    const ids = [...(io.sockets.adapter.rooms.get(room) || [])].map(id => io.sockets.sockets.get(id)).filter(Boolean);
+    if (!ids.length){ clearTimeout(g.timer); GT.delete(room); return; }
+    if (!ids.some(x => x.user.id === g.host)){ g.host = ids[0].user.id; g.hostName = ids[0].user.name; io.in(room).emit("rt-state", gtOut(room)); }
+  });
   socket.on("pomo-done", () => {
     logEvent(socket.user.id, "pomodoro", {});
     socket.sessions = (socket.sessions || 0) + 1;
@@ -649,7 +650,6 @@ io.on("connection", socket => {
   });
 
   socket.on("disconnecting", () => {
-    endSession(socket); touchSeen(socket.user.id);
     if (socket.room) socket.to(socket.room).emit("peer-left", { id: socket.id });
   });
 });
