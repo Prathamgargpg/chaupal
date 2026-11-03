@@ -546,6 +546,30 @@
   .mname{font-size:12.5px;opacity:.8;margin:10px 0 0}
   .mfollow{display:flex;gap:8px;align-items:center;font-size:12.5px;margin:8px 0 0;font-weight:400;opacity:.9}
   .mfollow input{width:auto;accent-color:var(--tacc)}
+  /* safety, dashboard, group timer */
+  .pfmore{display:flex;gap:18px;justify-content:center;margin-top:12px}
+  .linkbtn{border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:4px;cursor:pointer;text-decoration:underline}
+  .linkbtn:hover{color:var(--ink)}
+  .tile.blk video{opacity:0}
+  .tile.blk::after{content:"Blocked user";position:absolute;inset:0;display:grid;place-items:center;color:#B9CCF5;font-size:14px}
+  .dashcard{width:min(620px,100%)!important}
+  .dtoday{display:flex;justify-content:space-between;align-items:flex-end;margin:12px 0 10px}
+  .dtoday b{font-size:34px;display:block;font-family:"Plus Jakarta Sans","Inter",sans-serif;line-height:1.1}
+  .dgoal{display:flex;align-items:center;gap:10px;font-weight:600;font-size:13px;color:var(--muted)}
+  .mini{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:700;cursor:pointer;color:var(--ink)}
+  .dbar{height:10px;border-radius:10px;background:#E3EDFF;overflow:hidden;margin-bottom:16px}
+  .dbar i{display:block;height:100%;background:linear-gradient(90deg,#2563EB,#38BDF8);border-radius:10px;transition:width .5s}
+  .dbar.done i{background:linear-gradient(90deg,#16A34A,#4ADE80)}
+  .dchart{display:flex;gap:10px;align-items:flex-end;height:176px;position:relative;margin:12px 0 6px;padding-top:26px}
+  .dchart::before{content:"";position:absolute;left:0;right:0;bottom:calc(22px + 120px * var(--goal,0));border-top:2px dashed #93B4F5}
+  .dcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+  .dcol i{display:block;width:100%;max-width:38px;border-radius:8px 8px 4px 4px;background:#2563EB}
+  .dcol b{font-size:12px;min-height:16px}.dcol small{color:var(--muted);height:18px}
+  .grp{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:14px}
+  #grp-note{font-size:12.5px;opacity:.8}
+  .mtog:disabled{opacity:.85;cursor:default}
+  #d-stats{grid-template-columns:repeat(2,1fr)}
+  .timer.lock .tctl .btn{opacity:.45}
 </style>
 </head>
 <body>
@@ -582,7 +606,7 @@
 <div id="lobby" class="hidden">
   <div class="topbar">
     <div class="brand">Chaupal</div>
-    <div class="who"><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
+    <div class="who"><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-dash">Dashboard</button><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
   <div class="lobby">
@@ -631,6 +655,7 @@
     <button class="nav" id="n-home" aria-label="Home"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg><span class="lbl">Home</span></button>
     <button class="nav" id="n-prof" aria-label="Profile"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="lbl">Profile</span></button>
     <button class="nav" id="n-act" aria-label="Activity"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg><span class="lbl">Activity</span></button>
+    <button class="nav" id="n-dash" aria-label="Dashboard"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="lbl">Dashboard</span></button>
     <button class="nav" id="n-fx" aria-label="Video effects"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg><span class="lbl">Video effects</span></button>
     <button class="nav" id="n-dev" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span class="lbl">Settings</span></button>
     <button class="nav hidden" id="n-admin" aria-label="Admin portal"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg><span class="lbl">Admin portal</span></button>
@@ -687,6 +712,7 @@
         <div class="tphase" id="pomo-phase"></div>
         <div id="pomo-time">25:00</div>
         <div class="tctl"><button class="btn" id="pomo-go">Start</button><button class="btn ghost" id="pomo-reset">Reset</button><button class="btn ghost" id="pomo-skip">Skip</button></div>
+        <div class="grp"><button class="mtog" id="grp-btn" type="button"></button><span id="grp-note"></span></div>
         <div class="tbar"><i></i></div>
         <div class="themes" role="radiogroup" aria-label="Timer theme">
           <button role="radio" data-th="classic" aria-checked="true">Classic</button>
@@ -767,6 +793,26 @@
   <button class="btn ghost full" id="fx-close" type="button">Done</button>
 </div></div>
 
+<div id="dash" class="modal hidden"><div class="card dashcard">
+  <h2>Study dashboard</h2>
+  <div class="dtoday"><div><small class="sub">Today</small><b id="d-today">0 / 4</b><small class="sub">focus sessions</small></div><div class="dgoal"><button class="mini" id="d-minus" type="button" aria-label="Lower daily goal">-</button><span id="d-goal"></span><button class="mini" id="d-plus" type="button" aria-label="Raise daily goal">+</button></div></div>
+  <div class="dbar"><i id="d-bar"></i></div>
+  <div class="sgrid" id="d-stats"></div>
+  <h3 class="pfh">Last 7 days</h3>
+  <div class="dchart" id="d-chart"></div>
+  <p class="hint">Each finished focus session counts as 25 minutes. The dashed line is your daily goal.</p>
+  <button class="btn ghost full" id="d-close" type="button">Close</button>
+</div></div>
+
+<div id="rp" class="modal hidden"><div class="card">
+  <h2>Report</h2><p class="sub">Tell the admin what's wrong. They'll review it.</p>
+  <label for="rp-reason">Reason</label>
+  <select id="rp-reason"><option>Spam</option><option>Harassment or bullying</option><option>Inappropriate content</option><option>Fake account</option><option>Other</option></select>
+  <label for="rp-text">Details (optional)</label><textarea id="rp-text" rows="3" maxlength="200"></textarea>
+  <button class="btn full" id="rp-send" type="button">Send report</button><button class="btn ghost full" id="rp-cancel" type="button">Cancel</button>
+  <div class="msg" id="rp-msg" role="alert"></div>
+</div></div>
+
 <div id="dev" class="modal hidden"><div class="card">
   <h2>Audio &amp; video settings</h2><p class="sub">Choose the devices Chaupal uses. Changes apply right away during a meeting.</p>
   <label for="dev-cam">Camera</label><select id="dev-cam"></select>
@@ -783,11 +829,12 @@
 
 <div id="admin" class="modal hidden"><div class="card">
   <h2>Admin portal</h2>
-  <div class="tabs" id="ad-tabs"><button data-at="users" aria-selected="true">Users</button><button data-at="rooms" aria-selected="false">Rooms</button></div>
+  <div class="tabs" id="ad-tabs"><button data-at="users" aria-selected="true">Users</button><button data-at="rooms" aria-selected="false">Rooms</button><button data-at="reports" aria-selected="false">Reports</button></div>
   <div id="ad-users">
     <p class="sub" id="admin-live"></p>
     <div style="overflow-x:auto"><table><thead><tr><th>User</th><th>Title</th><th>Role</th><th>Sent / got</th><th>Actions</th></tr></thead><tbody id="admin-body"></tbody></table></div>
   </div>
+  <div id="ad-reports" class="hidden"></div>
   <div id="ad-rooms" class="hidden">
     <p class="sub">Create study rooms and choose whether video and audio are allowed in each. Changes apply to people already inside.</p>
     <label for="rm-name">Room name</label><input id="rm-name" maxlength="60" placeholder="JEE 2026 Warriors">
@@ -889,7 +936,7 @@ $("logout").onclick = logout;
 function afterLogin(){
   $("who").textContent = me.name;
   $("open-admin").classList.toggle("hidden", me.role !== "admin"); $("n-admin").classList.toggle("hidden", me.role !== "admin");
-  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); loadFeed(); loadRooms(); connectDm(); }).catch(() => {});
+  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); loadFeed(); loadRooms(); connectDm(); loadBlocks(); }).catch(() => {});
   route();
 }
 
@@ -954,6 +1001,7 @@ function relabel(id, fallback){
     '<span class="cnt">' + (i.sessions ? '<i title="Focus sessions done">' + i.sessions + "</i>" : "") + (i.cheers ? '<i title="Encouragements received">+' + i.cheers + "</i>" : "") + "</span>" +
     (i.goal ? '<span class="goal">' + esc(i.goal) + "</span>" : "");
   t.dataset.s = (nm + " " + (i.title || "") + " " + (i.goal || "")).toLowerCase();
+  const bl = id !== "me" && blockedUsers.has(i.userId), vv = t.querySelector("video"); t.classList.toggle("blk", bl); if (vv && id !== "me") vv.muted = bl;
 }
 function removeTile(id){ const t = document.getElementById("t-" + id); if (t) t.remove(); if (pinned === id) { pinned = null; tileView = true; } info.delete(id); updateCount(); layout(); }
 function updateCount(){ const n = $("grid").children.length; $("count").textContent = n + (n === 1 ? " person" : " people"); }
@@ -962,7 +1010,7 @@ async function enterRoom(code){
   show("room"); roomStart = Date.now(); closeSheet();
   $("room-code").textContent = code;
   $("grid").innerHTML = ""; $("log").innerHTML = "";
-  roomSettings = null; micLocked = camLocked = false; $("room-name").textContent = "Study Room";
+  roomSettings = null; micLocked = camLocked = false; grp.on = false; grpUI(); $("room-name").textContent = "Study Room";
 
   localStream = await getMedia();
   if (!localStream){
@@ -986,7 +1034,7 @@ async function enterRoom(code){
   socket.on("connect", () => {
     socket.emit("join", code, async res => {
       if (res.error){ alert(res.error); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
-      roomSettings = res.settings; applyBlocks();
+      roomSettings = res.settings; applyBlocks(); applyGroup(res.timer);
       // the newcomer starts a connection to everyone already inside
       for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); await connectTo(p.id, p.name, true); }
       pomoSend(); if (me.goal) socket.emit("goal", me.goal);
@@ -995,6 +1043,7 @@ async function enterRoom(code){
 
   socket.on("peer-joined", p => { info.set(p.id, p); if (!peers.has(p.id)) peers.set(p.id, { pc: null, name: p.name, chain: Promise.resolve() }); });
   socket.on("peer-left", ({ id }) => closePeer(id));
+  socket.on("rt-state", applyGroup);
   socket.on("peer-updated", p => { const i = info.get(p.id) || {}; info.set(p.id, { ...i, ...p, pomo: i.pomo }); relabel(p.id); layout(); });
   socket.on("pomo", ({ id, pomo }) => { const i = info.get(id); if (i) i.pomo = pomo && { ...pomo, at: Date.now() }; });
   socket.on("encouraged", d => { me.cheers = (me.cheers || 0) + 1; relabel("me"); toast(d.from + ": " + d.message); });
@@ -1227,10 +1276,11 @@ const rem = p => p.running ? Math.max(0, p.left - (Date.now() - p.at)) : p.left;
 const fmt = ms => { const s = Math.ceil(ms / 1000); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
 function beep(){ try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 880; g.gain.value = .15; o.start(); o.stop(c.currentTime + .4); } catch {} }
 function pomoSend(){ if (socket) socket.emit("pomo", { phase: ps.phase, running: ps.running, left: rem(ps) }); renderPomo(); }
-function pomoStart(){ if (ps.running) return; ps.at = Date.now(); ps.running = true; pomoSend(); }
-function pomoPause(){ if (!ps.running) return; ps.left = rem(ps); ps.running = false; pomoSend(); }
-function pomoReset(){ ps.running = false; ps.left = POMO[ps.phase] * 60000; pomoSend(); }
+function pomoStart(){ if (grp.on) return grpAct("start"); if (ps.running) return; ps.at = Date.now(); ps.running = true; pomoSend(); }
+function pomoPause(){ if (grp.on) return grpAct("pause"); if (!ps.running) return; ps.left = rem(ps); ps.running = false; pomoSend(); }
+function pomoReset(){ if (grp.on) return grpAct("reset"); ps.running = false; ps.left = POMO[ps.phase] * 60000; pomoSend(); }
 function pomoNext(){
+  if (grp.on) return grpAct("skip");
   if (ps.phase === "focus"){ ps.done++; if (socket) socket.emit("pomo-done"); me.sessions = (me.sessions || 0) + 1; relabel("me"); ps.phase = ps.done % 4 === 0 ? "long" : "short"; } else ps.phase = "focus";
   ps.running = false; ps.left = POMO[ps.phase] * 60000; beep(); pomoSend();
 }
@@ -1248,7 +1298,7 @@ function badge(p){
   return (PH[p.phase] || "Focus") + " " + fmt(rem(q)) + (p.running ? "" : " (paused)");
 }
 setInterval(() => {
-  if (ps.running && rem(ps) <= 0) pomoNext();
+  if (!grp.on && ps.running && rem(ps) <= 0) pomoNext();
   renderPomo();
   for (const [id, i] of info){
     const b = document.querySelector("#t-" + id + " .badge"), pp = id === "me" ? ps : i.pomo, tl = $("t-" + id);
@@ -1291,7 +1341,7 @@ $("admin-body").onclick = async e => {
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago"; };
 const setStreak = s => { const c = s && s.current ? s.current : 0; $("streak").textContent = c ? c + "-day streak" : "Start your streak"; $("rail-num").textContent = c; $("rail-streak").textContent = c ? c + "-day streak. Keep it up!" : "Log in daily to build a streak"; $("rail-bar").style.width = Math.min(100, c / 7 * 100) + "%"; };
 const postHtml = p => '<div class="post"><a class="lnk" data-u="' + p.uid + '">' + esc(p.name) + "</a>" + (p.title ? " · " + esc(p.title) : "") + " <small>" + ago(p.created_at) + "</small>" +
-  (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + "<div>" + esc(p.body) + "</div></div>";
+  (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + (p.uid !== me.id ? ' <a class="lnk" data-rep-post="' + p.id + '" data-uid="' + p.uid + '">Report</a>' : "") + "<div>" + esc(p.body) + "</div></div>";
 const followBtn = (id, on) => '<button class="btn ' + (on ? "ghost" : "") + '" data-f="' + id + '" data-on="' + (on ? 1 : 0) + '">' + (on ? "Following" : "Follow") + "</button>";
 const LABEL = { daily_login: () => "Logged in", joined_room: () => "Joined a meeting", pomodoro: () => "Finished a focus session", posted: () => "Shared a post",
   encouraged: d => "Encouraged " + d.to, encouraged_by: d => d.from + " encouraged you", followed: d => "Followed " + d.name };
@@ -1316,10 +1366,10 @@ const BADGES = [["First steps", "Log in on your first day", s => s.total >= 1], 
 const pfStats = u => { const st = u.stats || {}, sk = u.streak || {}; return { total: sk.total || 0, best: sk.best || 0, current: sk.current || 0, focus: st.focus || 0, sent: st.sent || 0, received: st.received || 0, posts: st.posts || 0, followers: u.followers || 0, following: u.following || 0 }; };
 async function openUser(id){
   PF = await api("/api/users/" + id); const u = PF;
-  const act = u.isMe ? '<button class="btn full" data-edit="1">Edit profile</button>' : '<div class="pfact">' + followBtn(u.id, u.isFollowing) + '<button class="btn" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>';
+  const act = u.isMe ? '<button class="btn full" data-edit="1">Edit profile</button>' : '<div class="pfact">' + followBtn(u.id, u.isFollowing) + '<button class="btn" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>' + '<div class="pfmore"><button class="linkbtn" data-block="' + u.id + '" data-on="' + (u.iBlocked ? 1 : 0) + '">' + (u.iBlocked ? "Unblock" : "Block") + '</button><button class="linkbtn" data-report="' + u.id + '">Report</button></div>';
   $("pv-body").innerHTML = '<div class="pfgrid"><div class="pfl"><div class="pfcover"></div><div class="pfin"><span class="pfav">' + avatar(u.name, u.id, 88) + "</span><h2>" + esc(u.name) + "</h2>" + (u.title ? '<span class="tag">' + esc(u.title) + "</span>" : "") +
     (u.streak ? '<p style="margin:12px 0 0"><span class="chip">' + u.streak.current + "-day streak</span></p>" : "") +
-    (u.restricted ? '<p class="sub" style="margin-top:14px">This profile is ' + (u.visibility === "private" ? "private." : "visible to followers only.") + "</p>" : '<div class="pfbio">' + esc(u.bio || "No bio yet.") + "</div>") +
+    (u.restricted ? '<p class="sub" style="margin-top:14px">This profile is ' + (u.blocked ? "not available." : u.visibility === "private" ? "private." : "visible to followers only.") + "</p>" : '<div class="pfbio">' + esc(u.bio || "No bio yet.") + "</div>") +
     '<div class="pfcount"><div><b>' + u.followers + "</b><span>Followers</span></div><div><b>" + u.following + "</b><span>Following</span></div></div>" + act + "</div></div>" +
     '<div class="pfr"><div class="tabs" id="pf-tabs"><button data-pt="sum" aria-selected="true">Summary</button><button data-pt="ach" aria-selected="false">Achievements</button><button data-pt="stat" aria-selected="false">Statistics</button></div><div id="pf-tab"></div></div></div>';
   $("pv").classList.remove("hidden"); pfTab("sum");
@@ -1343,11 +1393,14 @@ $("open-activity").onclick = async () => {
 };
 $("act-close").onclick = () => $("act").classList.add("hidden");
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-u],[data-del],[data-f],[data-dm],[data-edit]"); if (!t) return;
+  const t = e.target.closest("[data-u],[data-del],[data-f],[data-dm],[data-edit],[data-block],[data-report],[data-rep-post]"); if (!t) return;
   try {
     if (t.dataset.u) return openUser(t.dataset.u);
     if (t.dataset.dm){ $("pv").classList.add("hidden"); return openThread(t.dataset.dm, t.dataset.name); }
     if (t.dataset.edit){ $("pv").classList.add("hidden"); return openProfile(); }
+    if (t.dataset.block){ const on = t.dataset.on === "1"; await api("/api/block/" + t.dataset.block, on ? { method: "DELETE" } : { body: {} }); await loadBlocks(); relabelAll(); return openUser(t.dataset.block); }
+    if (t.dataset.report) return openReport(t.dataset.report, "user", null);
+    if (t.dataset.repPost) return openReport(t.dataset.uid, "post", t.dataset.repPost);
     if (t.dataset.del){ await api("/api/posts/" + t.dataset.del, { method: "DELETE" }); }
     if (t.dataset.f){ await api("/api/users/" + t.dataset.f + "/follow", { method: t.dataset.on === "1" ? "DELETE" : "POST" }); if (!$("pv").classList.contains("hidden")) openUser(t.dataset.f); searchPeople().catch(() => {}); }
     loadFeed(); if (!$("pv").classList.contains("hidden") && t.dataset.del) $("pv").classList.add("hidden");
@@ -1465,6 +1518,7 @@ document.querySelectorAll("#ad-tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#ad-tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
   $("ad-users").classList.toggle("hidden", b.dataset.at !== "users"); $("ad-rooms").classList.toggle("hidden", b.dataset.at !== "rooms");
   if (b.dataset.at === "rooms") loadAdminRooms().catch(e => alert(e.message));
+  $("ad-reports").classList.toggle("hidden", b.dataset.at !== "reports"); if (b.dataset.at === "reports") loadReports().catch(e => alert(e.message));
 });
 async function loadAdminRooms(){
   const { rooms } = await api("/api/admin/rooms");
@@ -1891,6 +1945,70 @@ $("dm-form").onsubmit = async e => {
   try { const r = await api("/api/chats/" + dmWith.id, { body: { body: t } }); appendMsg(r.message); refreshChats(); }
   catch (err) { toast(err.message); $("dm-in").value = t; }
 };
+
+/* ---------- safety: block and report ---------- */
+let blockedUsers = new Set(), rep = null;
+async function loadBlocks(){ try { blockedUsers = new Set((await api("/api/blocks")).ids); relabelAll(); } catch {} }
+function relabelAll(){ for (const id of info.keys()) relabel(id); }
+function openReport(uid, kind, ref){ rep = { userId: Number(uid), kind, refId: ref ? Number(ref) : null }; $("rp-text").value = ""; $("rp-msg").textContent = ""; $("rp").classList.remove("hidden"); }
+$("rp-cancel").onclick = () => $("rp").classList.add("hidden");
+$("rp-send").onclick = async () => {
+  try { await api("/api/report", { body: { ...rep, reason: $("rp-reason").value + ($("rp-text").value.trim() ? ": " + $("rp-text").value.trim() : "") } }); $("rp").classList.add("hidden"); toast("Thanks. The admin will review your report."); }
+  catch (e) { $("rp-msg").textContent = e.message; }
+};
+async function loadReports(){
+  const { reports } = await api("/api/admin/reports");
+  $("ad-reports").innerHTML = reports.length ? '<div style="overflow-x:auto"><table><thead><tr><th>Report</th><th>Reason</th><th>Actions</th></tr></thead><tbody>' + reports.map(r => "<tr><td><b>" + esc(r.target) + "</b> reported by " + esc(r.reporter) + "<br><small>" + r.kind + " · " + ago(r.created_at) + "</small></td><td>" + esc(r.reason || "No reason given") + (r.context ? '<br><small>"' + esc(r.context) + '"</small>' : "") + "</td><td>" +
+    '<button class="btn ghost" data-rp="resolved" data-id="' + r.id + '">Resolve</button><button class="btn ghost" data-rp="dismissed" data-id="' + r.id + '">Dismiss</button>' + (r.target_disabled ? "" : '<button class="btn ghost" data-rp="ban" data-id="' + r.id + '" data-uid="' + r.target_id + '">Disable user</button>') + "</td></tr>").join("") + "</tbody></table></div>"
+    : '<p class="sub" style="padding:16px 0">No open reports. All quiet.</p>';
+}
+$("ad-reports").onclick = async e => {
+  const b = e.target.closest("[data-rp]"); if (!b) return;
+  try {
+    if (b.dataset.rp === "ban"){
+      if (!confirm("Disable this user? They will be signed out and unable to log in.")) return;
+      await api("/api/admin/users/" + b.dataset.uid, { method: "PATCH", body: { disabled: true } });
+      await api("/api/admin/reports/" + b.dataset.id, { method: "PATCH", body: { status: "resolved" } });
+    } else await api("/api/admin/reports/" + b.dataset.id, { method: "PATCH", body: { status: b.dataset.rp } });
+    loadReports();
+  } catch (err) { alert(err.message); }
+};
+
+/* ---------- study dashboard ---------- */
+let DBD = null;
+const hm = m => m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m";
+async function openDash(){ try { DBD = await api("/api/dashboard"); } catch (e) { return toast(e.message); } renderDash(); $("dash").classList.remove("hidden"); }
+function renderDash(){
+  const d = DBD, mx = Math.max(d.goal, ...d.week.map(x => x.sessions), 1), names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  $("d-today").textContent = d.today + " / " + d.goal; $("d-goal").textContent = "Daily goal: " + d.goal;
+  $("d-bar").style.width = Math.min(100, d.today / d.goal * 100) + "%"; $("d-bar").parentElement.classList.toggle("done", d.today >= d.goal);
+  $("d-stats").innerHTML = [["Focus time this week", hm(d.weekTotal * d.minutesPerSession)], ["Sessions this week", d.weekTotal], ["Current streak", d.streak.current + (d.streak.current === 1 ? " day" : " days")], ["All-time sessions", d.total]].map(([k, v]) => '<div class="stat"><b>' + v + "</b><small>" + k + "</small></div>").join("");
+  $("d-chart").innerHTML = d.week.map(x => '<div class="dcol" title="' + x.sessions + ' sessions"><b>' + (x.sessions || "") + '</b><i style="height:' + Math.max(3, Math.round(x.sessions / mx * 120)) + 'px"></i><small>' + names[new Date(x.day + "T00:00:00Z").getUTCDay()] + "</small></div>").join("");
+  $("d-chart").style.setProperty("--goal", d.goal / mx);
+}
+async function setDailyGoal(g){ try { DBD.goal = (await api("/api/goal", { method: "PUT", body: { goal: g } })).goal; renderDash(); } catch (e) { toast(e.message); } }
+$("d-minus").onclick = () => setDailyGoal(DBD.goal - 1); $("d-plus").onclick = () => setDailyGoal(DBD.goal + 1);
+$("d-close").onclick = () => $("dash").classList.add("hidden"); $("open-dash").onclick = openDash; $("n-dash").onclick = openDash;
+
+/* ---------- group timer: one shared clock for the whole room ---------- */
+const grp = { on: false, host: null, name: "" };
+const canGrp = () => grp.on && (grp.host === me.id || me.role === "admin");
+function grpAct(a){ if (!socket) return; if (!canGrp()) return toast("Only the host controls the group timer."); socket.emit("rt-act", { action: a }); }
+function grpUI(){
+  const b = $("grp-btn"), n = $("grp-note");
+  b.setAttribute("aria-pressed", grp.on); $("pomo").classList.toggle("lock", grp.on && !canGrp());
+  if (!grp.on){ b.disabled = false; b.textContent = "Start a group timer"; n.textContent = "Everyone in the room studies on the same clock."; }
+  else { b.disabled = !canGrp(); b.textContent = canGrp() ? "Stop group timer" : "Group timer on"; n.textContent = "Hosted by " + grp.name + (canGrp() ? "" : ". Only the host controls it."); }
+}
+function applyGroup(s){
+  if (!s){ if (grp.on){ ps.running = false; ps.left = POMO[ps.phase] * 60000; } grp.on = false; grpUI(); renderPomo(); return; }
+  grp.on = true; grp.host = s.host; grp.name = s.hostName;
+  if (s.completed){ beep(); if (s.completed === "focus"){ me.sessions = (me.sessions || 0) + 1; relabel("me"); if (socket) socket.emit("pomo-done"); } }
+  ps.phase = s.phase; ps.running = s.running; ps.left = s.left; ps.at = Date.now(); ps.done = s.done;
+  grpUI(); pomoSend();
+}
+$("grp-btn").onclick = () => { if (!socket) return; if (!grp.on) socket.emit("rt-start"); else grpAct("stop"); };
+grpUI();
 
 /* ---------- boot ---------- */
 (async () => {
