@@ -45,7 +45,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
-for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["daily_goal", "INTEGER DEFAULT 4"]])
+for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["daily_goal", "INTEGER DEFAULT 4"], ["show_leaderboard", "INTEGER DEFAULT 1"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
@@ -64,6 +64,9 @@ CREATE INDEX IF NOT EXISTS idx_dms_to ON dms(to_id, read_at);
 CREATE INDEX IF NOT EXISTS idx_dms_pair ON dms(from_id, to_id);`);
 db.exec(`CREATE TABLE IF NOT EXISTS blocks (blocker_id INTEGER NOT NULL, blocked_id INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (blocker_id, blocked_id));
 CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, reporter_id INTEGER NOT NULL, target_id INTEGER NOT NULL, kind TEXT NOT NULL, ref_id INTEGER, reason TEXT, context TEXT, status TEXT DEFAULT 'open', created_at INTEGER NOT NULL);`);
+db.exec(`CREATE TABLE IF NOT EXISTS likes (post_id INTEGER NOT NULL, user_id INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (post_id, user_id));
+CREATE TABLE IF NOT EXISTS notifs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, type TEXT NOT NULL, actor_id INTEGER NOT NULL, ref_id INTEGER, text TEXT, created_at INTEGER NOT NULL, read_at INTEGER);
+CREATE INDEX IF NOT EXISTS idx_notifs_user ON notifs(user_id, read_at);`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
 const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
@@ -221,7 +224,7 @@ function auth(req, res, next) {
   } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
 
-app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id) }); });
+app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id), notifUnread: notifUnread(req.user.id) }); });
 app.get("/api/titles", auth, (_req, res) => res.json({ titles: TITLES }));
 app.put("/api/me", auth, (req, res) => {
   const { name, title, bio, visibility, show_streak, show_activity } = req.body || {};
@@ -269,7 +272,7 @@ app.get("/api/users/:id", auth, (req, res) => {
   if (!canView(req.user, o)) return res.json({ ...base, restricted: true });
   const self = o.id === req.user.id || req.user.role === "admin";
   res.json({ ...base, bio: o.bio, streak: self || o.show_streak ? streakOf(o.id) : null,
-    posts: db.prepare(POSTQ + "p.user_id = ? ORDER BY p.id DESC LIMIT 20").all(o.id),
+    posts: withLikes(db.prepare(POSTQ + "p.user_id = ? ORDER BY p.id DESC LIMIT 20").all(o.id), req.user.id),
     activity: self || o.show_activity ? eventsOf(o.id, 20) : null,
     stats: (() => { const ec = t => db.prepare("SELECT COUNT(*) c FROM events WHERE user_id = ? AND type = ?").get(o.id, t).c; return { focus: ec("pomodoro"), sent: ec("encouraged"), received: ec("encouraged_by"), posts: db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ?").get(o.id).c }; })() });
 });
@@ -279,7 +282,11 @@ app.post("/api/users/:id/follow", auth, (req, res) => {
   if (!o || o.disabled || o.id === req.user.id) return res.status(400).json({ error: "You can't follow this user." });
   if (blockedEither(req.user.id, o.id)) return res.status(403).json({ error: "You can't follow this user." });
   if (o.visibility === "private") return res.status(403).json({ error: "This profile is private." });
-  if (db.prepare("INSERT OR IGNORE INTO follows VALUES (?, ?, ?)").run(req.user.id, o.id, Date.now()).changes) logEvent(req.user.id, "followed", { name: o.name });
+  if (db.prepare("INSERT OR IGNORE INTO follows VALUES (?, ?, ?)").run(req.user.id, o.id, Date.now()).changes){
+    logEvent(req.user.id, "followed", { name: o.name });
+    const back = follows(o.id, req.user.id);   // they already follow me, so this is a follow-back for them
+    notify(o.id, back ? "followback" : "follow", req.user, null, null, req.user.name + (back ? " followed you back" : " started following you"));
+  }
   res.json({ ok: true });
 });
 app.delete("/api/users/:id/follow", auth, (req, res) => {
@@ -299,7 +306,7 @@ app.post("/api/posts", auth, (req, res) => {
 app.get("/api/feed", auth, (req, res) => {
   const me = req.user.id;
   const rows = db.prepare(POSTQ + "(p.user_id = ? OR p.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?)) ORDER BY p.id DESC LIMIT 50").all(me, me);
-  res.json({ posts: rows.filter(r => (r.uid === me || r.visibility !== "private") && !blockedEither(me, r.uid)) });
+  res.json({ posts: withLikes(rows.filter(r => (r.uid === me || r.visibility !== "private") && !blockedEither(me, r.uid)), me) });
 });
 app.delete("/api/posts/:id", auth, (req, res) => {
   const p = db.prepare("SELECT user_id FROM posts WHERE id = ?").get(Number(req.params.id));
@@ -349,6 +356,37 @@ app.post("/api/chats/:id", auth, (req, res) => {
   res.json({ message: msg });
 });
 
+/* ---------- likes and notifications ---------- */
+const likeCount = pid => db.prepare("SELECT COUNT(*) c FROM likes WHERE post_id = ?").get(pid).c;
+const withLikes = (rows, me) => rows.map(r => ({ ...r, likes: likeCount(r.id), liked: !!db.prepare("SELECT 1 FROM likes WHERE post_id = ? AND user_id = ?").get(r.id, me) }));
+const notifUnread = uid => db.prepare("SELECT COUNT(*) c FROM notifs WHERE user_id = ? AND read_at IS NULL").get(uid).c;
+function notify(uid, type, actor, ref, text, toastText){
+  if (uid === actor.id || blockedEither(uid, actor.id)) return;
+  if (db.prepare("SELECT 1 FROM notifs WHERE user_id = ? AND type = ? AND actor_id = ? AND IFNULL(ref_id, 0) = IFNULL(?, 0) AND read_at IS NULL").get(uid, type, actor.id, ref ?? null)) return;   // no repeats while the first is unread
+  db.prepare("INSERT INTO notifs (user_id, type, actor_id, ref_id, text, created_at) VALUES (?, ?, ?, ?, ?, ?)").run(uid, type, actor.id, ref ?? null, text || null, Date.now());
+  for (const s of io.sockets.sockets.values()) if (s.user.id === uid && s.handshake.query.dm === "1") s.emit("notif", { type, text: toastText });
+}
+app.post("/api/posts/:id/like", auth, (req, res) => {
+  const p = db.prepare("SELECT id, user_id, body FROM posts WHERE id = ?").get(Number(req.params.id));
+  if (!p || blockedEither(req.user.id, p.user_id)) return res.status(404).json({ error: "Post not found." });
+  if (db.prepare("INSERT OR IGNORE INTO likes VALUES (?, ?, ?)").run(p.id, req.user.id, Date.now()).changes)
+    notify(p.user_id, "like", req.user, p.id, p.body.slice(0, 60), req.user.name + " liked your post");
+  res.json({ liked: true, likes: likeCount(p.id) });
+});
+app.delete("/api/posts/:id/like", auth, (req, res) => {
+  db.prepare("DELETE FROM likes WHERE post_id = ? AND user_id = ?").run(Number(req.params.id), req.user.id);
+  res.json({ liked: false, likes: likeCount(Number(req.params.id)) });
+});
+app.get("/api/notifs", auth, (req, res) => {
+  const me = req.user.id;
+  const rows = db.prepare(`SELECT n.id, n.type, n.actor_id, n.ref_id, n.text, n.created_at, n.read_at, u.name FROM notifs n JOIN users u ON u.id = n.actor_id WHERE n.user_id = ? AND u.disabled = 0 ORDER BY n.id DESC LIMIT 50`).all(me)
+    .filter(r => !blockedEither(me, r.actor_id))
+    .map(r => ({ id: r.id, type: r.type, ref: r.ref_id, text: r.text, created_at: r.created_at, read: !!r.read_at, actor: { id: r.actor_id, name: r.name }, following: follows(me, r.actor_id) }));
+  res.json({ notifs: rows, unread: notifUnread(me) });
+});
+app.post("/api/notifs/read-all", auth, (req, res) => { db.prepare("UPDATE notifs SET read_at = ? WHERE user_id = ? AND read_at IS NULL").run(Date.now(), req.user.id); res.json({ ok: true, unread: 0 }); });
+app.post("/api/notifs/:id/read", auth, (req, res) => { db.prepare("UPDATE notifs SET read_at = ? WHERE id = ? AND user_id = ? AND read_at IS NULL").run(Date.now(), Number(req.params.id), req.user.id); res.json({ ok: true, unread: notifUnread(req.user.id) }); });
+
 /* ---------- safety: block and report ---------- */
 const blockedEither = (a, b) => !!db.prepare("SELECT 1 FROM blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)").get(a, b, b, a);
 app.get("/api/blocks", auth, (req, res) => res.json({ ids: db.prepare("SELECT blocked_id FROM blocks WHERE blocker_id = ?").all(req.user.id).map(r => r.blocked_id) }));
@@ -375,6 +413,20 @@ app.post("/api/report", auth, (req, res) => {
   recent.push(now); repHits.set(me, recent);
   db.prepare("INSERT INTO reports (reporter_id, target_id, kind, ref_id, reason, context, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").run(me, target.id, kind, ref, String(b.reason || "").trim().slice(0, 300), context.slice(0, 280), now);
   res.json({ ok: true });
+});
+
+/* ---------- weekly leaderboard (opt-out; private profiles never appear) ---------- */
+app.get("/api/leaderboard", auth, (req, res) => {
+  const me = req.user.id, since = Date.parse(dkey(Date.now() - 6 * 864e5)) - TZ;   // start of the local day six days ago
+  const board = db.prepare(`SELECT e.user_id id, u.name, u.title, COUNT(*) sessions FROM events e JOIN users u ON u.id = e.user_id
+      WHERE e.type = 'pomodoro' AND e.created_at >= ? AND u.disabled = 0 AND u.show_leaderboard = 1 AND u.visibility != 'private'
+      GROUP BY e.user_id ORDER BY sessions DESC, MIN(e.created_at) ASC LIMIT 200`).all(since)
+    .filter(r => r.id === me || !blockedEither(me, r.id))
+    .map((r, i) => ({ rank: i + 1, id: r.id, name: r.name, title: r.title || "", sessions: r.sessions, minutes: r.sessions * 25, me: r.id === me }));
+  res.json({ top: board.slice(0, 20), me: board.find(b => b.me) || null, total: board.length, optedIn: !!db.prepare("SELECT show_leaderboard s FROM users WHERE id = ?").get(me).s });
+});
+app.put("/api/leaderboard/optin", auth, (req, res) => {
+  db.prepare("UPDATE users SET show_leaderboard = ? WHERE id = ?").run((req.body || {}).on ? 1 : 0, req.user.id); res.json({ ok: true });
 });
 
 /* ---------- study dashboard ---------- */
@@ -588,6 +640,7 @@ io.on("connection", socket => {
     if (!result.ok) return ack({ ...result, quota: quota(socket.user.id) });
     t.emit("encouraged", { from: socket.user.name, message: msg });
     t.cheers = (t.cheers || 0) + 1;
+    notify(t.user.id, "cheer", socket.user, Math.floor(Date.now() / 1000), msg, socket.user.name + " sent you encouragement");
     t.to(t.room).emit("peer-updated", peerInfo(t));
     ack({ ok: true, quota: quota(socket.user.id) });
   });
