@@ -27,3 +27,7 @@ services:
         sync: false
       - key: TURN_CREDENTIAL
         sync: false
+      - key: METERED_API_KEY
+        sync: false
+      - key: METERED_DOMAIN
+        sync: false
