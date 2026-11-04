@@ -607,6 +607,221 @@
   .lbs{text-align:right;display:flex;flex-direction:column;flex:none}.lbs small{color:var(--muted)}
   .lbdiv{margin:12px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   .lbopt{margin-top:14px}
+  /* ===== full-page profile ===== */
+  #pv.pvpage{position:fixed;inset:0;z-index:15;background:#F5F8FF;overflow:auto;display:block;padding:0;animation:none;backdrop-filter:none}
+  .pv-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:14px;padding:12px 28px;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid #E4ECFB}
+  .pv-top h1{font-size:20px;margin:0;letter-spacing:-.01em}
+  .pv-back{border:0;background:#EEF3FF;color:#2563EB;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;transition:transform .15s,background .15s}
+  .pv-back:hover{background:#DCE7FF;transform:translateX(-2px)}
+  .pv-wrap{max-width:1240px;margin:0 auto;padding:22px 28px 60px;display:grid;grid-template-columns:420px minmax(0,1fr);gap:28px;align-items:start}
+  .pf-card{background:#fff;border-radius:22px;box-shadow:0 10px 40px -18px rgba(23,48,110,.25);padding:14px 22px 22px;position:sticky;top:84px;animation:rise .4s both}
+  .pf-cover{position:relative;height:150px;border-radius:16px;background:linear-gradient(120deg,#0B1E4B,#1D4ED8 55%,#38BDF8);background-size:cover;background-position:center;overflow:visible}
+  .pf-seen{position:absolute;right:12px;bottom:10px;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.95);border-radius:999px;padding:5px 12px;font-size:14px;color:#24345C;font-weight:500}
+  .pf-seen i{width:9px;height:9px;border-radius:50%;background:#C3CBDB}.pf-seen.on i{background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.2)}
+  .pf-cam{position:absolute;border:0;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.95);color:#2563EB;display:grid;place-items:center;box-shadow:0 4px 14px -4px rgba(0,0,0,.35);transition:transform .15s}
+  .pf-cam:hover{transform:scale(1.08)}.pf-cam .ic{width:17px;height:17px}
+  .pf-cover .pf-cam{right:10px;top:10px}
+  .pf-headrow{display:flex;justify-content:space-between;align-items:flex-start;margin-top:-62px;padding:0 4px;position:relative}
+  .pf-av{position:relative;width:138px;height:138px;border-radius:50%;border:5px solid #fff;background:#fff;box-shadow:0 8px 24px -10px rgba(0,0,0,.35)}
+  .pf-av img,.pf-av .avc{width:100%!important;height:100%!important;border-radius:50%;object-fit:cover;display:grid}
+  .pf-av .pf-cam{right:2px;bottom:6px}
+  .pf-social{display:flex;gap:10px;margin-top:74px}
+  .pf-social a{width:38px;height:38px;border-radius:50%;background:#F1F4FA;color:#5B6B8C;display:grid;place-items:center;transition:background .15s,color .15s}
+  .pf-social a:hover{background:#DBEAFE;color:#1D4ED8}.pf-social .ic{width:19px;height:19px}
+  .pf-name{display:flex;align-items:center;gap:12px;font-size:32px!important;margin:16px 0 4px!important;line-height:1.15;letter-spacing:-.02em}
+  .pf-name span.n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .pf-lvl{flex:none;display:grid;place-items:center;width:30px;height:34px;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#FBBF24,#F59E0B);clip-path:polygon(0 0,100% 0,100% 72%,50% 100%,0 72%);padding-bottom:4px}
+  .pf-sub{display:flex;align-items:center;gap:10px;font-size:20px;color:#3B4A6B;flex-wrap:wrap}
+  .pf-flag{font-size:22px;line-height:1}
+  .pf-age{color:#6B7A99;margin:10px 0 14px;font-size:15px}
+  .pf-row{display:flex;align-items:center;gap:8px;color:#55648A;font-size:15px;margin:6px 0}
+  .pf-look{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+  .lchip{display:inline-flex;align-items:center;gap:6px;background:#F3F6FC;border-radius:10px;padding:6px 10px;font-size:14.5px;color:#4A5878}
+  .pf-bio{position:relative;margin:18px 0;padding:18px 20px 30px;border-radius:14px;background:#F7F9FD;color:#4A5878;line-height:1.6;font-size:15px;overflow-wrap:anywhere;white-space:pre-wrap;max-height:180px;overflow:auto}
+  .pf-pen{position:absolute;right:10px;bottom:10px;border:0;width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 3px 10px -3px rgba(0,0,0,.25);display:grid;place-items:center;color:#3B4A6B}
+  .pf-pen .ic{width:16px;height:16px}
+  .pf-count{display:flex;margin:10px 0 18px}
+  .pf-count button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;color:#3B4A6B;font-size:16px;padding:8px 0;border-radius:12px;transition:background .15s}
+  .pf-count button:hover{background:#F3F6FC}.pf-count button+button{border-left:1px solid #E6ECF6}
+  .pf-count b{font-size:24px;color:#0B1E4B}
+  .pf-actions{display:flex;gap:10px;align-items:center}
+  .pf-actions .btn{flex:1;margin:0;height:44px;padding:0 14px;border-radius:12px}
+  .pf-dots{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:#F3F6FC;color:#55648A;display:grid;place-items:center;font-size:20px;line-height:1}
+  .pf-main{min-width:0;animation:rise .45s .05s both}
+  .pf-tabs{display:flex;background:#F1F5FD;border-radius:14px;padding:4px;margin-bottom:18px;position:sticky;top:72px;z-index:1}
+  .pf-tabs button{flex:1;border:0;background:transparent;padding:12px 8px;border-radius:11px;font-size:16px;color:#3B4A6B;font-weight:500;transition:background .2s,color .2s}
+  .pf-tabs button[aria-selected=true]{background:#DCE8FF;color:#0B1E4B;font-weight:600}
+  .pf-box{background:#F7F9FD;border-radius:14px;padding:14px;display:flex;flex-wrap:wrap;gap:10px}
+  .ichip{background:#fff;border-radius:8px;padding:8px 14px;font-size:15px;color:#24345C;box-shadow:0 1px 0 #E6ECF6}
+  .pf-h{font-size:19px;margin:30px 0 14px;font-weight:600;color:#0B1E4B}.pf-h small{font-style:italic;font-weight:400;color:#6B7A99;font-size:14px;margin-left:6px}
+  .seg2{display:flex;background:#F1F5FD;border-radius:12px;overflow:hidden}
+  .seg2 button{flex:1;border:0;background:transparent;padding:11px;font-size:16px;color:#3B4A6B;transition:background .2s}
+  .seg2 button[aria-selected=true]{background:#DCE8FF;font-weight:600;color:#0B1E4B}
+  .sess{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .sess-tot{background:linear-gradient(90deg,#60A5FA,#818CF8);color:#fff;border-radius:999px;padding:12px 20px;font-weight:600;display:flex;justify-content:space-between}
+  .srow{display:grid;grid-template-columns:150px 1fr 70px;gap:12px;align-items:center;font-size:14px;color:#55648A;padding:4px 6px}
+  .srow i{display:block;height:10px;border-radius:6px;background:linear-gradient(90deg,#3B82F6,#60A5FA);min-width:4px;transition:width .6s}
+  .srow b{text-align:right;color:#0B1E4B;font-weight:600}
+  .pf-compose{border:1px solid #E6ECF6;border-radius:14px;padding:14px 18px;background:#fff}
+  .pf-compose textarea{border:0;outline:0;resize:vertical;width:100%;min-height:48px;font:inherit;font-size:15px;background:transparent;padding:0}
+  .pf-crow{display:flex;justify-content:space-between;align-items:center;color:#9AA6BF;font-size:13px}
+  .pf-crow > span:last-child{display:flex;gap:4px}
+  .pf-ico{border:0;background:none;color:#7C8DB5;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;transition:background .15s,color .15s}
+  .pf-ico:hover{background:#EEF3FF;color:#2563EB}
+  .emo{display:flex;flex-wrap:wrap;gap:4px;padding-top:8px}.emo button{border:0;background:#F3F6FC;border-radius:8px;width:34px;height:34px;font-size:18px}
+  .pf-main .post{border:1px solid #E6ECF6;border-top:1px solid #E6ECF6;border-radius:14px;padding:16px 18px;margin-top:14px;background:#fff}
+  .post .phd{display:flex;align-items:center;gap:12px}
+  .post .pmeta{flex:1;min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .post .pname{color:#0B1E4B;font-weight:600;font-size:16px}
+  .post .pago{color:#8A97B3}
+  .post .pbody{margin:12px 2px 8px;white-space:pre-wrap;line-height:1.55;color:#1E2B4D}
+  .post .pact{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:14px}
+  .post .pact a{font-weight:600}
+  .lk.on{color:#E11D48!important}
+  .cmts{margin-top:10px;border-top:1px dashed #E1E8F5;padding-top:10px}
+  .cmt{display:flex;gap:10px;margin:8px 0;align-items:flex-start}
+  .cmt .cb{background:#F3F6FC;border-radius:12px;padding:8px 12px;flex:1;min-width:0;overflow-wrap:anywhere}
+  .cmt .cb b{font-size:14px}.cmt .cb small{color:#8A97B3;margin-left:6px}
+  .cmform{display:flex;gap:8px;margin-top:8px}.cmform input{flex:1;height:38px;border-radius:10px;margin:0}.cmform .btn{margin:0;padding:0 14px;height:38px}
+  .ptn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+  .ptn{background:#fff;border:1px solid #E6ECF6;border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-align:center;transition:transform .15s,box-shadow .15s}
+  .ptn:hover{transform:translateY(-3px);box-shadow:0 12px 30px -16px rgba(37,99,235,.5)}
+  .ptn small{color:#6B7A99}
+  .avw{position:relative;display:inline-block;line-height:0}.avw.on::after{content:"";position:absolute;right:1px;bottom:1px;width:11px;height:11px;border-radius:50%;background:#22C55E;border:2px solid #fff}
+  img.avc{object-fit:cover;display:inline-block}
+  .pf-menu{display:flex;gap:18px;justify-content:center;margin-top:12px}
+  /* edit profile */
+  .profcard{width:min(640px,100%)!important}
+  .ep-photos{position:relative;margin:14px 0 64px}
+  .ep-cover{height:140px;border-radius:14px;background:linear-gradient(120deg,#0B1E4B,#1D4ED8 55%,#38BDF8);background-size:cover;background-position:center;position:relative}
+  .ep-cover .ep-btns{position:absolute;right:10px;top:10px;display:flex;gap:6px}
+  .ep-chip{border:0;background:rgba(255,255,255,.95);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:#1D4ED8;display:inline-flex;gap:6px;align-items:center}
+  .ep-chip .ic{width:15px;height:15px}.ep-chip.rm{color:#B91C1C}
+  .ep-av{position:absolute;left:20px;bottom:-56px;width:112px;height:112px;border-radius:50%;border:4px solid #fff;background:#fff;overflow:hidden}
+  .ep-av img,.ep-av .avc{width:100%!important;height:100%!important;border-radius:50%;object-fit:cover}
+  .ep-avbtns{position:absolute;left:146px;bottom:-46px;display:flex;gap:6px}
+  .ep-avbtns .ep-chip{background:#EEF3FF}
+  .ep-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .ep-look{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .ep-look label{display:inline-flex!important;align-items:center;gap:6px;font-weight:500!important;background:#F3F6FC;border-radius:10px;padding:7px 11px;margin:0!important;cursor:pointer;font-size:14px}
+  .ep-look input{width:auto!important;margin:0!important}
+  .ep-busy{opacity:.6;pointer-events:none}
+  .fl-row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid var(--line)}
+  .fl-row .dmmid{flex:1;min-width:0}.fl-row .btn{margin:0;padding:6px 12px;font-size:13px}
+  /* ===== top bar extras, account menu, settings, tasks, floating pomodoro ===== */
+  .grid:not(.mirself) .tile.local video{transform:none}
+  .grid.noself #t-me{display:none!important}
+  body.nomsg #room .tabs2 button[data-t=chat], body.nomsg #chat, body.nomsg #toggle-chat{display:none!important}
+  .pm-av{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px 3px 3px;font-weight:600;color:var(--ink);transition:box-shadow .15s}
+  .pm-av:hover{box-shadow:0 6px 16px -8px rgba(37,99,235,.5)}
+  .pm-av .avc{width:32px!important;height:32px!important}
+  .pm{position:fixed;top:64px;right:20px;z-index:62;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px -20px rgba(15,27,61,.45);padding:8px;min-width:220px;display:flex;flex-direction:column;animation:pop .16s ease-out both}
+  .pm button{border:0;background:none;text-align:left;padding:11px 14px;border-radius:10px;font-weight:500;color:var(--ink);transition:background .12s}
+  .pm button:hover{background:#EEF3FF}.pm hr{border:0;border-top:1px solid var(--line);margin:6px 4px}.pm .danger{color:#B91C1C}
+  .pp-btn{position:relative;width:auto!important;min-width:40px;padding:0 8px;gap:6px;display:inline-flex!important;align-items:center;justify-content:center}
+  .pp-btn.run{background:#EEF2FF;color:#4F46E5;border-color:#C7D2FE}
+  .pp-t{font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+  .stcard{width:min(720px,100%)!important}
+  .sthead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  #st-tabs{flex-wrap:wrap}#st-tabs button{flex:1 1 auto;padding:10px 8px;white-space:nowrap;font-size:14px}
+  .stp{min-height:280px}
+  .strow{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 2px;border-bottom:1px solid #EEF2FA}
+  .strow span{font-weight:500}.strow select,.strow input{width:min(260px,55%);margin:0}
+  .tg{display:flex!important;justify-content:space-between;align-items:center;gap:16px;padding:13px 2px;border-bottom:1px solid #EEF2FA;cursor:pointer;font-weight:500!important;margin:0!important}
+  .tg input{position:absolute;opacity:0;width:1px!important;height:1px}
+  .tg i{flex:none;width:44px;height:26px;border-radius:999px;background:#CBD5E1;position:relative;transition:background .2s}
+  .tg i::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:transform .2s}
+  .tg input:checked+i{background:#2563EB}.tg input:checked+i::after{transform:translateX(18px)}
+  .tg input:focus-visible+i{outline:3px solid var(--accent);outline-offset:2px}
+  .stfoot{display:flex;justify-content:flex-end;align-items:center;gap:14px;margin-top:16px}.stfoot .msg{margin:0;flex:1}.stfoot .btn{margin:0;min-width:120px}
+  .tk-form{display:flex;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .tk-form input{margin:0;height:40px;border-radius:10px}.tk-form #tk-in{flex:1;min-width:0}.tk-form #tk-due{width:150px;flex:none;padding:0 8px}.tk-form .btn{margin:0;height:40px;padding:0 14px}
+  .tk-tabs{display:flex;gap:6px;padding:10px 14px 0}
+  .tk-tabs button{border:0;background:#F1F5FD;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+  .tk-tabs button[aria-selected=true]{background:#2563EB;color:#fff}
+  .tk-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F3FA;animation:rise .25s both}
+  .tk-row label{flex:1;display:flex!important;align-items:center;gap:10px;margin:0!important;font-weight:500!important;cursor:pointer;min-width:0}
+  .tk-row label span{overflow-wrap:anywhere}.tk-row input{width:18px!important;height:18px;margin:0!important;accent-color:#2563EB;flex:none}
+  .tk-row.done span{text-decoration:line-through;color:var(--muted)}
+  .tk-due{font-size:12px;font-weight:600;color:var(--muted);background:#F1F5FD;border-radius:999px;padding:3px 9px;flex:none}
+  .tk-due.today{color:#1D4ED8;background:#DBEAFE}.tk-due.late{color:#B91C1C;background:#FEE2E2}
+  .pp{width:330px!important}
+  .pp-body{padding:14px 18px 18px}
+  .pp-ph{display:flex;background:#F1F5FD;border-radius:12px;padding:3px}
+  .pp-ph button{flex:1;border:0;background:none;border-radius:9px;padding:8px 4px;font-size:13px;font-weight:600;color:var(--muted);transition:background .2s,color .2s}
+  .pp-ph button[aria-selected=true]{background:#fff;color:#4F46E5;box-shadow:0 2px 6px -2px rgba(79,70,229,.35)}
+  .pp-ring{position:relative;width:210px;height:210px;margin:18px auto 10px}
+  .pp-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .pp-bg{fill:none;stroke:#EEF0FB;stroke-width:9}
+  .pp-fg{fill:none;stroke:url(#ppg);stroke:#7C83F5;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+  #pp[data-ph=short] .pp-fg{stroke:#22C55E}#pp[data-ph=long] .pp-fg{stroke:#0EA5E9}
+  .pp-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .pp-in small{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+  .pp-in b{font-size:46px;font-family:"Plus Jakarta Sans","Inter",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:#0B1E4B}
+  .pp-ctl{display:flex;justify-content:center;align-items:center;gap:14px}
+  .pp-c{border:0;width:42px;height:42px;border-radius:50%;background:#F1F5FD;color:#4A5878;display:grid;place-items:center;transition:background .15s,transform .15s}
+  .pp-c:hover{background:#E0E7FF;transform:translateY(-1px)}.pp-c .ic{width:19px;height:19px}
+  .pp-go{border:0;width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#3B82F6);color:#fff;display:grid;place-items:center;box-shadow:0 12px 24px -10px rgba(79,70,229,.7);transition:transform .15s}
+  .pp-go:hover{transform:scale(1.06)}.pp-go .ic{width:26px;height:26px}
+  .spin.on{background:#F59E0B!important;color:#fff!important}
+  .cnt .pc{display:inline-flex;align-items:center}
+  .vt{white-space:pre-wrap;font:13px/1.5 ui-monospace,Menlo,monospace;background:#F4F7FE;border-radius:10px;padding:0;margin:8px 0 0;color:var(--ink)}
+  .vt:not(:empty){padding:12px}.vt.ok{background:#ECFDF5;color:#065F46}.vt.bad{background:#FEF2F2;color:#991B1B}
+  .rooms-sec .rgrid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  /* vibe color schemes inside a room */
+  #room[data-vibe]{transition:background .6s}
+  #room[data-vibe=pomodoro]{background:radial-gradient(900px 500px at 85% -10%,rgba(255,166,140,.45),transparent 60%),linear-gradient(160deg,#FFF4F0,#FBE4DC)}
+  #room[data-vibe=deep]{background:radial-gradient(900px 500px at 85% -10%,rgba(129,140,248,.4),transparent 60%),linear-gradient(160deg,#EEF0FF,#DCDFF8)}
+  #room[data-vibe=chill]{background:radial-gradient(900px 500px at 85% -10%,rgba(94,234,212,.35),transparent 60%),linear-gradient(160deg,#EEFAF6,#D9F0E8)}
+  #room[data-vibe=cram]{background:radial-gradient(900px 500px at 85% -10%,rgba(252,211,77,.4),transparent 60%),linear-gradient(160deg,#FFF9EC,#FBEBCB)}
+  #room[data-vibe] .rail{background:rgba(255,255,255,.55);backdrop-filter:blur(14px)}
+  #room[data-vibe] .stage{border-radius:22px;background:var(--vtint);transition:background .6s}
+  #room[data-vibe] .side > *{border-color:var(--vline)!important;background-image:linear-gradient(var(--vtint),var(--vtint))}
+  #room[data-vibe] .rhead{border-bottom:3px solid var(--vline);padding-bottom:10px}
+  #room[data-vibe=pomodoro]{--vtint:rgba(251,146,120,.16);--vline:rgba(234,88,12,.28)}
+  #room[data-vibe=deep]{--vtint:rgba(99,102,241,.16);--vline:rgba(79,70,229,.3)}
+  #room[data-vibe=chill]{--vtint:rgba(45,212,191,.16);--vline:rgba(13,148,136,.3)}
+  #room[data-vibe=cram]{--vtint:rgba(251,191,36,.18);--vline:rgba(217,119,6,.3)}
+  #room[data-vibe=pomodoro] .nav[aria-current=page],#room[data-vibe=pomodoro] .nav.on{color:#C2410C}
+  #room[data-vibe=deep] .nav[aria-current=page],#room[data-vibe=deep] .nav.on{color:#4338CA}
+  #room[data-vibe=chill] .nav[aria-current=page],#room[data-vibe=chill] .nav.on{color:#0F766E}
+  #room[data-vibe=cram] .nav[aria-current=page],#room[data-vibe=cram] .nav.on{color:#B45309}
+  .ambw{position:relative;display:inline-flex}
+  #amb-btn.on{background:#0B1E4B;color:#fff}
+  .ambp{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:270px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 50px -20px rgba(15,27,61,.45);padding:14px;display:flex;flex-direction:column;gap:8px;animation:pop .16s ease-out both}
+  .ambp small{color:var(--muted);font-size:12.5px}
+  .ambg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .ambg button{border:1px solid var(--line);background:#F7F9FD;border-radius:10px;padding:9px 8px;font-weight:600;font-size:13px;color:var(--ink);text-align:left;transition:background .15s,border-color .15s}
+  .ambg button i{display:block;font-style:normal;font-size:11px;color:var(--muted);font-weight:500}
+  .ambg button[aria-pressed=true]{background:#0B1E4B;color:#fff;border-color:#0B1E4B}.ambg button[aria-pressed=true] i{color:#C7D2FE}
+  .ambv{display:flex!important;align-items:center;gap:10px;margin:4px 0 0!important;font-weight:500!important;font-size:13px}.ambv input{flex:1;margin:0!important}
+  .vchips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
+  .vchips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-weight:600;color:var(--muted);transition:background .15s,color .15s,transform .15s}
+  .vchips button:hover{transform:translateY(-1px)}.vchips button[aria-selected=true]{background:#0B1E4B;color:#fff;border-color:#0B1E4B}
+  .vcard{position:relative;overflow:hidden;--vc:#2563EB;--vbg:#EFF6FF}
+  .vcard::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:var(--vc)}
+  [data-vibe=pomodoro]{--vc:#EF4444;--vbg:#FEF2F2}[data-vibe=deep]{--vc:#4F46E5;--vbg:#EEF2FF}[data-vibe=chill]{--vc:#0D9488;--vbg:#F0FDFA}[data-vibe=cram]{--vc:#D97706;--vbg:#FFFBEB}
+  .vhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .vtag{display:inline-flex;align-items:center;gap:6px;background:var(--vbg,#EFF6FF);color:var(--vc,#2563EB);border-radius:999px;padding:4px 11px;font-size:13px;font-weight:700;letter-spacing:.01em}
+  .vtag .ic{width:15px;height:15px}
+  h1.rt .vtag{margin-left:10px;vertical-align:middle;font-size:12px;-webkit-text-fill-color:currentColor}
+  .vclock{font-size:12px;white-space:nowrap;color:var(--muted);display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+  .vdot{width:8px;height:8px;border-radius:50%;background:#94A3B8}.vdot.focus{background:#EF4444;box-shadow:0 0 0 3px rgba(239,68,68,.18)}.vdot.short,.vdot.long{background:#22C55E}
+  .vplan{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .qb{position:absolute;top:13px;left:44px;z-index:3;display:inline-flex;align-items:flex-end;gap:2px;height:16px;padding:3px 5px;border-radius:6px;background:rgba(10,18,40,.55);backdrop-filter:blur(6px)}
+  .qb i{width:3px;border-radius:1px;background:rgba(255,255,255,.35);transition:background .3s}
+  .qb i:nth-child(1){height:5px}.qb i:nth-child(2){height:8px}.qb i:nth-child(3){height:11px}
+  .qb[data-q=good] i{background:#22C55E}
+  .qb[data-q=ok] i:nth-child(-n+2){background:#F59E0B}
+  .qb[data-q=bad] i:nth-child(1){background:#EF4444}
+  .qb[data-q=wait] i{animation:qbw 1.2s infinite}.qb[data-q=wait] i:nth-child(2){animation-delay:.2s}.qb[data-q=wait] i:nth-child(3){animation-delay:.4s}
+  @keyframes qbw{0%,100%{background:rgba(255,255,255,.3)}50%{background:rgba(255,255,255,.85)}}
+  .plf{display:flex;gap:6px;padding:4px 0 8px}
+  .plf button{border:0;background:#F1F5FD;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+  .plf button[aria-selected=true]{background:#2563EB;color:#fff}
+  @media (max-width:820px){ .pm{left:12px;right:12px;top:auto;bottom:12px} .pp{width:auto!important} .strow{flex-direction:column;align-items:stretch;gap:6px} .strow select,.strow input{width:100%} }
+  @media (max-width:980px){ .pv-wrap{grid-template-columns:1fr;padding:16px} .pf-card{position:static} .pf-tabs{top:62px} .pv-top{padding:10px 16px} }
+  @media (max-width:560px){ .ep-grid{grid-template-columns:1fr} .pf-name{font-size:26px!important} .srow{grid-template-columns:110px 1fr 56px} .pf-tabs button{font-size:13px;padding:10px 4px} }
 </style>
 </head>
 <body>
@@ -643,7 +858,7 @@
 <div id="lobby" class="hidden">
   <div class="topbar">
     <div class="brand">Chaupal</div>
-    <div class="who"><button class="rbtn nt-btn" id="nt-btn" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nt-badge hidden"></span></button><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost hidden" id="install-btn" type="button">Install app</button><button class="btn ghost" id="open-dash">Dashboard</button><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
+    <div class="who"><button class="rbtn nt-btn" id="nt-btn" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nt-badge hidden"></span></button><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><button class="rbtn" id="tk-btn" type="button" aria-label="Tasks" title="Tasks" data-testid="topbar-tasks-btn"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10l1.5 1.5L14 8M9 16h6"/></svg></button><button class="rbtn pp-btn" id="pp-btn" type="button" aria-label="Pomodoro timer" title="Pomodoro timer" data-testid="topbar-pomodoro-btn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg><span class="pp-t hidden" id="pp-btn-t"></span></button><button class="rbtn" id="open-dev" type="button" aria-label="Settings" title="Settings" data-testid="topbar-settings-btn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button><span class="chip" id="streak"></span><button class="btn ghost hidden" id="install-btn" type="button">Install app</button><button class="btn ghost" id="open-dash">Dashboard</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="pm-av" id="pm-btn" type="button" aria-label="Account menu" data-testid="profile-menu-btn"><span id="pm-av"></span><span id="who"></span><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m6 9 6 6 6-6"/></svg></button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
   <div class="lobby">
@@ -665,14 +880,15 @@
     </div>
   </div>
   <div class="rooms-sec">
-    <h2>Study Rooms</h2><p class="sub">Rooms set up by the admin. Join any time.</p>
+    <h2>Study Rooms</h2><p class="sub">Pick a vibe. Every room runs its own shared timer, so everyone inside focuses and breaks together.</p>
+    <div class="vchips" id="vibe-filter" role="tablist"><button data-vf="all" aria-selected="true" data-testid="vibe-filter-all">All rooms</button><button data-vf="pomodoro" aria-selected="false" data-testid="vibe-filter-pomodoro">Pomodoro</button><button data-vf="deep" aria-selected="false" data-testid="vibe-filter-deep">Deep focus</button><button data-vf="chill" aria-selected="false" data-testid="vibe-filter-chill">Chill</button><button data-vf="cram" aria-selected="false" data-testid="vibe-filter-cram">Cram</button></div>
     <div id="rooms-grid" class="rgrid"></div>
   </div>
   <div class="social">
     <div class="card">
       <h2>What's on your mind?</h2>
-      <textarea id="post-in" maxlength="280" rows="2" placeholder="Share a thought, a goal or a win" aria-label="New post"></textarea>
-      <div class="row" style="margin-top:10px;justify-content:space-between;align-items:center"><span class="sub" id="post-count" style="margin:0">0 / 280</span><button class="btn" id="post-send">Post</button></div>
+      <textarea id="post-in" maxlength="1000" rows="2" placeholder="Share a thought, a goal or a win" aria-label="New post" data-testid="feed-post-input"></textarea>
+      <div class="row" style="margin-top:10px;justify-content:space-between;align-items:center"><span class="sub" id="post-count" style="margin:0">0 / 1000</span><button class="btn" id="post-send" data-testid="feed-post-send">Post</button></div>
       <div class="msg" id="post-msg" role="alert"></div>
       <div id="feed"></div>
     </div>
@@ -703,7 +919,7 @@
     <header class="rhead">
       <div class="rleft">
         <button class="btn ghost sm" id="finish">Finish session</button>
-        <h1 class="rt"><span id="room-name">Study Room</span></h1>
+        <h1 class="rt"><span id="room-name">Study Room</span><span class="vtag hidden" id="room-vibe" data-testid="room-vibe-tag"></span></h1>
         <span class="rchip live">Live</span>
       </div>
       <div class="rchips">
@@ -712,6 +928,13 @@
         <span class="rchip" id="count"></span>
         <button class="rchip pomo-chip" id="pomo-chip" type="button" aria-label="Open study timer"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg><span id="pomo-chip-t">25:00</span></button>
         <button class="btn sm" id="copy">Share room</button>
+        <span class="ambw"><button class="rbtn" id="amb-btn" type="button" aria-label="Ambient sound" title="Ambient sound" aria-expanded="false" data-testid="room-ambience-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg></button>
+          <div class="ambp hidden" id="amb-pop" role="dialog" aria-label="Ambient sound" data-testid="ambience-panel">
+            <b>Ambient sound</b><small id="amb-sug"></small>
+            <div class="ambg" id="amb-list"></div>
+            <label class="ambv"><span>Volume</span><input type="range" id="amb-vol" min="0" max="1" step="0.05" aria-label="Ambient volume" data-testid="ambience-volume"></label>
+          </div></span>
+        <button class="rbtn" id="tk-btn2" type="button" aria-label="Tasks" title="Tasks" data-testid="room-tasks-btn"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10l1.5 1.5L14 8M9 16h6"/></svg></button>
         <button class="rbtn nt-btn" id="nt-btn2" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nt-badge hidden"></span></button>
         <button class="rbtn dm-btn" id="dm-btn2" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button>
       </div>
@@ -722,7 +945,7 @@
       <div class="tgroup">
         <input id="find" type="search" placeholder="Find people" aria-label="Find people">
         <div class="seg" role="group" aria-label="Layout"><button id="v-grid" class="on">Grid</button><button id="v-pin">Focus</button></div>
-        <label class="perl">Per page <select id="per"><option value="4">4</option><option value="8">8</option></select></label>
+        <label class="perl">Per page <select id="per"><option value="4">4</option><option value="8">8</option><option value="12">12</option></select></label>
         <div class="pager2"><button class="pg" id="pg-prev" aria-label="Previous page">&#8249;</button><span id="pg">1 / 1</span><button class="pg" id="pg-next" aria-label="Next page">&#8250;</button></div>
       </div>
     </div>
@@ -771,7 +994,7 @@
         <div class="log" id="log" aria-live="polite"></div>
         <form id="chat-form"><input id="chat-in" placeholder="Type a message" aria-label="Message" maxlength="1000"><button class="btn" style="padding:8px 14px">Send</button></form>
       </aside>
-      <div id="plist" class="hidden"></div>
+      <div id="plist" class="hidden"><div class="plf" id="plf"><button data-plf="all" aria-selected="true" data-testid="plist-filter-all">All</button><button data-plf="pin" aria-selected="false" data-testid="plist-filter-pinned">Pinned</button><button data-plf="fol" aria-selected="false" data-testid="plist-filter-following">Following</button></div><div id="plist-body"></div></div>
     </div>
   </aside>
   <div id="sheet-bg" class="hidden"></div>
@@ -788,16 +1011,28 @@
   <form class="dm-form hidden" id="dm-form"><input id="dm-in" maxlength="1000" placeholder="Write a message" autocomplete="off" aria-label="Message"><button class="btn" id="dm-send">Send</button></form>
 </div>
 
-<div id="prof" class="modal hidden"><div class="card">
-  <h2>Your profile</h2>
-  <label for="p-name">Name</label><input id="p-name" maxlength="40">
-  <label for="p-title">Title</label><select id="p-title"></select>
-  <label for="p-bio">Bio (200 characters)</label><textarea id="p-bio" maxlength="200" rows="3"></textarea>
-  <label for="p-vis">Who can see your profile and posts</label>
-  <select id="p-vis"><option value="public">Everyone</option><option value="followers">Only people who follow me</option><option value="private">Only me</option></select>
-  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-streak" style="width:auto"> Show my login streak on my profile</label>
-  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-act" style="width:auto"> Show my recent activity on my profile</label>
-  <button class="btn full" id="p-save">Save profile</button><button class="btn ghost full" id="p-close">Close</button>
+<input type="file" id="photo-in" accept="image/jpeg,image/png,image/webp" hidden data-testid="photo-file-input">
+<div id="prof" class="modal hidden"><div class="card profcard" data-testid="edit-profile-modal">
+  <h2>Edit profile</h2>
+  <div class="ep-photos">
+    <div class="ep-cover" id="ep-cover"><div class="ep-btns"><button type="button" class="ep-chip" data-photo="cover" data-testid="edit-cover-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Change cover</button><button type="button" class="ep-chip rm" data-rmphoto="cover" data-testid="remove-cover-btn">Remove</button></div></div>
+    <div class="ep-av" id="ep-av"></div>
+    <div class="ep-avbtns"><button type="button" class="ep-chip" data-photo="avatar" data-testid="edit-avatar-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Change photo</button><button type="button" class="ep-chip rm" data-rmphoto="avatar" data-testid="remove-avatar-btn">Remove</button></div>
+  </div>
+  <div class="ep-grid">
+    <div><label for="p-name">Name</label><input id="p-name" maxlength="40" data-testid="edit-name-input"></div>
+    <div><label for="p-pron">Pronouns</label><input id="p-pron" maxlength="20" placeholder="he/him" data-testid="edit-pronouns-input"></div>
+    <div><label for="p-age">Age</label><input id="p-age" type="number" min="13" max="120" data-testid="edit-age-input"></div>
+    <div><label for="p-country">Country</label><select id="p-country" data-testid="edit-country-select"></select></div>
+    <div><label for="p-title">Title</label><select id="p-title" data-testid="edit-title-select"></select></div>
+    <div><label for="p-rel">Relationship status</label><select id="p-rel" data-testid="edit-relationship-select"></select></div>
+    <div><label for="p-ig">Instagram (handle or link)</label><input id="p-ig" maxlength="120" placeholder="@yourname" data-testid="edit-instagram-input"></div>
+    <div><label for="p-li">LinkedIn (link)</label><input id="p-li" maxlength="120" placeholder="https://linkedin.com/in/you" data-testid="edit-linkedin-input"></div>
+  </div>
+  <label>Looking for</label><div class="ep-look" id="p-look" data-testid="edit-looking-for"></div>
+  <label for="p-int">Interests (separate with commas)</label><input id="p-int" maxlength="400" placeholder="Music, Reading, Football" data-testid="edit-interests-input">
+  <label for="p-bio">Bio (600 characters)</label><textarea id="p-bio" maxlength="600" rows="4" data-testid="edit-bio-input"></textarea>
+  <button class="btn full" id="p-save" data-testid="edit-profile-save-btn">Save profile</button><button class="btn ghost full" id="p-close" data-testid="edit-profile-close-btn">Close</button>
   <div class="msg" id="p-msg" role="alert"></div>
 </div></div>
 
@@ -809,7 +1044,16 @@
   <div class="msg" id="enc-msg" role="alert"></div>
 </div></div>
 
-<div id="pv" class="modal hidden"><div class="card pfwrap"><div id="pv-body"></div><button class="btn ghost full" id="pv-close">Close</button></div></div>
+<div id="pv" class="pvpage hidden" data-testid="profile-page">
+  <header class="pv-top"><button class="pv-back" id="pv-close" type="button" aria-label="Back" data-testid="profile-back-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><h1 id="pv-title">Profile</h1></header>
+  <div id="pv-body"></div>
+</div>
+<div id="fl" class="modal hidden"><div class="card" data-testid="follows-modal">
+  <h2 id="fl-title">Followers</h2>
+  <div class="tabs" id="fl-tabs" style="margin-top:12px"><button data-fl="followers" aria-selected="true" data-testid="follows-tab-followers">Followers</button><button data-fl="following" aria-selected="false" data-testid="follows-tab-following">Following</button></div>
+  <div id="fl-body" style="max-height:55vh;overflow:auto"></div>
+  <button class="btn ghost full" id="fl-close" data-testid="follows-close-btn">Close</button>
+</div></div>
 <div id="act" class="modal hidden"><div class="card"><h2>My activity</h2><p class="sub" id="act-streak"></p><div id="act-body"></div><button class="btn ghost full" id="act-close">Close</button></div></div>
 
 <div id="fx" class="modal hidden"><div class="card fxcard">
@@ -859,14 +1103,74 @@
   <div class="msg" id="rp-msg" role="alert"></div>
 </div></div>
 
-<div id="dev" class="modal hidden"><div class="card">
-  <h2>Audio &amp; video settings</h2><p class="sub">Choose the devices Chaupal uses. Changes apply right away during a meeting.</p>
-  <label for="dev-cam">Camera</label><select id="dev-cam"></select>
-  <label for="dev-mic">Microphone</label><select id="dev-mic"></select>
-  <div id="dev-spk-wrap"><label for="dev-spk">Speaker</label><select id="dev-spk"></select><button class="btn ghost" id="dev-test" type="button">Test speaker</button></div>
-  <p class="hint" id="dev-note"></p>
-  <button class="btn ghost full" id="dev-close">Close</button>
+<div id="st" class="modal hidden"><div class="card stcard" data-testid="settings-modal">
+  <div class="sthead"><h2>Settings</h2><button class="dmi" id="dev-close" type="button" aria-label="Close" data-testid="settings-close-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="tabs" id="st-tabs"><button data-st="video" aria-selected="true" data-testid="settings-tab-video">Video</button><button data-st="audio" aria-selected="false" data-testid="settings-tab-audio">Audio</button><button data-st="timer" aria-selected="false" data-testid="settings-tab-timer">Pomodoro</button><button data-st="pin" aria-selected="false" data-testid="settings-tab-pin">Pin settings</button><button data-st="trouble" aria-selected="false" data-testid="settings-tab-trouble">Troubleshooting</button></div>
+  <div class="stp" data-stp="video">
+    <div class="strow"><span>Number of tiles per page</span><select id="st-tiles" data-testid="setting-tiles"><option value="4">4</option><option value="8">8</option><option value="12">12</option></select></div>
+    <div class="strow"><span>Active video source</span><select id="dev-cam" data-testid="setting-camera"></select></div>
+    <div class="strow"><span>Preferred resolution</span><select id="st-q" data-testid="setting-quality"><option value="auto">Auto (720p)</option><option value="360">Low (360p, saves data)</option><option value="720">Standard (720p)</option><option value="1080">High (1080p)</option></select></div>
+    <label class="tg"><span>Mirror my video for myself</span><input type="checkbox" data-set="mirror_self" data-testid="setting-mirror-self"><i></i></label><label class="tg"><span>Mirror my video for others</span><input type="checkbox" data-set="mirror_others" data-testid="setting-mirror-others"><i></i></label><label class="tg"><span>Show my own video tile</span><input type="checkbox" data-set="self_view" data-testid="setting-self-view"><i></i></label>
+  </div>
+  <div class="stp hidden" data-stp="audio">
+    <div class="strow"><span>Microphone</span><select id="dev-mic" data-testid="setting-mic"></select></div>
+    <div id="dev-spk-wrap"><div class="strow"><span>Speaker</span><select id="dev-spk" data-testid="setting-speaker"></select></div><button class="btn ghost" id="dev-test" type="button" data-testid="setting-test-speaker">Test speaker</button></div>
+    <p class="hint" id="dev-note"></p>
+  </div>
+  <div class="stp hidden" data-stp="timer">
+    <div class="strow"><span>Focus (minutes)</span><input type="number" min="1" max="120" data-setn="pomo_focus" data-testid="setting-pomo-focus"></div>
+    <div class="strow"><span>Short break (minutes)</span><input type="number" min="1" max="60" data-setn="pomo_short" data-testid="setting-pomo-short"></div>
+    <div class="strow"><span>Long break (minutes)</span><input type="number" min="1" max="90" data-setn="pomo_long" data-testid="setting-pomo-long"></div>
+    <div class="strow"><span>Focus rounds before a long break</span><input type="number" min="1" max="12" data-setn="pomo_rounds" data-testid="setting-pomo-rounds"></div>
+    <label class="tg"><span>Play a sound when a round ends</span><input type="checkbox" data-set="pomo_sound" data-testid="setting-pomo-sound"><i></i></label><label class="tg"><span>Start the next round automatically</span><input type="checkbox" data-set="pomo_auto" data-testid="setting-pomo-auto"><i></i></label>
+  </div>
+  <div class="stp hidden" data-stp="pin">
+    <p class="sub" style="margin:0 0 8px">Pinning tells someone in your room "I see you working, keep going". Pins add up on their profile.</p>
+    <label class="tg"><span>Hide pin notifications</span><input type="checkbox" data-set="hide_pin_notifs" data-testid="setting-hide-pin-notifs"><i></i></label><label class="tg"><span>Auto pin-back: pin people who pin me</span><input type="checkbox" data-set="auto_pinback" data-testid="setting-auto-pinback"><i></i></label><label class="tg"><span>Show people I pinned first</span><input type="checkbox" data-set="sort_pinned" data-testid="setting-sort-pinned"><i></i></label><label class="tg"><span>Hide everyone's pin counts for me</span><input type="checkbox" data-set="hide_pin_counts" data-testid="setting-hide-pin-counts"><i></i></label><label class="tg"><span>Hide my pin count from everyone</span><input type="checkbox" data-set="hide_my_pins" data-testid="setting-hide-my-pins"><i></i></label>
+  </div>
+  <div class="stp hidden" data-stp="trouble">
+    <p class="sub" style="margin:0 0 8px">Turn things off if the room feels slow or distracting.</p>
+    <label class="tg"><span>Disable messages (room chat and message pop-ups)</span><input type="checkbox" data-set="disable_messages" data-testid="setting-disable-messages"><i></i></label><label class="tg"><span>Disable pinning</span><input type="checkbox" data-set="disable_pinning" data-testid="setting-disable-pinning"><i></i></label><label class="tg"><span>Decrease my room video resolution (360p)</span><input type="checkbox" data-set="low_res" data-testid="setting-low-res"><i></i></label>
+    <div class="strow"><span>Can't see someone's video?</span><button class="btn ghost" type="button" id="vt-btn" data-testid="video-test-btn" style="margin:0">Test video connection</button></div>
+    <pre class="vt" id="vt-out" data-testid="video-test-result"></pre>
+    <p class="hint">Still stuck? Ask both people to reload the page, or try another Wi-Fi. Office, college and mobile networks need the video relay (TURN).</p>
+  </div>
+  <div class="stfoot"><span class="msg" id="st-msg" role="alert"></span><button class="btn" id="st-save" type="button" data-testid="settings-save-btn">Save</button></div>
 </div></div>
+
+<div id="pr" class="modal hidden"><div class="card" data-testid="privacy-modal">
+  <h2>Privacy settings</h2>
+  <div class="tabs" id="pr-tabs" style="margin-top:12px"><button data-pr="msg" aria-selected="true" data-testid="privacy-tab-messaging">Messaging</button><button data-pr="prof" aria-selected="false" data-testid="privacy-tab-profile">Profile</button></div>
+  <div data-prp="msg"><label for="pr-dm">Who can message me?</label><select id="pr-dm" data-testid="privacy-dm-select"><option value="everyone">Everyone</option><option value="following">Only people I follow</option><option value="nobody">No one</option></select><p class="hint">People you have already messaged can always reply.</p></div>
+  <div data-prp="prof" class="hidden">  <label for="p-vis">Who can see your profile and posts</label>
+  <select id="p-vis" data-testid="privacy-visibility-select"><option value="public">Everyone</option><option value="followers">Only people who follow me</option><option value="private">Only me</option></select>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-streak" style="width:auto" data-testid="privacy-streak-check"> Show my login streak on my profile</label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-act" style="width:auto" data-testid="privacy-activity-check"> Show my recent activity on my profile</label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pr-lb" style="width:auto" data-testid="privacy-leaderboard-check"> Show me on the weekly leaderboard</label></div>
+  <button class="btn full" id="pr-save" data-testid="privacy-save-btn">Save</button><button class="btn ghost full" id="pr-close" data-testid="privacy-close-btn">Discard changes</button>
+  <div class="msg" id="pr-msg" role="alert"></div>
+</div></div>
+
+<div id="pm" class="pm hidden" role="menu" data-testid="profile-menu">
+  <button data-pm="view" data-testid="menu-view-profile">View profile</button><button data-pm="edit" data-testid="menu-profile-settings">Profile settings</button><button data-pm="privacy" data-testid="menu-privacy-settings">Privacy settings</button><button data-pm="settings" data-testid="menu-settings">Settings</button><button data-pm="tasks" data-testid="menu-tasks">Tasks</button><hr><button data-pm="logout" class="danger" id="logout" data-testid="menu-logout">Log out</button>
+</div>
+
+<div id="tk" class="dmp hidden" role="dialog" aria-label="Tasks" data-testid="tasks-panel">
+  <div class="dm-head"><span class="dmlogo"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10l1.5 1.5L14 8M9 16h6"/></svg></span><b>Tasks</b><span class="sp"></span><button class="dmi" id="tk-close" type="button" title="Close" data-testid="tasks-close-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <form class="tk-form" id="tk-form"><input id="tk-in" maxlength="200" placeholder="Add a task" autocomplete="off" data-testid="task-input"><input type="date" id="tk-due" data-testid="task-due-input"><button class="btn" data-testid="task-add-btn">Add</button></form>
+  <div class="tk-tabs" id="tk-tabs"><button data-tk="week" aria-selected="true" data-testid="tasks-filter-week">Next 7 days</button><button data-tk="all" aria-selected="false" data-testid="tasks-filter-all">All</button><button data-tk="done" aria-selected="false" data-testid="tasks-filter-done">Done</button></div>
+  <div class="dm-body" id="tk-body"></div>
+</div>
+
+<div id="pp" class="dmp pp hidden" role="dialog" aria-label="Pomodoro timer" data-testid="pomodoro-panel">
+  <div class="dm-head"><b>Pomodoro</b><span class="sp"></span><button class="dmi" id="pp-set" type="button" title="Timer settings" data-testid="pomodoro-settings-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button><button class="dmi" id="pp-close" type="button" title="Close" data-testid="pomodoro-close-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="pp-body">
+    <div class="pp-ph" id="pp-ph"><button data-pph="focus" data-testid="pomodoro-phase-focus">Focus</button><button data-pph="short" data-testid="pomodoro-phase-short">Short break</button><button data-pph="long" data-testid="pomodoro-phase-long">Long break</button></div>
+    <div class="pp-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="pp-bg"/><circle cx="60" cy="60" r="52" class="pp-fg" id="pp-fg"/></svg><div class="pp-in"><small id="pp-lbl">FOCUS</small><b id="pp-time" data-testid="pomodoro-time">25:00</b><small id="pp-round"></small></div></div>
+    <div class="pp-ctl"><button class="pp-c" id="pp-reset" title="Reset" data-testid="pomodoro-reset-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg></button><button class="pp-go" id="pp-go" title="Start" data-testid="pomodoro-start-btn"></button><button class="pp-c" id="pp-skip" title="Skip" data-testid="pomodoro-skip-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM19 5v14"/></svg></button><button class="pp-c" id="pp-snd" title="Sound" data-testid="pomodoro-sound-btn"></button></div>
+    <p class="hint" id="pp-note" style="text-align:center"></p>
+  </div>
+</div>
 
 <div id="info" class="modal hidden"><div class="card">
   <h2 id="info-name"></h2><p class="sub" id="info-title"></p><p id="info-bio"></p>
@@ -885,6 +1189,7 @@
     <p class="sub">Create study rooms and choose whether video and audio are allowed in each. Changes apply to people already inside.</p>
     <label for="rm-name">Room name</label><input id="rm-name" maxlength="60" placeholder="JEE 2026 Warriors">
     <label for="rm-desc">Description</label><input id="rm-desc" maxlength="140" placeholder="Together we study. Together we achieve.">
+    <label for="rm-vibe">Room vibe (sets the shared timer)</label><select id="rm-vibe" data-testid="admin-room-vibe-select"><option value="pomodoro">Pomodoro (25 / 5)</option><option value="deep">Deep focus (50 / 10)</option><option value="chill">Chill (30 / 10)</option><option value="cram">Cram (90 / 15)</option></select>
     <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="rm-video" checked style="width:auto"> Allow video</label>
     <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="rm-audio" checked style="width:auto"> Allow audio</label>
     <button class="btn" id="rm-create" style="margin-top:12px">Create room</button><div class="msg" id="rm-msg" role="alert"></div>
@@ -980,7 +1285,7 @@ function logout(){
 $("logout").onclick = logout;
 
 function afterLogin(){
-  $("who").textContent = me.name;
+  $("who").textContent = me.name; setMenuAvatar(); loadSettings();
   $("open-admin").classList.toggle("hidden", me.role !== "admin"); $("n-admin").classList.toggle("hidden", me.role !== "admin");
   api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); setNotif(r.notifUnread || 0); loadFeed(); loadRooms(); connectDm(); loadBlocks(); }).catch(() => {});
   route();
@@ -1010,7 +1315,7 @@ let socket = null, localStream = null, camTrack = null, screenStream = null, ice
 const peers = new Map(); // socketId -> { pc, name }
 const info = new Map();  // socketId (or "me") -> { name, title, bio, pomo }
 let relayOn = false, relayMissing = [], roomSettings = null, micLocked = false, camLocked = false, pinned = null, tileView = true, perPage = 4, page = 0, roomStart = 0, quota = { left: 3, max: 3, nextAt: 0 }, TITLES = [];
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const esc = s => String(s ?? "").replace(/[&<>"'`]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "`": "&#96;" }[c]));
 
 async function getMedia(){
   const q = QUAL[FX.quality] || QUAL.auto, v = { width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.f }, ...(DEV.cam ? { deviceId: { ideal: DEV.cam } } : {}) };
@@ -1025,12 +1330,12 @@ function addTile(id, stream, label, local){
     t = document.createElement("div");
     t.className = "tile" + (local ? " local" : "");
     t.id = "t-" + id;
-    t.innerHTML = '<video autoplay playsinline></video><button class="pinb" data-a="pin" title="Pin">' + TI.pin + '</button><div class="badge"></div><div class="status"></div><div class="name"></div><div class="tact">' +
-      (local ? "" : '<button data-a="enc" title="Encourage">' + TI.smile + '</button><button data-a="msg" title="Message">' + TI.msg + '</button><button data-a="bio" title="View profile">' + TI.info + "</button>" +
+    t.innerHTML = '<video autoplay playsinline></video><button class="pinb" data-a="pin" title="Spotlight">' + TI.spot + '</button><div class="badge"></div>' + (local ? "" : '<span class="qb" data-q="wait" title="Connecting..." data-testid="tile-quality-' + id + '"><i></i><i></i><i></i></span>') + '<div class="status"></div><div class="name"></div><div class="tact">' +
+      (local ? "" : '<button data-a="spin" class="spin" title="Pin" data-testid="tile-pin-' + id + '">' + TI.pin + '</button><button data-a="enc" title="Encourage">' + TI.smile + '</button><button data-a="msg" title="Message">' + TI.msg + '</button><button data-a="bio" title="View profile">' + TI.info + "</button>" +
         (me.role === "admin" ? '<button data-a="a-mic">Mute</button><button data-a="a-cam">Stop cam</button><button data-a="a-rm">Remove</button>' : "")) + "</div>";
     t.onclick = e => {
       const bt = e.target.closest("[data-a]"); if (!bt) return; const a = bt.dataset.a;
-      if (a === "pin") togglePin(id); if (a === "enc") openEnc(id); if (a === "bio"){ const i = info.get(id); if (i && i.userId) openUser(i.userId); } if (a === "msg"){ const i = info.get(id); if (i && i.userId) openThread(i.userId, i.name); } if (a.startsWith("a-")) adminAct(id, a, bt);
+      if (a === "pin") togglePin(id); if (a === "spin") pinPeer(id, bt); if (a === "enc") openEnc(id); if (a === "bio"){ const i = info.get(id); if (i && i.userId) openUser(i.userId); } if (a === "msg"){ const i = info.get(id); if (i && i.userId) openThread(i.userId, i.name); } if (a.startsWith("a-")) adminAct(id, a, bt);
     };
     $("grid").appendChild(t);
   }
@@ -1044,9 +1349,10 @@ function relabel(id, fallback){
   const t = $("t-" + id), el = t && t.querySelector(".name"); if (!el) return;
   const i = info.get(id) || {}, nm = (i.name || fallback) + (id === "me" ? " (you)" : "");
   el.innerHTML = '<span class="who"><b>' + esc(nm) + "</b>" + (i.title ? " <small>" + esc(i.title) + "</small>" : "") + "</span>" +
-    '<span class="cnt">' + (i.sessions ? '<i title="Focus sessions done">' + i.sessions + "</i>" : "") + (i.cheers ? '<i title="Encouragements received">+' + i.cheers + "</i>" : "") + "</span>" +
+    '<span class="cnt">' + (i.sessions ? '<i title="Focus sessions done">' + i.sessions + "</i>" : "") + (i.cheers ? '<i title="Encouragements received">+' + i.cheers + "</i>" : "") + (!SET.hide_pin_counts && i.pins ? '<i class="pc" title="Pins">' + TI.pinS + i.pins + "</i>" : "") + "</span>" +
     (i.goal ? '<span class="goal">' + esc(i.goal) + "</span>" : "");
   t.dataset.s = (nm + " " + (i.title || "") + " " + (i.goal || "")).toLowerCase();
+  const sp = t.querySelector(".spin"); if (sp){ const on = myPins.has(i.userId); sp.classList.toggle("on", on); sp.title = on ? "Unpin" : "Pin"; sp.classList.toggle("hidden", !!(SET.disable_pinning || i.noPin)); }
   const bl = id !== "me" && blockedUsers.has(i.userId), vv = t.querySelector("video"); t.classList.toggle("blk", bl); if (vv && id !== "me") vv.muted = bl;
 }
 function removeTile(id){ const t = document.getElementById("t-" + id); if (t) t.remove(); if (pinned === id) { pinned = null; tileView = true; } info.delete(id); updateCount(); layout(); }
@@ -1056,7 +1362,7 @@ async function enterRoom(code){
   show("room"); roomStart = Date.now(); closeSheet();
   $("room-code").textContent = code;
   $("grid").innerHTML = ""; $("log").innerHTML = "";
-  roomSettings = null; micLocked = camLocked = false; grp.on = false; grpUI(); $("room-name").textContent = "Study Room";
+  roomSettings = null; micLocked = camLocked = false; grp.on = false; grp.vibe = null; restorePomo(); grpUI(); $("room-name").textContent = "Study Room"; $("room-vibe").classList.add("hidden");
 
   localStream = await getMedia();
   if (!localStream){
@@ -1072,7 +1378,7 @@ async function enterRoom(code){
   info.set("me", me);
   addTile("me", localStream, me.name + " (you)", true);
 
-  try { const r = await api("/api/ice"); iceServers = r.iceServers; relayOn = !!r.relay; relayMissing = r.missing || []; } catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
+  try { const r = await api("/api/ice"); iceServers = r.iceServers; relayOn = !!r.relay; relayMissing = r.missing || []; meteredError = r.meteredError || ""; } catch { iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; }
 
   socket = io({ auth: { token }, forceNew: true });
   socket.on("connect_error", err => { if (err.message === "unauthorized") logout(); });
@@ -1081,16 +1387,22 @@ async function enterRoom(code){
     socket.emit("join", code, async res => {
       if (res.error){ alert(res.error); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
       roomSettings = res.settings; applyBlocks(); applyGroup(res.timer);
+      myPins = new Set(res.myPins || []); myFollowing = new Set(res.following || []);
       // the newcomer starts a connection to everyone already inside
       for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); await connectTo(p.id, p.name, true); }
-      pomoSend(); if (me.goal) socket.emit("goal", me.goal);
+      pomoSend(); if (me.goal) socket.emit("goal", me.goal); socket.emit("cam", !!(camTrack && camTrack.enabled));
     });
   });
 
   socket.on("peer-joined", p => { info.set(p.id, p); if (!peers.has(p.id)) peers.set(p.id, { pc: null, name: p.name, chain: Promise.resolve() }); });
   socket.on("peer-left", ({ id }) => closePeer(id));
   socket.on("rt-state", applyGroup);
-  socket.on("peer-updated", p => { const i = info.get(p.id) || {}; info.set(p.id, { ...i, ...p, pomo: i.pomo }); relabel(p.id); layout(); });
+  socket.on("peer-updated", p => {
+    if (p.id === socket.id){ me.pins = p.pins; relabel("me"); return; }
+    const i = info.get(p.id) || {}; info.set(p.id, { ...i, ...p, pomo: i.pomo }); relabel(p.id); layout();
+  });
+  socket.on("pinned", d => toast(d.from + (d.auto ? " pinned you back automatically" : d.mutual ? " pinned you back" : " pinned you. Keep going!")));
+  socket.on("pin-mark", d => { if (d.on) myPins.add(d.userId); else myPins.delete(d.userId); relabelAll(); layout(); if (d.on && d.name && !SET.hide_pin_notifs) toast("Auto pin-back: you pinned " + d.name); });
   socket.on("pomo", ({ id, pomo }) => { const i = info.get(id); if (i) i.pomo = pomo && { ...pomo, at: Date.now() }; });
   socket.on("encouraged", d => { me.cheers = (me.cheers || 0) + 1; relabel("me"); toast(d.from + ": " + d.message); });
   socket.on("room-settings", s => { roomSettings = s; applyBlocks(); toast("Room settings changed: video " + (s.video ? "on" : "off") + ", audio " + (s.audio ? "on" : "off")); });
@@ -1113,14 +1425,15 @@ async function enterRoom(code){
 }
 
 function failMsg(){
-  return relayOn ? "Still can't connect, even with the relay. The TURN settings on the server may be wrong."
-    : me.role === "admin" ? "Can't connect. The server has no video relay yet. In Render, open Environment and add: " + (relayMissing.join(", ") || "TURN_URL, TURN_USERNAME, TURN_CREDENTIAL") + "."
-    : "Can't connect. These networks block direct video. Please ask the admin to set up the video relay.";
+  if (relayOn) return "Video couldn't connect, even through the relay. Open Settings > Troubleshooting > Test video connection to see why.";
+  if (me.role === "admin") return meteredError ? "Video couldn't connect. The Metered relay didn't load: " + meteredError + ". Check METERED_DOMAIN and METERED_API_KEY in Render."
+    : "Video couldn't connect because your networks block direct video and no relay is set up. In Render add METERED_API_KEY and METERED_DOMAIN (or " + (relayMissing.join(", ") || "TURN_URL, TURN_USERNAME, TURN_CREDENTIAL") + ").";
+  return "Video couldn't connect: your network or theirs blocks direct video. Ask the admin to turn on the video relay, or try another Wi-Fi.";
 }
-async function retryPeer(id){
+async function retryPeer(id, relayOnly){
   const p = peers.get(id); if (!p || !localStream) return;
   if (p.pc) p.pc.close();
-  p.pc = null; await connectTo(id, p.name, true);
+  p.pc = null; await connectTo(id, p.name, true, relayOnly);
 }
 async function handleSignal(from, name, data){
   let p = peers.get(from);
@@ -1130,20 +1443,28 @@ async function handleSignal(from, name, data){
   const pc = p.pc;
   if (data.sdp){
     await pc.setRemoteDescription(data.sdp);
+    await flushCandidates(p);
     if (data.sdp.type === "offer"){
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       socket.emit("signal", { to: from, data: { sdp: pc.localDescription } });
     }
   } else if (data.candidate){
-    await pc.addIceCandidate(data.candidate);
+    // candidates can arrive before the offer/answer is applied; keep them until then instead of dropping them
+    if (!pc.remoteDescription){ (p.pending = p.pending || []).push(data.candidate); return; }
+    await pc.addIceCandidate(data.candidate).catch(e => console.warn("ICE candidate skipped", e));
   }
 }
+async function flushCandidates(p){
+  const list = (p.pending || []).splice(0);
+  for (const c of list) await p.pc.addIceCandidate(c).catch(e => console.warn("ICE candidate skipped", e));
+}
 
-async function connectTo(id, name, initiator){
-  const pc = new RTCPeerConnection({ iceServers });
+async function connectTo(id, name, initiator, relayOnly){
+  // relay-only is used on the retry: it forces the TURN route that strict networks need
+  const pc = new RTCPeerConnection({ iceServers, iceCandidatePoolSize: 2, ...(relayOnly && relayOn ? { iceTransportPolicy: "relay" } : {}) });
   const entry = peers.get(id) || { name, chain: Promise.resolve() };
-  entry.pc = pc; entry.name = name;
+  entry.pc = pc; entry.name = name; entry.pending = [];
   peers.set(id, entry);
 
   addTile(id, new MediaStream(), name, false);
@@ -1154,11 +1475,16 @@ async function connectTo(id, name, initiator){
   pc.onconnectionstatechange = () => {
     const s = pc.connectionState, el = document.querySelector("#t-" + id + " .status");
     if (s === "closed") return closePeer(id);
-    if (s === "connected") capBitrate(pc);
+    if (s === "connected"){ capBitrate(pc); entry.retried = false; }
+    // one automatic retry; only one side (lower socket id) restarts, so the two browsers don't collide
+    if (s === "failed" && !entry.retried && socket && socket.id < id && peers.get(id) === entry && entry.pc === pc){ entry.retried = true; setTimeout(() => { if (entry.pc === pc) retryPeer(id, true); }, 1500); }
+    // a dropped connection that doesn't recover in 6s is rebuilt
+    clearTimeout(entry.dropT);
+    if (s === "disconnected") entry.dropT = setTimeout(() => { if (entry.pc === pc && pc.connectionState === "disconnected" && socket && socket.id < id) retryPeer(id); }, 6000);
     if (!el) return;
     if (s === "failed") el.innerHTML = esc(failMsg()) + '<br><button class="retry" data-retry="' + esc(id) + '">Try again</button>';
     else el.textContent = s === "connected" ? "" : s === "disconnected" ? "Connection lost. Reconnecting…" : "Connecting…";
-    if (s === "failed") console.warn("WebRTC failed for", id, "– a TURN server is needed");
+    if (s === "failed") console.warn("WebRTC failed for", id, relayOn ? "(relay on)" : "(no relay configured)");
   };
 
   if (initiator){
@@ -1169,6 +1495,31 @@ async function connectTo(id, name, initiator){
   return entry;
 }
 
+// reads WebRTC stats every 3 s and grades the link: good (green), ok (amber), bad (red)
+async function gradePeer(id){
+  const p = peers.get(id), pc = p && p.pc, el = document.querySelector("#t-" + CSS.escape(id) + " .qb");
+  if (!el) return;
+  if (!pc || pc.connectionState !== "connected"){
+    const s = pc ? pc.connectionState : "new", bad = s === "failed";
+    el.dataset.q = bad ? "bad" : "wait"; el.title = bad ? "No connection" : s === "disconnected" ? "Reconnecting..." : "Connecting..."; return;
+  }
+  let rtt = null, lost = 0, recv = 0, relay = false;
+  const st = await pc.getStats();
+  st.forEach(r => {
+    if (r.type === "candidate-pair" && r.state === "succeeded" && (r.nominated || r.selected)){
+      if (typeof r.currentRoundTripTime === "number") rtt = r.currentRoundTripTime;
+      const lc = st.get(r.localCandidateId), rc = st.get(r.remoteCandidateId);
+      relay = (lc && lc.candidateType === "relay") || (rc && rc.candidateType === "relay");
+    }
+    if (r.type === "inbound-rtp" && !r.isRemote){ lost += r.packetsLost || 0; recv += r.packetsReceived || 0; }
+  });
+  const dl = Math.max(0, lost - (p.qLost || 0)), dr = Math.max(0, recv - (p.qRecv || 0)); p.qLost = lost; p.qRecv = recv;
+  const loss = dl + dr > 0 ? dl / (dl + dr) : 0;
+  const q = rtt === null ? (loss < .03 ? "good" : loss < .1 ? "ok" : "bad") : rtt < .3 && loss < .03 ? "good" : rtt < .7 && loss < .1 ? "ok" : "bad";
+  el.dataset.q = q;
+  el.title = { good: "Good connection", ok: "Fair connection", bad: "Poor connection" }[q] + (rtt !== null ? " \u00b7 " + Math.round(rtt * 1000) + " ms" : "") + " \u00b7 " + Math.round(loss * 100) + "% loss" + (relay ? " \u00b7 via relay" : "");
+}
+setInterval(() => { for (const id of peers.keys()) gradePeer(id).catch(() => {}); }, 3000);
 function closePeer(id){
   const p = peers.get(id);
   if (p && p.pc) p.pc.close();
@@ -1177,7 +1528,7 @@ function closePeer(id){
 }
 
 function leaveRoom(){
-  fxStop(true);
+  fxStop(true); setRoomVibe(null);
   if (socket){ socket.disconnect(); socket = null; }
   for (const id of [...peers.keys()]) closePeer(id);
   [localStream, screenStream].forEach(s => s && s.getTracks().forEach(t => t.stop()));
@@ -1198,7 +1549,7 @@ function syncButtons(){
   setBtn("cam", camTrack && camTrack.enabled, "Camera on", "Camera off");
 }
 $("mic").onclick = () => { const a = localStream.getAudioTracks()[0]; if (blocked("mic")) return toast("The admin has turned off microphones here."); if (a){ a.enabled = !a.enabled; syncButtons(); } };
-$("cam").onclick = () => { if (blocked("cam")) return toast("The admin has turned off video here."); if (camTrack){ camTrack.enabled = !camTrack.enabled; syncButtons(); } };
+$("cam").onclick = () => { if (blocked("cam")) return toast("The admin has turned off video here."); if (camTrack){ camTrack.enabled = !camTrack.enabled; syncButtons(); if (socket) socket.emit("cam", camTrack.enabled); } };
 
 function swapVideoTrack(track){
   for (const { pc } of peers.values()){
@@ -1293,20 +1644,65 @@ $("enc-send").onclick = () => socket && socket.emit("encourage", { to: encTo, me
 $("enc-close").onclick = () => $("enc").classList.add("hidden");
 
 /* ---------- profile + bio ---------- */
+const COUNTRIES = [["IN","India"],["US","United States"],["GB","United Kingdom"],["CA","Canada"],["AU","Australia"],["NZ","New Zealand"],["IE","Ireland"],["DE","Germany"],["FR","France"],["ES","Spain"],["IT","Italy"],["NL","Netherlands"],["SE","Sweden"],["AE","United Arab Emirates"],["SA","Saudi Arabia"],["SG","Singapore"],["MY","Malaysia"],["ID","Indonesia"],["PH","Philippines"],["JP","Japan"],["KR","South Korea"],["CN","China"],["NP","Nepal"],["BD","Bangladesh"],["PK","Pakistan"],["LK","Sri Lanka"],["TR","Turkey"],["EG","Egypt"],["NG","Nigeria"],["KE","Kenya"],["ZA","South Africa"],["BR","Brazil"],["MX","Mexico"],["RU","Russia"]];
+const flag = c => /^[A-Z]{2}$/.test(c || "") ? String.fromCodePoint(...[...c].map(x => 127397 + x.charCodeAt(0))) : "";
+let PROF_OPTS = null;
+function epPhotos(){
+  $("ep-cover").style.backgroundImage = me.cover_url ? "url('" + me.cover_url + "')" : "";
+  $("ep-av").innerHTML = avatar(me.name, me.id, 112, me.avatar_url);
+  document.querySelector('[data-rmphoto="cover"]').classList.toggle("hidden", !me.cover_url);
+  document.querySelector('[data-rmphoto="avatar"]').classList.toggle("hidden", !me.avatar_url);
+}
 async function openProfile(){
   if (!TITLES.length) TITLES = (await api("/api/titles")).titles;
+  if (!PROF_OPTS) PROF_OPTS = await api("/api/profile-options");
   $("p-title").innerHTML = '<option value="">No title</option>' + TITLES.map(t => "<option>" + esc(t) + "</option>").join("");
+  $("p-rel").innerHTML = '<option value="">Not shown</option>' + PROF_OPTS.relationships.map(t => "<option>" + esc(t) + "</option>").join("");
+  $("p-country").innerHTML = '<option value="">Not shown</option>' + COUNTRIES.map(([c, n]) => '<option value="' + c + '">' + flag(c) + " " + esc(n) + "</option>").join("");
+  $("p-look").innerHTML = PROF_OPTS.looking.map((l, i) => '<label><input type="checkbox" value="' + esc(l) + '" data-testid="edit-looking-' + i + '"' + ((me.looking_for || []).includes(l) ? " checked" : "") + "> " + esc(l) + "</label>").join("");
   $("p-name").value = me.name; $("p-title").value = me.title || ""; $("p-vis").value = me.visibility || "public"; $("p-streak").checked = !!me.show_streak; $("p-act").checked = !!me.show_activity; $("p-bio").value = me.bio || ""; $("p-msg").textContent = "";
+  $("p-pron").value = me.pronouns || ""; $("p-age").value = me.age || ""; $("p-country").value = me.country || ""; $("p-rel").value = me.relationship || "";
+  $("p-int").value = (me.interests || []).join(", "); $("p-ig").value = me.instagram || ""; $("p-li").value = me.linkedin || "";
+  epPhotos();
   $("prof").classList.remove("hidden");
 }
-$("open-profile").onclick = openProfile;
 $("p-close").onclick = () => $("prof").classList.add("hidden");
 $("p-save").onclick = async () => {
   try {
-    const r = await api("/api/me", { method: "PUT", body: { name: $("p-name").value, title: $("p-title").value, bio: $("p-bio").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked } });
-    Object.assign(me, r.user); $("who").textContent = me.name;
-    $("prof").classList.add("hidden");
+    const r = await api("/api/me", { method: "PUT", body: { name: $("p-name").value, title: $("p-title").value, bio: $("p-bio").value,
+      pronouns: $("p-pron").value, age: $("p-age").value, country: $("p-country").value, relationship: $("p-rel").value,
+      looking_for: [...document.querySelectorAll("#p-look input:checked")].map(x => x.value), interests: $("p-int").value.split(","), instagram: $("p-ig").value, linkedin: $("p-li").value } });
+    Object.assign(me, r.user); $("who").textContent = me.name; setMenuAvatar();
+    if (dmSock) dmSock.emit("profile-updated"); if (socket) socket.emit("profile-updated");
+    $("prof").classList.add("hidden"); toast("Profile saved");
+    if (pvOpen() && PF && PF.id === me.id) openUser(me.id, PFT);
   } catch (e) { $("p-msg").textContent = e.message; }
+};
+// shrink a picture in the browser so uploads stay small and fast
+async function shrinkImage(file, kind){
+  const url = URL.createObjectURL(file);
+  const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error("That file isn't a picture we can read.")); i.src = url; });
+  const [W, H] = kind === "avatar" ? [400, 400] : [1500, 500], c = document.createElement("canvas"); c.width = W; c.height = H;
+  const s = Math.max(W / img.width, H / img.height), w = img.width * s, h = img.height * s;
+  c.getContext("2d").drawImage(img, (W - w) / 2, (H - h) / 2, w, h); URL.revokeObjectURL(url);
+  const max = kind === "avatar" ? 250e3 : 600e3; let q = .86, d = c.toDataURL("image/jpeg", q);
+  while (d.length * .75 > max && q > .4){ q -= .1; d = c.toDataURL("image/jpeg", q); }
+  return d;
+}
+let photoKind = "avatar";
+async function savePhoto(kind, data){
+  document.body.classList.add("ep-busy");
+  try {
+    const r = await api("/api/me/photo", { body: { kind, data } });
+    Object.assign(me, r.user); epPhotos(); setMenuAvatar();
+    if (pvOpen() && PF && PF.id === me.id) openUser(me.id, PFT);
+    toast(data ? (kind === "avatar" ? "Profile picture updated" : "Cover updated") : "Picture removed");
+  } catch (e) { alert(e.message); }
+  document.body.classList.remove("ep-busy");
+}
+$("photo-in").onchange = async () => {
+  const f = $("photo-in").files[0]; $("photo-in").value = ""; if (!f) return;
+  try { await savePhoto(photoKind, await shrinkImage(f, photoKind)); } catch (e) { alert(e.message); }
 };
 function showBio(id){
   const i = info.get(id) || {};
@@ -1325,13 +1721,16 @@ function pomoSend(){ if (socket) socket.emit("pomo", { phase: ps.phase, running:
 function pomoStart(){ if (grp.on) return grpAct("start"); if (ps.running) return; ps.at = Date.now(); ps.running = true; pomoSend(); }
 function pomoPause(){ if (grp.on) return grpAct("pause"); if (!ps.running) return; ps.left = rem(ps); ps.running = false; pomoSend(); }
 function pomoReset(){ if (grp.on) return grpAct("reset"); ps.running = false; ps.left = POMO[ps.phase] * 60000; pomoSend(); }
-function pomoNext(){
+function pomoNext(skipped){
   if (grp.on) return grpAct("skip");
-  if (ps.phase === "focus"){ ps.done++; if (socket) socket.emit("pomo-done"); me.sessions = (me.sessions || 0) + 1; relabel("me"); ps.phase = ps.done % 4 === 0 ? "long" : "short"; } else ps.phase = "focus";
-  ps.running = false; ps.left = POMO[ps.phase] * 60000; beep(); pomoSend();
+  const finished = skipped !== true || rem(ps) <= 0;
+  if (ps.phase === "focus"){ ps.done++; if (finished){ if (socket) socket.emit("pomo-done"); else api("/api/pomo-done", { body: {} }).catch(() => {}); me.sessions = (me.sessions || 0) + 1; relabel("me"); } ps.phase = ps.done % ROUNDS() === 0 ? "long" : "short"; } else ps.phase = "focus";
+  ps.running = !!SET.pomo_auto; ps.at = Date.now(); ps.left = POMO[ps.phase] * 60000; if (SET.pomo_sound !== false) beep(); pomoSend();
+  toast(ps.phase === "focus" ? "Break over. Time to focus!" : "Focus round done. Take a break.");
 }
 function renderPomo(){
-  $("pomo-phase").textContent = PH[ps.phase] + " · round " + (ps.done % 4 + 1) + " of 4";
+  $("pomo-phase").textContent = PH[ps.phase] + " · round " + (ps.done % ROUNDS() + 1) + " of " + ROUNDS();
+  renderPP();
   $("pomo-time").textContent = fmt(rem(ps));
   $("pomo-go").textContent = ps.running ? "Pause" : "Start";
   $("pomo-chip-t").textContent = fmt(rem(ps));
@@ -1354,7 +1753,7 @@ setInterval(() => {
 }, 1000);
 $("pomo-go").onclick = () => ps.running ? pomoPause() : pomoStart();
 $("pomo-reset").onclick = pomoReset;
-$("pomo-skip").onclick = pomoNext;
+$("pomo-skip").onclick = () => pomoNext(true);
 $("pomo-btn").onclick = () => { if (mob()) return openSheet("timer"); pomoDesk($("pomo").classList.contains("hidden")); renderPomo(); };
 
 /* ---------- admin ---------- */
@@ -1386,11 +1785,14 @@ $("admin-body").onclick = async e => {
 /* ---------- social: posts, follow, public profiles, activity timeline ---------- */
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago"; };
 const setStreak = s => { const c = s && s.current ? s.current : 0; $("streak").textContent = c ? c + "-day streak" : "Start your streak"; $("rail-num").textContent = c; $("rail-streak").textContent = c ? c + "-day streak. Keep it up!" : "Log in daily to build a streak"; $("rail-bar").style.width = Math.min(100, c / 7 * 100) + "%"; };
-const postHtml = p => '<div class="post"><a class="lnk" data-u="' + p.uid + '">' + esc(p.name) + "</a>" + (p.title ? " · " + esc(p.title) : "") + " <small>" + ago(p.created_at) + "</small>" +
-  (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + (p.uid !== me.id ? ' <a class="lnk" data-rep-post="' + p.id + '" data-uid="' + p.uid + '">Report</a>' : "") + "<div>" + esc(p.body) + '</div><div class="pact"><a class="lnk lk' + (p.liked ? " on" : "") + '" data-like="' + p.id + '" data-on="' + (p.liked ? 1 : 0) + '">' + (p.liked ? "Liked" : "Like") + (p.likes ? " · " + p.likes : "") + "</a></div></div>";
+const likeTxt = (on, n) => (on ? "\u2665 Liked" : "\u2661 Like") + (n ? " \u00b7 " + n : "");
+const cmTxt = n => "Comment" + (n ? " \u00b7 " + n : "");
+const postHtml = p => '<div class="post" data-post="' + p.id + '" data-testid="post-' + p.id + '"><div class="phd"><a data-u="' + p.uid + '" style="cursor:pointer">' + avatar(p.name, p.uid, 42, p.av) + '</a><div class="pmeta"><a class="lnk pname" data-u="' + p.uid + '">' + esc(p.name) + "</a>" + (p.title ? '<span class="tag">' + esc(p.title) + "</span>" : "") + '</div><small class="pago">' + ago(p.created_at) + "</small></div>" +
+  '<div class="pbody">' + esc(p.body) + '</div><div class="pact"><a class="lnk lk' + (p.liked ? " on" : "") + '" data-like="' + p.id + '" data-on="' + (p.liked ? 1 : 0) + '" data-testid="post-like-' + p.id + '">' + likeTxt(p.liked, p.likes) + '</a><a class="lnk" data-cm="' + p.id + '" data-testid="post-comment-toggle-' + p.id + '">' + cmTxt(p.comments) + "</a>" +
+  (p.uid === me.id || me.role === "admin" ? '<a class="lnk" data-del="' + p.id + '" data-testid="post-delete-' + p.id + '">Delete</a>' : "") + (p.uid !== me.id ? '<a class="lnk" data-rep-post="' + p.id + '" data-uid="' + p.uid + '">Report</a>' : "") + '</div><div class="cmts hidden" data-cmbox="' + p.id + '"></div></div>';
 const followBtn = (id, on) => '<button class="btn ' + (on ? "ghost" : "") + '" data-f="' + id + '" data-on="' + (on ? 1 : 0) + '">' + (on ? "Following" : "Follow") + "</button>";
 const LABEL = { daily_login: () => "Logged in", joined_room: () => "Joined a meeting", pomodoro: () => "Finished a focus session", posted: () => "Shared a post",
-  encouraged: d => "Encouraged " + d.to, encouraged_by: d => d.from + " encouraged you", followed: d => "Followed " + d.name };
+  encouraged: d => "Encouraged " + d.to, encouraged_by: d => d.from + " encouraged you", followed: d => "Followed " + d.name, pinned: d => "Pinned " + d.name, task_done: d => "Finished a task: " + d.text, left_room: d => "Spent " + Math.round((d.ms || 0) / 60000) + " min in a room" };
 const evHtml = e => '<div class="ev">' + esc((LABEL[e.type] || (() => e.type))(e.data)) + " <small>" + ago(e.created_at) + "</small></div>";
 
 async function loadFeed(){
@@ -1401,36 +1803,88 @@ async function searchPeople(){
   $("people").innerHTML = users.length ? users.map(u => '<div class="person"><span><a class="lnk" data-u="' + u.id + '">' + esc(u.name) + "</a>" + (u.title ? "<br><small>" + esc(u.title) + "</small>" : "") + "</span>" + followBtn(u.id, u.isFollowing) + "</div>").join("") : '<p class="sub">No one found.</p>';
 }
 let pt; $("people-q").oninput = () => { clearTimeout(pt); pt = setTimeout(() => searchPeople().catch(() => {}), 250); };
-$("post-in").oninput = () => { $("post-count").textContent = $("post-in").value.length + " / 280"; };
+$("post-in").oninput = () => { $("post-count").textContent = $("post-in").value.length + " / 1000"; };
 $("post-send").onclick = async () => {
   $("post-msg").textContent = "";
-  try { await api("/api/posts", { body: { body: $("post-in").value } }); $("post-in").value = ""; $("post-count").textContent = "0 / 280"; loadFeed(); }
+  try { await api("/api/posts", { body: { body: $("post-in").value } }); $("post-in").value = ""; $("post-count").textContent = "0 / 1000"; loadFeed(); }
   catch (e) { $("post-msg").textContent = e.message; }
 };
-let PF = null;
-const BADGES = [["First steps", "Log in on your first day", s => s.total >= 1], ["3-day streak", "Log in 3 days in a row", s => s.best >= 3], ["Week warrior", "Reach a 7-day streak", s => s.best >= 7], ["Focus starter", "Finish a focus session", s => s.focus >= 1], ["Deep worker", "Finish 10 focus sessions", s => s.focus >= 10], ["Cheerleader", "Send 3 encouragements", s => s.sent >= 3], ["Well loved", "Receive 5 encouragements", s => s.received >= 5], ["Storyteller", "Share your first post", s => s.posts >= 1], ["Connector", "Get 5 followers", s => s.followers >= 5]];
-const pfStats = u => { const st = u.stats || {}, sk = u.streak || {}; return { total: sk.total || 0, best: sk.best || 0, current: sk.current || 0, focus: st.focus || 0, sent: st.sent || 0, received: st.received || 0, posts: st.posts || 0, followers: u.followers || 0, following: u.following || 0 }; };
-async function openUser(id){
+let PF = null, PFT = "sum", PFS = "room";
+const pvOpen = () => !$("pv").classList.contains("hidden");
+const SVG = {
+  cam: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  ig: '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/></svg>',
+  li: '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9v10M6 5v.01M10 19v-6a3 3 0 0 1 6 0v6M10 10v9"/></svg>',
+  heart: '<svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;color:#818CF8;fill:#A5B4FC"><path d="M12 20s-7-4.5-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>',
+  search: '<svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px;color:#93A5CF"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  pen: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  send: '<svg class="ic" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>',
+  smile: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0M9 9.5h.01M15 9.5h.01"/></svg>'
+};
+const LOOK_ICON = { "Accountability partner(s)": "\u2705", "Study buddy": "\ud83d\udcda", "A focus group/community": "\ud83e\udde0", "Professional networking": "\ud83e\udd1d", "Friends": "\ud83d\udc4b", "Mentorship": "\ud83c\udf93" };
+const EMOJI = ["\ud83d\ude00","\ud83d\ude02","\ud83d\ude0d","\ud83d\udd25","\ud83d\udcaa","\ud83c\udf89","\ud83d\udcda","\u2615","\ud83d\ude4f","\u2728","\ud83d\udc4f","\ud83c\udfaf"];
+function seenText(u){
+  if (u.online) return "Online now";
+  if (!u.last_seen) return "Offline";
+  const d = Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(u.last_seen).setHours(0, 0, 0, 0)) / 864e5);
+  return d <= 0 ? "Seen today" : d === 1 ? "Seen yesterday" : d < 7 ? "Seen " + d + " days ago" : "Seen " + Math.floor(d / 7) + "w ago";
+}
+const socialUrl = (v, base) => /^https:\/\//i.test(v) ? v : base + encodeURIComponent(v);
+const dur = ms => { const m = Math.round(ms / 60000); return m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m"; };
+async function openUser(id, tab = "sum"){
   PF = await api("/api/users/" + id); const u = PF;
-  const act = u.isMe ? '<button class="btn full" data-edit="1">Edit profile</button>' : '<div class="pfact">' + followBtn(u.id, u.isFollowing) + '<button class="btn" data-dm="' + u.id + '" data-name="' + esc(u.name) + '">Message</button></div>' + '<div class="pfmore"><button class="linkbtn" data-block="' + u.id + '" data-on="' + (u.iBlocked ? 1 : 0) + '">' + (u.iBlocked ? "Unblock" : "Block") + '</button><button class="linkbtn" data-report="' + u.id + '">Report</button></div>';
-  $("pv-body").innerHTML = '<div class="pfgrid"><div class="pfl"><div class="pfcover"></div><div class="pfin"><span class="pfav">' + avatar(u.name, u.id, 88) + "</span><h2>" + esc(u.name) + "</h2>" + (u.title ? '<span class="tag">' + esc(u.title) + "</span>" : "") +
-    (u.streak ? '<p style="margin:12px 0 0"><span class="chip">' + u.streak.current + "-day streak</span></p>" : "") +
-    (u.restricted ? '<p class="sub" style="margin-top:14px">This profile is ' + (u.blocked ? "not available." : u.visibility === "private" ? "private." : "visible to followers only.") + "</p>" : '<div class="pfbio">' + esc(u.bio || "No bio yet.") + "</div>") +
-    '<div class="pfcount"><div><b>' + u.followers + "</b><span>Followers</span></div><div><b>" + u.following + "</b><span>Following</span></div></div>" + act + "</div></div>" +
-    '<div class="pfr"><div class="tabs" id="pf-tabs"><button data-pt="sum" aria-selected="true">Summary</button><button data-pt="ach" aria-selected="false">Achievements</button><button data-pt="stat" aria-selected="false">Statistics</button></div><div id="pf-tab"></div></div></div>';
-  $("pv").classList.remove("hidden"); pfTab("sum");
+  $("pv-title").textContent = u.isMe ? "Your Profile" : u.name.split(" ")[0] + "'s Profile";
+  const lvl = u.streak ? u.streak.total : 0;
+  const act = u.isMe
+    ? '<div class="pf-actions"><button class="btn" data-flist="followers" data-fuid="' + u.id + '" data-testid="manage-followers-btn">Manage followers</button><button class="pf-dots" data-edit="1" title="Edit profile" data-testid="profile-edit-btn">' + SVG.pen + "</button></div>"
+    : '<div class="pf-actions">' + followBtn(u.id, u.isFollowing).replace("<button ", '<button data-testid="profile-follow-btn" ') + '<button class="btn ghost" data-dm="' + u.id + '" data-name="' + esc(u.name) + '" data-testid="profile-message-btn">Message</button><button class="pf-dots" data-pfmenu="1" data-testid="profile-more-btn">&middot;&middot;&middot;</button></div>' +
+      '<div class="pf-menu hidden" id="pf-menu"><button class="linkbtn" data-block="' + u.id + '" data-on="' + (u.iBlocked ? 1 : 0) + '">' + (u.iBlocked ? "Unblock" : "Block") + '</button><button class="linkbtn" data-report="' + u.id + '">Report</button></div>';
+  const look = (u.looking_for || []).map(l => '<span class="lchip">' + (LOOK_ICON[l] || "") + " " + esc(l) + "</span>").join("");
+  $("pv-body").innerHTML = '<div class="pv-wrap"><aside class="pf-card" data-testid="profile-card">' +
+    '<div class="pf-cover" data-testid="profile-cover" style="' + (u.cover_url ? "background-image:url('" + esc(u.cover_url) + "')" : "") + '">' + (u.isMe ? '<button class="pf-cam" data-photo="cover" title="Change cover" data-testid="profile-change-cover-btn">' + SVG.cam + "</button>" : "") +
+    (u.restricted ? "" : '<span class="pf-seen' + (u.online ? " on" : "") + '" id="pf-seen" data-testid="profile-seen-status"><i></i>' + seenText(u) + "</span>") + "</div>" +
+    '<div class="pf-headrow"><div class="pf-av" data-testid="profile-avatar">' + avatar(u.name, u.id, 128, u.avatar_url) + (u.isMe ? '<button class="pf-cam" data-photo="avatar" title="Change profile picture" data-testid="profile-change-avatar-btn">' + SVG.cam + "</button>" : "") + "</div>" +
+    '<div class="pf-social">' + (u.instagram ? '<a href="' + esc(socialUrl(u.instagram, "https://instagram.com/")) + '" target="_blank" rel="noopener" title="Instagram" data-testid="profile-instagram-link">' + SVG.ig + "</a>" : "") + (u.linkedin ? '<a href="' + esc(socialUrl(u.linkedin, "https://linkedin.com/in/")) + '" target="_blank" rel="noopener" title="LinkedIn" data-testid="profile-linkedin-link">' + SVG.li + "</a>" : "") + "</div></div>" +
+    '<h2 class="pf-name" data-testid="profile-name"><span class="n">' + esc(u.name) + "</span>" + (lvl ? '<span class="pf-lvl" title="Days logged in">' + lvl + "</span>" : "") + "</h2>" +
+    '<div class="pf-sub">' + (u.pronouns ? "<span>(" + esc(u.pronouns) + ")</span>" : "") + (u.country ? '<span class="pf-flag" title="' + esc((COUNTRIES.find(c => c[0] === u.country) || [])[1] || u.country) + '">' + flag(u.country) + "</span>" : "") + (u.title ? '<span class="tag">' + esc(u.title) + "</span>" : "") + "</div>" +
+    (u.age ? '<div class="pf-age">' + u.age + " years</div>" : '<div style="height:10px"></div>') +
+    (u.relationship ? '<div class="pf-row">' + SVG.heart + esc(u.relationship) + "</div>" : "") +
+    (look ? '<div class="pf-look">' + SVG.search + look + "</div>" : "") +
+    (u.restricted ? '<p class="sub" style="margin-top:14px">This profile is ' + (u.blocked ? "not available." : u.visibility === "private" ? "private." : "visible to followers only.") + "</p>"
+      : '<div class="pf-bio" data-testid="profile-bio">' + esc(u.bio || (u.isMe ? "Tell people about yourself." : "No bio yet.")) + (u.isMe ? '<button class="pf-pen" data-edit="1" title="Edit profile" data-testid="profile-bio-edit-btn">' + SVG.pen + "</button>" : "") + "</div>") +
+    '<div class="pf-count"><button data-flist="followers" data-fuid="' + u.id + '" data-testid="profile-followers-count">Followers <b id="pf-followers">' + u.followers + '</b></button><button data-flist="following" data-fuid="' + u.id + '" data-testid="profile-following-count">Following <b id="pf-following">' + u.following + "</b></button></div>" + act + "</aside>" +
+    '<section class="pf-main"><div class="pf-tabs" id="pf-tabs"><button data-pt="sum" data-testid="profile-tab-summary">Summary</button><button data-pt="ach" data-testid="profile-tab-achievements">Achievements</button><button data-pt="stat" data-testid="profile-tab-statistics">Statistics</button><button data-pt="ptn" data-testid="profile-tab-partners">Focus Partners</button></div><div id="pf-tab"></div></section></div>';
+  $("pv").classList.remove("hidden"); $("pv").scrollTop = 0; pfTab(tab);
+}
+function sessionsHtml(u){
+  if (!u.sessions) return '<p class="sub">' + (u.isMe ? "Turn on \u201cShow my recent activity\u201d in Edit profile to share your sessions." : "Session times are hidden by this user.") + "</p>";
+  const k = PFS === "cam" ? "cam" : "ms", list = u.sessions.recent, mx = Math.max(1, ...list.map(s => s[k] || 0));
+  return '<div class="seg2" role="tablist"><button data-sk="room" aria-selected="' + (PFS === "room") + '" data-testid="sessions-room-tab">Focus room time</button><button data-sk="cam" aria-selected="' + (PFS === "cam") + '" data-testid="sessions-video-tab">Video on time</button></div>' +
+    '<div class="sess" data-testid="sessions-list"><div class="sess-tot"><span>Last 7 days</span><span>' + dur(PFS === "cam" ? u.sessions.weekCam : u.sessions.weekRoom) + "</span></div>" +
+    (list.length ? list.map(s => '<div class="srow"><span>' + new Date(s.at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + '</span><i style="width:' + Math.round((s[k] || 0) / mx * 100) + '%"></i><b>' + dur(s[k] || 0) + "</b></div>").join("") : '<p class="sub">No finished room sessions yet. Join a study room to start.</p>') + "</div>";
 }
 function pfTab(t){
+  PFT = t;
   document.querySelectorAll("#pf-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.pt === t));
   const u = PF, s = pfStats(u); let h = "";
   if (u.restricted) h = '<p class="sub" style="padding:20px 4px">Posts, achievements and statistics are hidden on this profile.</p>';
-  else if (t === "sum") h = (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="sub" style="padding:20px 4px">No posts yet.</p>') + (u.activity ? '<h3 class="pfh">Recent activity</h3>' + u.activity.map(evHtml).join("") : "");
+  else if (t === "sum"){
+    h = (u.interests && u.interests.length ? '<div class="pf-box" data-testid="profile-interests">' + u.interests.map(i => '<span class="ichip">' + esc(i) + "</span>").join("") + "</div>" : u.isMe ? '<div class="pf-box sub" style="margin:0">Add your interests from Edit profile.</div>' : "") +
+      '<h3 class="pf-h">Recent Sessions <small>(' + hhmm(Date.now()) + " in your timezone)</small></h3>" + sessionsHtml(u) +
+      '<h3 class="pf-h">Recent Activity</h3>' +
+      (u.isMe ? '<div class="pf-compose"><textarea id="pf-post-in" maxlength="1000" placeholder="Post an update\u2026" data-testid="profile-post-input"></textarea><div class="emo hidden" id="pf-emo">' + EMOJI.map(e => '<button type="button" data-emo="' + e + '">' + e + "</button>").join("") + '</div><div class="pf-crow"><span id="pf-post-count">0 / 1000</span><span><button class="pf-ico" type="button" id="pf-emo-btn" title="Emoji" data-testid="profile-emoji-btn">' + SVG.smile + '</button><button class="pf-ico" type="button" id="pf-post-send" title="Post" data-testid="profile-post-send">' + SVG.send + '</button></span></div><div class="msg" id="pf-post-msg"></div></div>' : "") +
+      '<div id="pf-posts" data-testid="profile-posts">' + (u.posts.length ? u.posts.map(postHtml).join("") : '<p class="sub" style="padding:16px 4px">No posts yet.</p>') + "</div>" +
+      (u.activity && u.activity.length ? '<h3 class="pf-h">Timeline</h3>' + u.activity.map(evHtml).join("") : "");
+  }
   else if (t === "ach") h = '<div class="bgrid">' + BADGES.map(([n, d, f]) => '<div class="badge2' + (f(s) ? " got" : "") + '"><b>' + n + "</b><small>" + d + "</small></div>").join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
+  else if (t === "ptn") h = '<p class="sub" style="margin:0 0 14px">People who follow each other with ' + (u.isMe ? "you" : esc(u.name.split(" ")[0])) + ".</p>" + (u.partners && u.partners.length ? '<div class="ptn-grid" data-testid="partners-grid">' + u.partners.map(p => '<div class="ptn" data-u="' + p.id + '"><span class="avw' + (p.online ? " on" : "") + '" data-on-uid="' + p.id + '">' + avatar(p.name, p.id, 64, p.avatar_url) + "</span><b>" + esc(p.name) + "</b><small>" + esc(p.title || "Study buddy") + "</small></div>").join("") + "</div>" : '<p class="sub">No focus partners yet. Follow people and when they follow back they appear here.</p>');
   else h = '<div class="sgrid">' + [["Current streak", u.streak ? s.current + " days" : "Hidden"], ["Best streak", u.streak ? s.best + " days" : "Hidden"], ["Days logged in", u.streak ? s.total : "Hidden"], ["Focus sessions", s.focus], ["Encouragements sent", s.sent], ["Encouragements received", s.received], ["Posts", s.posts], ["Followers", s.followers], ["Following", s.following]].map(([k, v]) => '<div class="stat"><b>' + v + "</b><small>" + k + "</small></div>").join("") + "</div>";
   $("pf-tab").innerHTML = h;
 }
 document.addEventListener("click", e => { const b = e.target.closest("#pf-tabs button"); if (b) pfTab(b.dataset.pt); });
 $("pv-close").onclick = () => $("pv").classList.add("hidden");
+const BADGES = [["First steps", "Log in on your first day", s => s.total >= 1], ["3-day streak", "Log in 3 days in a row", s => s.best >= 3], ["Week warrior", "Reach a 7-day streak", s => s.best >= 7], ["Focus starter", "Finish a focus session", s => s.focus >= 1], ["Deep worker", "Finish 10 focus sessions", s => s.focus >= 10], ["Cheerleader", "Send 3 encouragements", s => s.sent >= 3], ["Well loved", "Receive 5 encouragements", s => s.received >= 5], ["Storyteller", "Share your first post", s => s.posts >= 1], ["Connector", "Get 5 followers", s => s.followers >= 5]];
+const pfStats = u => { const st = u.stats || {}, sk = u.streak || {}; return { total: sk.total || 0, best: sk.best || 0, current: sk.current || 0, focus: st.focus || 0, sent: st.sent || 0, received: st.received || 0, posts: st.posts || 0, followers: u.followers || 0, following: u.following || 0 }; };
 $("open-activity").onclick = async () => {
   const { events, streak } = await api("/api/timeline");
   $("act-streak").textContent = "Current streak " + streak.current + " days · best " + streak.best + " · " + streak.total + " days logged in";
@@ -1443,35 +1897,359 @@ document.addEventListener("click", async e => {
   try {
     if (t.dataset.like){
       const on = t.dataset.on === "1", r = await api("/api/posts/" + t.dataset.like + "/like", on ? { method: "DELETE" } : { body: {} });
-      t.dataset.on = r.liked ? 1 : 0; t.classList.toggle("on", r.liked); t.textContent = (r.liked ? "Liked" : "Like") + (r.likes ? " \u00b7 " + r.likes : ""); return;
+      t.dataset.on = r.liked ? 1 : 0; t.classList.toggle("on", r.liked); t.textContent = likeTxt(r.liked, r.likes); return;
     }
-    if (t.dataset.u) return openUser(t.dataset.u);
+    if (t.dataset.u){ $("fl").classList.add("hidden"); return openUser(t.dataset.u); }
     if (t.dataset.dm){ $("pv").classList.add("hidden"); return openThread(t.dataset.dm, t.dataset.name); }
-    if (t.dataset.edit){ $("pv").classList.add("hidden"); return openProfile(); }
+    if (t.dataset.edit) return openProfile();
     if (t.dataset.block){ const on = t.dataset.on === "1"; await api("/api/block/" + t.dataset.block, on ? { method: "DELETE" } : { body: {} }); await loadBlocks(); relabelAll(); return openUser(t.dataset.block); }
     if (t.dataset.report) return openReport(t.dataset.report, "user", null);
     if (t.dataset.repPost) return openReport(t.dataset.uid, "post", t.dataset.repPost);
     if (t.dataset.del){ await api("/api/posts/" + t.dataset.del, { method: "DELETE" }); }
-    if (t.dataset.f){ await api("/api/users/" + t.dataset.f + "/follow", { method: t.dataset.on === "1" ? "DELETE" : "POST" }); if (!$("pv").classList.contains("hidden")) openUser(t.dataset.f); searchPeople().catch(() => {}); }
-    loadFeed(); if (!$("pv").classList.contains("hidden") && t.dataset.del) $("pv").classList.add("hidden");
+    if (t.dataset.f){ await api("/api/users/" + t.dataset.f + "/follow", { method: t.dataset.on === "1" ? "DELETE" : "POST" }); if (pvOpen() && PF && String(PF.id) === String(t.dataset.f)) openUser(PF.id, PFT); if (!$("fl").classList.contains("hidden")) loadFl(); searchPeople().catch(() => {}); }
+    loadFeed(); if (pvOpen() && PF && t.dataset.del) openUser(PF.id, PFT);
   } catch (err) { alert(err.message); }
 });
 
+/* ---------- comments, photos, followers list, profile composer ---------- */
+const cmHtml = c => '<div class="cmt" data-testid="comment-' + c.id + '"><a data-u="' + c.uid + '" style="cursor:pointer">' + avatar(c.name, c.uid, 30, c.av) + '</a><div class="cb"><b>' + esc(c.name) + "</b><small>" + ago(c.created_at) + "</small>" + (c.canDelete ? ' <a class="lnk" style="font-size:12px" data-cmdel="' + c.id + '">Delete</a>' : "") + "<div>" + esc(c.body) + "</div></div></div>";
+async function loadComments(pid){
+  const boxes = document.querySelectorAll('[data-cmbox="' + pid + '"]:not(.hidden)'); if (!boxes.length) return;
+  try {
+    const { comments } = await api("/api/posts/" + pid + "/comments");
+    boxes.forEach(b => {
+      const typed = b.querySelector("input") ? b.querySelector("input").value : "";
+      b.innerHTML = (comments.length ? comments.map(cmHtml).join("") : '<p class="sub" style="margin:4px 0">No comments yet.</p>') +
+        '<form class="cmform" data-cmform="' + pid + '"><input maxlength="280" placeholder="Write a comment" aria-label="Write a comment" data-testid="comment-input-' + pid + '"><button class="btn" data-testid="comment-send-' + pid + '">Send</button></form>';
+      b.querySelector("input").value = typed;
+    });
+  } catch (e) { boxes.forEach(b => b.innerHTML = '<p class="sub">' + esc(e.message) + "</p>"); }
+}
+document.addEventListener("submit", async e => {
+  const f = e.target.closest("[data-cmform]"); if (!f) return; e.preventDefault();
+  const inp = f.querySelector("input"), body = inp.value.trim(); if (!body) return;
+  try { await api("/api/posts/" + f.dataset.cmform + "/comments", { body: { body } }); inp.value = ""; loadComments(f.dataset.cmform); } catch (err) { alert(err.message); }
+});
+let flUid = null, flType = "followers";
+async function loadFl(){
+  document.querySelectorAll("#fl-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.fl === flType));
+  const mine = String(flUid) === String(me.id);
+  $("fl-title").textContent = mine ? "Manage followers" : "Followers & following";
+  $("fl-body").innerHTML = '<p class="sub">Loading...</p>';
+  try {
+    const { users } = await api("/api/users/" + flUid + "/follows?type=" + flType);
+    $("fl-body").innerHTML = users.length ? users.map(u => '<div class="fl-row" data-testid="follow-row-' + u.id + '"><a data-u="' + u.id + '" style="cursor:pointer"><span class="avw' + (u.online ? " on" : "") + '" data-on-uid="' + u.id + '">' + avatar(u.name, u.id, 40, u.avatar_url) + '</span></a><div class="dmmid"><a class="lnk" data-u="' + u.id + '">' + esc(u.name) + "</a><br><small class=\"sub\">" + esc(u.title || "") + "</small></div>" +
+      (u.isMe ? "" : (mine && flType === "followers" ? '<button class="btn ghost" data-rmf="' + u.id + '" data-testid="remove-follower-' + u.id + '">Remove</button>' : "") + followBtn(u.id, u.isFollowing)) + "</div>").join("")
+      : '<p class="sub" style="padding:16px 0">' + (flType === "followers" ? "No followers yet." : "Not following anyone yet.") + "</p>";
+  } catch (e) { $("fl-body").innerHTML = '<p class="sub">' + esc(e.message) + "</p>"; }
+}
+document.querySelectorAll("#fl-tabs button").forEach(b => b.onclick = () => { flType = b.dataset.fl; loadFl(); });
+$("fl-close").onclick = () => $("fl").classList.add("hidden");
+async function sendProfilePost(){
+  const inp = $("pf-post-in"); $("pf-post-msg").textContent = "";
+  try { await api("/api/posts", { body: { body: inp.value } }); inp.value = ""; openUser(me.id, "sum"); loadFeed(); }
+  catch (e) { $("pf-post-msg").textContent = e.message; }
+}
+document.addEventListener("input", e => { if (e.target.id === "pf-post-in") $("pf-post-count").textContent = e.target.value.length + " / 1000"; });
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-cm],[data-cmdel],[data-photo],[data-rmphoto],[data-flist],[data-rmf],[data-sk],[data-pfmenu],[data-emo],#pf-emo-btn,#pf-post-send"); if (!t) return;
+  try {
+    if (t.id === "pf-post-send") return sendProfilePost();
+    if (t.id === "pf-emo-btn") return $("pf-emo").classList.toggle("hidden");
+    if (t.dataset.emo){ const i = $("pf-post-in"); i.value += t.dataset.emo; i.focus(); $("pf-post-count").textContent = i.value.length + " / 1000"; return; }
+    if (t.dataset.cm){ const box = t.closest(".post").querySelector(".cmts"); box.classList.toggle("hidden"); if (!box.classList.contains("hidden")){ box.innerHTML = '<p class="sub">Loading...</p>'; loadComments(t.dataset.cm); } return; }
+    if (t.dataset.cmdel){ if (!confirm("Delete this comment?")) return; await api("/api/comments/" + t.dataset.cmdel, { method: "DELETE" }); return; }
+    if (t.dataset.photo){ photoKind = t.dataset.photo; return $("photo-in").click(); }
+    if (t.dataset.rmphoto){ if (confirm("Remove this picture?")) await savePhoto(t.dataset.rmphoto, ""); return; }
+    if (t.dataset.flist){ flUid = t.dataset.fuid; flType = t.dataset.flist; $("fl").classList.remove("hidden"); return loadFl(); }
+    if (t.dataset.rmf){ if (!confirm("Remove this follower?")) return; await api("/api/followers/" + t.dataset.rmf, { method: "DELETE" }); return loadFl(); }
+    if (t.dataset.sk){ PFS = t.dataset.sk; return pfTab("sum"); }
+    if (t.dataset.pfmenu) return $("pf-menu").classList.toggle("hidden");
+  } catch (err) { alert(err.message); }
+});
+
+/* ---------- real-time updates from the server ---------- */
+function liveHandlers(s){
+  s.on("post-new", d => { if (d.inFeed) loadFeed(); if (pvOpen() && PF && PF.id === d.uid && d.uid !== me.id) openUser(PF.id, PFT); });
+  s.on("post-del", d => document.querySelectorAll('[data-post="' + d.id + '"]').forEach(p => p.remove()));
+  s.on("post-update", d => {
+    document.querySelectorAll('[data-like="' + d.id + '"]').forEach(a => { a.textContent = likeTxt(a.dataset.on === "1", d.likes); });
+    document.querySelectorAll('[data-cm="' + d.id + '"]').forEach(a => { a.textContent = cmTxt(d.comments); });
+    loadComments(d.id);
+  });
+  s.on("follow-update", d => {
+    if (!pvOpen() || !PF || PF.id !== d.uid) return;
+    PF.followers = d.followers; PF.following = d.following;
+    if ($("pf-followers")) $("pf-followers").textContent = d.followers;
+    if ($("pf-following")) $("pf-following").textContent = d.following;
+  });
+  s.on("presence", d => {
+    document.querySelectorAll('[data-on-uid="' + d.uid + '"]').forEach(x => x.classList.toggle("on", d.online));
+    if (pvOpen() && PF && PF.id === d.uid){ PF.online = d.online; PF.last_seen = d.last_seen; const el = $("pf-seen"); if (el){ el.classList.toggle("on", d.online); el.innerHTML = "<i></i>" + seenText(PF); } }
+  });
+  s.on("profile-photo", d => { if (pvOpen() && PF && PF.id === d.uid && d.uid !== me.id) openUser(PF.id, PFT); });
+}
+
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; for (const id of ["prof", "pr", "st", "fl"]) if (!$(id).classList.contains("hidden")) return $(id).classList.add("hidden"); });
+/* ---------- user settings (video, audio, pomodoro, pins, troubleshooting) ---------- */
+var SET = { pomo_focus: 25, pomo_short: 5, pomo_long: 15, pomo_rounds: 4, pomo_sound: true, pomo_auto: false, tiles: 4, mirror_self: true, mirror_others: false, self_view: true,
+  hide_pin_notifs: false, auto_pinback: false, hide_pin_counts: false, hide_my_pins: false, sort_pinned: true, disable_messages: false, disable_pinning: false, low_res: false };
+var myPins = new Set(), myFollowing = new Set(), meteredError = "";
+// checks whether STUN and the TURN relay actually answer from this network
+async function testVideoConnection(){
+  const out = $("vt-out"); out.className = "vt"; out.textContent = "Testing... (up to 8 seconds)";
+  let r; try { r = await api("/api/ice"); } catch (e) { out.textContent = e.message; return; }
+  const gather = policy => new Promise(done => {
+    const found = new Set(); let pc;
+    try { pc = new RTCPeerConnection({ iceServers: r.iceServers, iceTransportPolicy: policy }); } catch (e) { return done({ err: e.message, found }); }
+    pc.createDataChannel("t");
+    pc.onicecandidate = e => { if (!e.candidate) { pc.close(); done({ found }); } else { const m = / typ (\w+)/.exec(e.candidate.candidate); if (m) found.add(m[1]); } };
+    pc.createOffer().then(o => pc.setLocalDescription(o)).catch(e => done({ err: e.message, found }));
+    setTimeout(() => { try { pc.close(); } catch {} done({ found }); }, 8000);
+  });
+  const all = await gather("all"), relay = r.relay ? await gather("relay") : { found: new Set() };
+  const lines = [];
+  lines.push(all.found.has("srflx") ? "Direct connection check (STUN): OK" : "Direct connection check (STUN): blocked on this network");
+  if (!r.relay) lines.push("Video relay (TURN): not set up on the server" + (r.meteredError ? " - Metered error: " + r.meteredError : "") + ". People on strict networks won't see each other.");
+  else lines.push(relay.found.has("relay") ? "Video relay (TURN, " + r.source + "): OK - video should connect from any network" : "Video relay (TURN, " + r.source + "): NOT answering. The TURN username/password may be wrong or the Metered free quota used up.");
+  const ok = !r.relay ? all.found.has("srflx") : relay.found.has("relay");
+  out.className = "vt " + (ok ? "ok" : "bad"); out.textContent = lines.join("\n");
+}
+function ROUNDS(){ return (grp.vibe && grp.rounds) || SET.pomo_rounds || 4; }
+async function loadSettings(){ try { applySettings((await api("/api/settings")).settings); } catch {} }
+function applySettings(n){
+  const full = !ps.running && ps.left === POMO[ps.phase] * 60000;
+  Object.assign(SET, n);
+  if (!grp.vibe) restorePomo();
+  if (full && !grp.on) ps.left = POMO[ps.phase] * 60000;
+  if (perPage !== SET.tiles){ perPage = SET.tiles; $("per").value = perPage; try { localStorage.setItem("chaupal_per", perPage); } catch {} }
+  $("grid").classList.toggle("noself", !SET.self_view); $("grid").classList.toggle("mirself", !!SET.mirror_self);
+  document.body.classList.toggle("nomsg", !!SET.disable_messages);
+  if (SET.disable_messages){ const b = document.querySelector('.tabs2 [data-t="plist"]'); if (b) b.click(); }
+  if (SET.low_res && FX.quality !== "360"){ FX.quality = "360"; saveFx(); applyQuality(); }
+  if (localStream) fxApply();
+  relabelAll(); layout(); renderPomo();
+}
+function fillSettings(){
+  document.querySelectorAll("[data-set]").forEach(x => { x.checked = !!SET[x.dataset.set]; });
+  document.querySelectorAll("[data-setn]").forEach(x => { x.value = SET[x.dataset.setn]; });
+  $("st-tiles").value = String(SET.tiles); $("st-q").value = FX.quality; $("st-msg").textContent = "";
+}
+function stTab(t){
+  document.querySelectorAll("#st-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.st === t));
+  document.querySelectorAll("[data-stp]").forEach(p => p.classList.toggle("hidden", p.dataset.stp !== t));
+}
+document.querySelectorAll("#st-tabs button").forEach(b => b.onclick = () => stTab(b.dataset.st));
+$("vt-btn").onclick = testVideoConnection;
+$("st-save").onclick = async () => {
+  const body = { tiles: Number($("st-tiles").value) };
+  document.querySelectorAll("[data-set]").forEach(x => { body[x.dataset.set] = x.checked; });
+  document.querySelectorAll("[data-setn]").forEach(x => { body[x.dataset.setn] = Number(x.value); });
+  if (!body.low_res && FX.quality !== $("st-q").value){ FX.quality = $("st-q").value; saveFx(); applyQuality(); }
+  try { applySettings((await api("/api/settings", { method: "PUT", body })).settings); $("st").classList.add("hidden"); toast("Settings saved"); }
+  catch (e) { $("st-msg").textContent = e.message; }
+};
+async function saveSet(patch){ try { applySettings((await api("/api/settings", { method: "PUT", body: patch })).settings); } catch (e) { toast(e.message); } }
+
+/* ---------- pinning people in a room ---------- */
+function pinPeer(id, bt){
+  const i = info.get(id); if (!i || !socket) return;
+  if (SET.disable_pinning) return toast("Pinning is off. Turn it on in Settings > Troubleshooting.");
+  const on = !myPins.has(i.userId); bt.disabled = true;
+  socket.emit("pin", { to: id, on }, r => {
+    bt.disabled = false;
+    if (r.error) return toast(r.error);
+    if (r.on) myPins.add(i.userId); else myPins.delete(i.userId);
+    relabel(id); layout(); toast(r.on ? "You pinned " + i.name : "Unpinned " + i.name);
+  });
+}
+
+/* ---------- account menu + privacy ---------- */
+function setMenuAvatar(){ $("pm-av").innerHTML = avatar(me.name, me.id, 32, me.avatar_url); }
+const pmClose = () => $("pm").classList.add("hidden");
+$("pm-btn").onclick = e => { e.stopPropagation(); $("pm").classList.toggle("hidden"); };
+document.addEventListener("click", e => { if (!e.target.closest("#pm") && !e.target.closest("#pm-btn")) pmClose(); });
+$("pm").onclick = e => {
+  const b = e.target.closest("[data-pm]"); if (!b) return; pmClose();
+  const a = b.dataset.pm;
+  if (a === "view") openUser(me.id);
+  if (a === "edit") openProfile();
+  if (a === "privacy") openPrivacy();
+  if (a === "settings") openDev();
+  if (a === "tasks") openTasks();
+};
+function prTab(t){
+  document.querySelectorAll("#pr-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.pr === t));
+  document.querySelectorAll("[data-prp]").forEach(p => p.classList.toggle("hidden", p.dataset.prp !== t));
+}
+document.querySelectorAll("#pr-tabs button").forEach(b => b.onclick = () => prTab(b.dataset.pr));
+function openPrivacy(){
+  $("pr-dm").value = me.dm_privacy || "everyone"; $("p-vis").value = me.visibility || "public"; $("p-streak").checked = !!me.show_streak; $("p-act").checked = !!me.show_activity; $("pr-lb").checked = me.show_leaderboard !== 0;
+  $("pr-msg").textContent = ""; prTab("msg"); $("pr").classList.remove("hidden");
+}
+$("pr-close").onclick = () => $("pr").classList.add("hidden");
+$("pr-save").onclick = async () => {
+  try {
+    const r = await api("/api/privacy", { method: "PUT", body: { dm_privacy: $("pr-dm").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked, show_leaderboard: $("pr-lb").checked } });
+    Object.assign(me, r.user); $("pr").classList.add("hidden"); toast("Privacy settings saved");
+    if (pvOpen() && PF && PF.id === me.id) openUser(me.id, PFT);
+  } catch (e) { $("pr-msg").textContent = e.message; }
+};
+
+/* ---------- tasks ---------- */
+let TASKS = [], tkFilter = "week";
+const dayKey = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+function dueLabel(due){
+  if (!due) return "";
+  const today = dayKey(Date.now()), tom = dayKey(Date.now() + 864e5);
+  if (due < today) return '<span class="tk-due late">Overdue</span>';
+  if (due === today) return '<span class="tk-due today">Today</span>';
+  if (due === tom) return '<span class="tk-due">Tomorrow</span>';
+  return '<span class="tk-due">' + new Date(due + "T00:00").toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }) + "</span>";
+}
+function renderTasks(){
+  document.querySelectorAll("#tk-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tk === tkFilter));
+  const wk = dayKey(Date.now() + 7 * 864e5);
+  const list = TASKS.filter(t => tkFilter === "done" ? t.done : !t.done && (tkFilter === "all" || (t.due && t.due <= wk) || !t.due));
+  $("tk-body").innerHTML = list.length ? list.map(t => '<div class="tk-row' + (t.done ? " done" : "") + '" data-testid="task-row-' + t.id + '"><label><input type="checkbox" data-tkdone="' + t.id + '"' + (t.done ? " checked" : "") + ' data-testid="task-check-' + t.id + '"><span>' + esc(t.text) + "</span></label>" + dueLabel(t.due) + '<button class="dmi" data-tkdel="' + t.id + '" title="Delete" data-testid="task-delete-' + t.id + '"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>').join("")
+    : '<p class="dmempty sub">' + (tkFilter === "done" ? "Nothing finished yet." : "No tasks here. Add one above.") + "</p>";
+}
+async function openTasks(){
+  $("pp").classList.add("hidden"); closeDm(); closeNt();
+  $("tk").classList.remove("hidden"); if (!$("tk-due").value) $("tk-due").value = dayKey(Date.now());
+  try { TASKS = (await api("/api/tasks")).tasks; } catch (e) { toast(e.message); }
+  renderTasks(); $("tk-in").focus();
+}
+["tk-btn", "tk-btn2"].forEach(id => $(id).onclick = () => $("tk").classList.contains("hidden") ? openTasks() : $("tk").classList.add("hidden"));
+$("tk-close").onclick = () => $("tk").classList.add("hidden");
+document.querySelectorAll("#tk-tabs button").forEach(b => b.onclick = () => { tkFilter = b.dataset.tk; renderTasks(); });
+$("tk-form").onsubmit = async e => {
+  e.preventDefault(); const text = $("tk-in").value.trim(); if (!text) return;
+  try { const r = await api("/api/tasks", { body: { text, due: $("tk-due").value } }); TASKS.unshift(r.task); $("tk-in").value = ""; renderTasks(); } catch (err) { toast(err.message); }
+};
+$("tk-body").onclick = async e => {
+  const d = e.target.closest("[data-tkdel]");
+  if (d){ await api("/api/tasks/" + d.dataset.tkdel, { method: "DELETE" }).catch(() => {}); TASKS = TASKS.filter(t => t.id !== Number(d.dataset.tkdel)); return renderTasks(); }
+};
+$("tk-body").onchange = async e => {
+  const c = e.target.closest("[data-tkdone]"); if (!c) return;
+  try { const r = await api("/api/tasks/" + c.dataset.tkdone, { method: "PATCH", body: { done: c.checked } }); TASKS = TASKS.map(t => t.id === r.task.id ? r.task : t); if (r.task.done) toast("Nice! Task done."); setTimeout(renderTasks, 250); } catch (err) { toast(err.message); }
+};
+
+/* ---------- floating pomodoro ---------- */
+const PP_C = 2 * Math.PI * 52;
+const PLAY = '<svg class="ic" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M8 5v14l11-7z"/></svg>', PAUSE = '<svg class="ic" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+const SND_ON = '<svg class="ic" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>', SND_OFF = '<svg class="ic" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>';
+function renderPP(){
+  if (!$("pp")) return;
+  const total = POMO[ps.phase] * 60000, left = rem(ps);
+  $("pp-time").textContent = fmt(left); $("pp-lbl").textContent = PH[ps.phase].toUpperCase();
+  $("pp-round").textContent = "Round " + (ps.done % ROUNDS() + 1) + " of " + ROUNDS();
+  $("pp-fg").style.strokeDasharray = PP_C; $("pp-fg").style.strokeDashoffset = PP_C * (1 - Math.max(0, Math.min(1, left / total)));
+  $("pp").dataset.ph = ps.phase;
+  $("pp-go").innerHTML = ps.running ? PAUSE : PLAY; $("pp-go").title = ps.running ? "Pause" : "Start";
+  $("pp-snd").innerHTML = SET.pomo_sound === false ? SND_OFF : SND_ON; $("pp-snd").title = SET.pomo_sound === false ? "Sound off" : "Sound on";
+  document.querySelectorAll("#pp-ph button").forEach(b => b.setAttribute("aria-selected", b.dataset.pph === ps.phase));
+  $("pp-note").textContent = grp.vibe ? grp.name + " room timer. Everyone in the room is on this clock." : grp.on ? "A shared room timer is on. " + (grp.host === me?.id ? "You control it." : "The host controls it.") : "";
+  const t = $("pp-btn-t"); t.textContent = fmt(left); t.classList.toggle("hidden", !ps.running && left === total);
+  $("pp-btn").classList.toggle("run", ps.running);
+}
+$("pp-btn").onclick = () => { $("tk").classList.add("hidden"); $("pp").classList.toggle("hidden"); renderPP(); };
+$("pp-close").onclick = () => $("pp").classList.add("hidden");
+$("pp-go").onclick = () => ps.running ? pomoPause() : pomoStart();
+$("pp-reset").onclick = pomoReset;
+$("pp-skip").onclick = () => pomoNext(true);
+$("pp-snd").onclick = () => saveSet({ pomo_sound: SET.pomo_sound === false });
+$("pp-set").onclick = () => openDev("timer");
+document.querySelectorAll("#pp-ph button").forEach(b => b.onclick = () => {
+  if (grp.on) return toast("The shared room timer decides the phase.");
+  ps.phase = b.dataset.pph; ps.running = false; ps.left = POMO[ps.phase] * 60000; pomoSend();
+});
+
+/* ---------- vibe backgrounds + ambient sounds (made live with Web Audio, no files to download) ---------- */
+const AMBS = { rain: "Rain", cafe: "Cafe", ocean: "Ocean waves", fire: "Fireplace", brown: "Brown noise" };
+const VIBE_AMB = { pomodoro: "cafe", deep: "rain", chill: "ocean", cram: "brown" };
+let AMBSET = { vol: .45, by: {} }; try { AMBSET = { ...AMBSET, ...JSON.parse(localStorage.getItem("chaupal_amb") || "{}") }; } catch {}
+const amb = { ctx: null, out: null, nodes: [], timers: [], kind: "off", vibe: null };
+const saveAmb = () => { try { localStorage.setItem("chaupal_amb", JSON.stringify(AMBSET)); } catch {} };
+function noise(ctx, type){
+  const n = ctx.sampleRate * 4, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+  let last = 0, b0 = 0, b1 = 0, b2 = 0;
+  for (let i = 0; i < n; i++){
+    const w = Math.random() * 2 - 1;
+    if (type === "brown"){ last = (last + .02 * w) / 1.02; d[i] = last * 3.5; }
+    else if (type === "pink"){ b0 = .99765 * b0 + w * .099046; b1 = .963 * b1 + w * .2965164; b2 = .57 * b2 + w * 1.0526913; d[i] = (b0 + b1 + b2 + w * .1848) * .11; }
+    else d[i] = w * .5;
+  }
+  return b;
+}
+function ambStop(){
+  amb.timers.forEach(clearInterval); amb.timers = [];
+  amb.nodes.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch {} }); amb.nodes = []; amb.kind = "off";
+}
+function ambPlay(kind){
+  ambStop(); if (kind === "off" || !AMBS[kind]) return ambUI();
+  if (!amb.ctx){ try { amb.ctx = new (window.AudioContext || window.webkitAudioContext)(); amb.out = amb.ctx.createGain(); amb.out.connect(amb.ctx.destination); if (amb.ctx.setSinkId && DEV.spk) amb.ctx.setSinkId(DEV.spk).catch(() => {}); } catch { return; } }
+  const c = amb.ctx; c.resume().catch(() => {}); amb.out.gain.value = AMBSET.vol; amb.kind = kind;
+  const loop = (type, chain, gain) => {
+    const s = c.createBufferSource(); s.buffer = noise(c, type); s.loop = true; let n = s;
+    for (const [t, f, q] of chain){ const fl = c.createBiquadFilter(); fl.type = t; fl.frequency.value = f; if (q) fl.Q.value = q; n.connect(fl); n = fl; amb.nodes.push(fl); }
+    const g = c.createGain(); g.gain.value = gain; n.connect(g); g.connect(amb.out); s.start(); amb.nodes.push(s, g); return g;
+  };
+  const lfo = (target, rate, depth) => { const o = c.createOscillator(), d = c.createGain(); o.frequency.value = rate; d.gain.value = depth; o.connect(d); d.connect(target); o.start(); amb.nodes.push(o, d); };
+  const blip = (freq, dur, vol) => { const o = c.createOscillator(), g = c.createGain(), t = c.currentTime; o.frequency.value = freq; o.type = "sine"; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(g); g.connect(amb.out); o.start(t); o.stop(t + dur + .05); };
+  const crack = (vol) => { const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime; s.buffer = noise(c, "white"); f.type = "highpass"; f.frequency.value = 1800; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + .06 + Math.random() * .08); s.connect(f); f.connect(g); g.connect(amb.out); s.start(t, Math.random() * 3); s.stop(t + .2); };
+  if (kind === "rain"){ loop("pink", [["highpass", 500], ["lowpass", 6500]], .9); const d = loop("white", [["bandpass", 3000, .7]], .12); lfo(d.gain, .13, .06); }
+  if (kind === "cafe"){ const m = loop("brown", [["lowpass", 700]], .8); lfo(m.gain, .21, .25); const ch = loop("pink", [["bandpass", 900, 1.2]], .18); lfo(ch.gain, .37, .1);
+    amb.timers.push(setInterval(() => { if (Math.random() < .35) blip(2200 + Math.random() * 1800, .35, .05); }, 1400)); }
+  if (kind === "ocean"){ const w = loop("brown", [["lowpass", 1100]], .55); lfo(w.gain, .075, .5); const f = loop("pink", [["bandpass", 1800, .5]], .06); lfo(f.gain, .075, .05); }
+  if (kind === "fire"){ loop("brown", [["lowpass", 450]], .9); amb.timers.push(setInterval(() => { if (Math.random() < .55) crack(.15 + Math.random() * .25); }, 140)); }
+  if (kind === "brown") loop("brown", [["lowpass", 900]], 1);
+  ambUI();
+}
+function ambUI(){
+  const v = amb.vibe;
+  $("amb-sug").textContent = v ? "Suggested for " + ((roomSettings && roomSettings.vibeLabel) || "this room") + ": " + AMBS[VIBE_AMB[v]] : "Pick a sound to study with.";
+  $("amb-list").innerHTML = ['<button data-amb="off" aria-pressed="' + (amb.kind === "off") + '" data-testid="ambience-off">Off</button>'].concat(Object.entries(AMBS).map(([k, l]) => '<button data-amb="' + k + '" aria-pressed="' + (amb.kind === k) + '" data-testid="ambience-' + k + '">' + l + (v && VIBE_AMB[v] === k ? " <i>suggested</i>" : "") + "</button>")).join("");
+  $("amb-vol").value = AMBSET.vol;
+  $("amb-btn").classList.toggle("on", amb.kind !== "off");
+}
+function setRoomVibe(v){
+  const changed = amb.vibe !== (v || null);
+  $("room").dataset.vibe = v || ""; amb.vibe = v || null;
+  if (!v){ ambStop(); ambUI(); return; }
+  if (changed){ const pick = AMBSET.by[v]; if (pick && pick !== "off") ambPlay(pick); else { ambStop(); ambUI(); } }
+}
+$("amb-btn").onclick = e => { e.stopPropagation(); const p = $("amb-pop"); p.classList.toggle("hidden"); $("amb-btn").setAttribute("aria-expanded", !p.classList.contains("hidden")); ambUI(); };
+document.addEventListener("click", e => { if (!e.target.isConnected || e.target.closest(".ambw")) return; $("amb-pop").classList.add("hidden"); $("amb-btn").setAttribute("aria-expanded", "false"); });
+$("amb-list").onclick = e => {
+  const b = e.target.closest("[data-amb]"); if (!b) return;
+  if (amb.vibe){ AMBSET.by[amb.vibe] = b.dataset.amb; saveAmb(); }
+  if (b.dataset.amb !== "off" && MSET.on){ MSET.on = false; saveMus(); musUI(); musSync(); toast("Timer music paused so the ambient sound plays alone"); }
+  ambPlay(b.dataset.amb);
+};
+$("amb-vol").oninput = () => { AMBSET.vol = Number($("amb-vol").value); saveAmb(); if (amb.out) amb.out.gain.value = AMBSET.vol; };
+document.addEventListener("pointerdown", () => { if (amb.ctx && amb.kind !== "off") amb.ctx.resume().catch(() => {}); });
+
 /* ---------- room page: pagination, side tabs, nav, participants ---------- */
-try { const v = Number(localStorage.getItem("chaupal_per")); if (v === 4 || v === 8) perPage = v; } catch {}
+try { const v = Number(localStorage.getItem("chaupal_per")); if ([4, 8, 12].includes(v)) perPage = v; } catch {}
 $("per").value = perPage;
-$("per").onchange = () => { perPage = $("per").value === "8" ? 8 : 4; page = 0; try { localStorage.setItem("chaupal_per", perPage); } catch {} layout(); };
+$("per").onchange = () => { perPage = [8, 12].includes(Number($("per").value)) ? Number($("per").value) : 4; page = 0; try { localStorage.setItem("chaupal_per", perPage); } catch {} layout(); };
 $("pg-prev").onclick = () => { page = Math.max(0, page - 1); layout(); };
 $("pg-next").onclick = () => { page++; layout(); };
 document.querySelectorAll(".tabs2 button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tabs2 button").forEach(x => x.setAttribute("aria-selected", x === b));
   $("chat").classList.toggle("hidden", b.dataset.t !== "chat"); $("plist").classList.toggle("hidden", b.dataset.t !== "plist");
 });
+let plFilter = "all";
 function renderPeople(){
-  $("plist").innerHTML = [...info].map(([id, i]) => '<div class="person"><span><b>' + esc(i.name) + (id === "me" ? " (you)" : "") + "</b>" + (i.title ? "<br><small>" + esc(i.title) + "</small>" : "") + "</span>" + (id === "me" || !i.userId ? "" : '<a class="lnk" data-u="' + i.userId + '">Profile</a>') + "</div>").join("");
+  let list = [...info].filter(([id, i]) => plFilter === "all" || (id !== "me" && (plFilter === "pin" ? myPins.has(i.userId) : myFollowing.has(i.userId))));
+  if (SET.sort_pinned) list.sort((a, b) => (myPins.has(b[1].userId) ? 1 : 0) - (myPins.has(a[1].userId) ? 1 : 0));
+  $("plist-body").innerHTML = list.length ? list.map(([id, i]) => '<div class="person"><span><b>' + esc(i.name) + (id === "me" ? " (you)" : "") + "</b>" + (i.title ? "<br><small>" + esc(i.title) + "</small>" : "") + "</span>" + (myPins.has(i.userId) && id !== "me" ? '<span class="tag">Pinned</span> ' : "") + (id === "me" || !i.userId ? "" : '<a class="lnk" data-u="' + i.userId + '">Profile</a>') + "</div>").join("") : '<p class="sub" style="padding:14px 4px">' + (plFilter === "pin" ? "You are not pinning anyone in this room." : "No one you follow is in this room.") + "</p>";
 }
+document.querySelectorAll("#plf button").forEach(b => b.onclick = () => { plFilter = b.dataset.plf; document.querySelectorAll("#plf button").forEach(x => x.setAttribute("aria-selected", x === b)); renderPeople(); });
 $("n-home").onclick = () => $("leave").click();
-$("n-prof").onclick = openProfile;
+$("n-prof").onclick = () => openUser(me.id);
 $("n-act").onclick = () => $("open-activity").click();
 $("n-admin").onclick = () => $("open-admin").click();
 setInterval(() => { if (roomStart){ const m = Math.floor((Date.now() - roomStart) / 60000); $("elapsed").textContent = m >= 60 ? Math.floor(m / 60) + "h " + m % 60 + "m" : m + "m"; } }, 15000);
@@ -1498,10 +2276,10 @@ async function listDevices(){
   if (canSink) fillSel("dev-spk", ds.filter(d => d.kind === "audiooutput"), DEV.spk, "Speaker");
   $("dev-note").textContent = canSink ? "" : "Your browser plays sound through the system default speaker. Change it in your computer's sound settings.";
 }
-function openDev(){ $("dev").classList.remove("hidden"); listDevices().catch(() => {}); }
-["open-dev", "dev-btn", "n-dev"].forEach(id => $(id).onclick = openDev);
-$("dev-close").onclick = () => $("dev").classList.add("hidden");
-if (navigator.mediaDevices) navigator.mediaDevices.addEventListener("devicechange", () => { if (!$("dev").classList.contains("hidden")) listDevices().catch(() => {}); });
+function openDev(tab = "video"){ fillSettings(); stTab(tab); $("st").classList.remove("hidden"); listDevices().catch(() => {}); }
+["open-dev", "dev-btn", "n-dev"].forEach(id => $(id).onclick = () => openDev());
+$("dev-close").onclick = () => $("st").classList.add("hidden");
+if (navigator.mediaDevices) navigator.mediaDevices.addEventListener("devicechange", () => { if (!$("st").classList.contains("hidden")) listDevices().catch(() => {}); });
 
 function swapSender(kind, track){
   for (const { pc } of peers.values()){
@@ -1544,6 +2322,7 @@ function applyBlocks(){
   if (a && blocked("mic")) a.enabled = false;
   if (camTrack && blocked("cam")) camTrack.enabled = false;
   $("room-name").textContent = (roomSettings && roomSettings.name) || "Study Room";
+  const rv = $("room-vibe"), vb = roomSettings && roomSettings.vibe; rv.classList.toggle("hidden", !vb); setRoomVibe(vb); if (vb){ rv.dataset.vibe = vb; rv.innerHTML = (VIBE_IC[vb] || "") + esc(roomSettings.vibeLabel); }
   syncButtons();
 }
 const ADM = {};
@@ -1554,13 +2333,20 @@ function adminAct(id, a, btn){
   s[k] = off; socket.emit("admin-action", { to: id, action: k + (off ? "-off" : "-on") });
   btn.textContent = k === "mic" ? (off ? "Allow mic" : "Mute") : (off ? "Allow cam" : "Stop cam");
 }
-async function loadRooms(){
-  try {
-    const { rooms } = await api("/api/rooms");
-    $("rooms-grid").innerHTML = rooms.length ? rooms.map(r => '<div class="card"><h2 style="font-size:20px">' + esc(r.name) + '</h2><p class="sub" style="margin:4px 0 0">' + esc(r.description || "") + '</p><div class="tagrow"><span class="tag">' + r.live + ' in room</span><span class="tag' + (r.video ? "" : " off") + '">Video ' + (r.video ? "on" : "off") + '</span><span class="tag' + (r.audio ? "" : " off") + '">Audio ' + (r.audio ? "on" : "off") + '</span></div><button class="btn" data-join="' + esc(r.code) + '">Join room</button></div>').join("")
-      : '<p class="sub">No study rooms yet.' + (me && me.role === "admin" ? " Create one in the Admin portal." : "") + "</p>";
-  } catch {}
+let ROOMS = [], vibeF = "all", roomsAt = 0;
+const VIBE_IC = { pomodoro: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>', deep: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 0 12 6 6 0 0 1 0-12zM5 20h14"/></svg>', chill: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 10h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM17 11h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3"/></svg>', cram: '<svg class="ic" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>' };
+function renderRooms(){
+  document.querySelectorAll("#vibe-filter button").forEach(b => b.setAttribute("aria-selected", b.dataset.vf === vibeF));
+  const list = ROOMS.filter(r => vibeF === "all" || r.vibe === vibeF), passed = Date.now() - roomsAt;
+  $("rooms-grid").innerHTML = list.length ? list.map(r => { const left = Math.max(0, r.timer.left - passed);
+    return '<div class="card vcard" data-vibe="' + esc(r.vibe) + '" data-testid="room-card-' + esc(r.code) + '"><div class="vhead"><span class="vtag" data-testid="room-vibe-' + esc(r.code) + '">' + (VIBE_IC[r.vibe] || "") + esc(r.vibeLabel) + '</span><span class="vclock" title="Shared room timer"><i class="vdot ' + esc(r.timer.phase) + '"></i>' + (r.timer.phase === "focus" ? "Focus" : "Break") + " \u00b7 " + Math.ceil(left / 60000) + ' min left</span></div><h2 style="font-size:20px">' + esc(r.name) + '</h2><p class="sub" style="margin:4px 0 0">' + esc(r.description || r.vibeBlurb) + '</p><p class="vplan">' + r.plan.focus + " min focus \u00b7 " + r.plan.short + " min break \u00b7 " + r.plan.long + " min long break</p>" +
+      '<div class="tagrow"><span class="tag">' + r.live + ' in room</span><span class="tag' + (r.video ? "" : " off") + '">Video ' + (r.video ? "on" : "off") + '</span><span class="tag' + (r.audio ? "" : " off") + '">Audio ' + (r.audio ? "on" : "off") + '</span></div><button class="btn" data-join="' + esc(r.code) + '" data-testid="join-room-' + esc(r.code) + '">Join room</button></div>'; }).join("")
+    : '<p class="sub">' + (ROOMS.length ? "No rooms with this vibe yet." : "No study rooms yet.") + (me && me.role === "admin" ? " Create one in the Admin portal." : "") + "</p>";
 }
+async function loadRooms(){
+  try { ROOMS = (await api("/api/rooms")).rooms; roomsAt = Date.now(); renderRooms(); } catch {}
+}
+document.querySelectorAll("#vibe-filter button").forEach(b => b.onclick = () => { vibeF = b.dataset.vf; renderRooms(); });
 document.addEventListener("click", e => { const b = e.target.closest("[data-join]"); if (b) location.hash = b.dataset.join; const r = e.target.closest("[data-retry]"); if (r) retryPeer(r.dataset.retry); });
 setInterval(() => { if (me && !$("lobby").classList.contains("hidden")) loadRooms(); }, 15000);
 
@@ -1573,6 +2359,7 @@ document.querySelectorAll("#ad-tabs button").forEach(b => b.onclick = () => {
 async function loadAdminRooms(){
   const { rooms } = await api("/api/admin/rooms");
   $("rm-list").innerHTML = rooms.length ? rooms.map(r => '<div class="person" style="flex-wrap:wrap"><span><b>' + esc(r.name) + "</b><br><small>" + esc(r.code) + " · " + r.live + " live" + (r.active ? "" : " · closed") + "</small></span><span>" +
+    '<select data-r="vibe" data-id="' + r.id + '" style="width:auto;margin:0 10px 0 0;height:36px" aria-label="Room vibe">' + [["pomodoro", "Pomodoro"], ["deep", "Deep focus"], ["chill", "Chill"], ["cram", "Cram"]].map(([v, l]) => '<option value="' + v + '"' + (r.vibe === v ? " selected" : "") + ">" + l + "</option>").join("") + "</select>" +
     '<label style="display:inline-flex;gap:4px;margin:0 10px 0 0;font-weight:400"><input type="checkbox" style="width:auto" data-r="video" data-id="' + r.id + '" ' + (r.video ? "checked" : "") + "> Video</label>" +
     '<label style="display:inline-flex;gap:4px;margin:0 10px 0 0;font-weight:400"><input type="checkbox" style="width:auto" data-r="audio" data-id="' + r.id + '" ' + (r.audio ? "checked" : "") + "> Audio</label>" +
     '<button class="btn ghost" data-r="active" data-id="' + r.id + '" data-v="' + (r.active ? 0 : 1) + '">' + (r.active ? "Close" : "Reopen") + "</button>" +
@@ -1582,13 +2369,13 @@ async function loadAdminRooms(){
 $("rm-create").onclick = async () => {
   $("rm-msg").textContent = "";
   try {
-    await api("/api/admin/rooms", { body: { name: $("rm-name").value, description: $("rm-desc").value, video: $("rm-video").checked, audio: $("rm-audio").checked } });
+    await api("/api/admin/rooms", { body: { name: $("rm-name").value, description: $("rm-desc").value, vibe: $("rm-vibe").value, video: $("rm-video").checked, audio: $("rm-audio").checked } });
     $("rm-name").value = ""; $("rm-desc").value = ""; await loadAdminRooms(); loadRooms();
   } catch (e) { $("rm-msg").textContent = e.message; }
 };
 $("rm-list").onchange = async e => {
-  const c = e.target; if (!c.dataset.r || c.type !== "checkbox") return;
-  try { await api("/api/admin/rooms/" + c.dataset.id, { method: "PATCH", body: { [c.dataset.r]: c.checked } }); loadRooms(); } catch (err) { alert(err.message); loadAdminRooms(); }
+  const c = e.target; if (!c.dataset.r || (c.type !== "checkbox" && c.tagName !== "SELECT")) return;
+  try { await api("/api/admin/rooms/" + c.dataset.id, { method: "PATCH", body: { [c.dataset.r]: c.type === "checkbox" ? c.checked : c.value } }); loadRooms(); } catch (err) { alert(err.message); loadAdminRooms(); }
 };
 $("rm-list").onclick = async e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -1603,6 +2390,8 @@ $("rm-list").onclick = async e => {
 /* ---------- room interface v2: goals, view switch, find people, session summary ---------- */
 const TI = {
   pin: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v1H7v-1l3-3z"/></svg>',
+  pinS: '<svg class="ic" viewBox="0 0 24 24" style="width:12px;height:12px;margin-right:2px"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v1H7v-1l3-3z"/></svg>',
+  spot: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
   smile: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>',
   info: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
   msg: '<svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg>'
@@ -1730,7 +2519,7 @@ function musSync(){
 }
 setInterval(() => { if (mus && mus.key) mus.schedule(mus.ctx.currentTime + .6); }, 150);
 document.addEventListener("pointerdown", () => { if (MSET.on) musSync(); });   // browsers only allow sound after a tap or click
-$("mus-btn").onclick = () => { MSET.on = !MSET.on; saveMus(); musUI(); musSync(); };
+$("mus-btn").onclick = () => { MSET.on = !MSET.on; saveMus(); musUI(); musSync(); if (MSET.on && amb.kind !== "off"){ ambStop(); ambUI(); toast("Ambient sound paused while timer music plays"); } };
 $("mus-vol").oninput = () => { MSET.vol = +$("mus-vol").value; saveMus(); if (mus) mus.setVol(MSET.vol); };
 $("mus-follow").onchange = () => { MSET.follow = $("mus-follow").checked; saveMus(); musSync(); };
 musUI();
@@ -1769,7 +2558,7 @@ const FILTERS = { none: "", warm: "sepia(.25) saturate(1.2) hue-rotate(-8deg)", 
 const fxSupported = "filter" in CanvasRenderingContext2D.prototype && typeof HTMLCanvasElement.prototype.captureStream === "function" && typeof Worker !== "undefined";
 const fx = { on: false, raw: null, out: null, src: null, cv: null, ctx: null, timer: null, lm: null, lmr: null, loading: false, failed: false, last: 0, gap: 30, frame: 0, z: 1, cx: .5, cy: .5 };
 const saveFx = () => { try { localStorage.setItem("chaupal_fx", JSON.stringify(FX)); } catch {} };
-const fxActive = () => FX.zoom > 1 || FX.auto || FX.bright !== 1 || FX.contrast !== 1 || FX.sat !== 1 || FX.smooth > 0 || FX.filter !== "none" || FX.face !== "none";
+const fxActive = () => !!SET.mirror_others || FX.zoom > 1 || FX.auto || FX.bright !== 1 || FX.contrast !== 1 || FX.sat !== 1 || FX.smooth > 0 || FX.filter !== "none" || FX.face !== "none";
 const fxFilter = () => ("brightness(" + FX.bright + ") contrast(" + FX.contrast + ") saturate(" + FX.sat + ") " + (FILTERS[FX.filter] || "")).trim();
 const fxNote = t => { $("fx-note").textContent = t; };
 function refreshLocalTile(){
@@ -1835,10 +2624,12 @@ function fxDraw(){
   fx.z += (z - fx.z) * k; fx.cx += (tx - fx.cx) * k; fx.cy += (ty - fx.cy) * k;
   const sw = vw / fx.z, sh = vh / fx.z, sx = Math.min(vw - sw, Math.max(0, fx.cx * vw - sw / 2)), sy = Math.min(vh - sh, Math.max(0, fx.cy * vh - sh / 2));
   const base = fxFilter();
+  ctx.save(); if (SET.mirror_others){ ctx.translate(vw, 0); ctx.scale(-1, 1); }
   ctx.filter = base || "none"; ctx.drawImage(v, sx, sy, sw, sh, 0, 0, vw, vh);
   if (FX.smooth > 0){ ctx.globalAlpha = FX.smooth * .6; ctx.filter = (base + " blur(" + Math.max(1, Math.round(vh / 240)) + "px)").trim(); ctx.drawImage(v, sx, sy, sw, sh, 0, 0, vw, vh); ctx.globalAlpha = 1; }
   ctx.filter = "none";
   if (FX.face !== "none" && fx.lm) drawFace(ctx, fx.lm, sx, sy, sw, sh, vw, vh);
+  ctx.restore();
   fx.gap = Math.max(30, Math.min(250, (performance.now() - t0) * 1.6)); fx.last = performance.now();   // slower machine = lower frame rate
 }
 function drawFace(ctx, lm, sx, sy, sw, sh, vw, vh){
@@ -1916,7 +2707,7 @@ fxUI();
 
 /* ---------- direct messages ---------- */
 const PAL = ["#2563EB", "#0EA5E9", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#14B8A6"];
-const avatar = (name, id, size = 40) => '<span class="avc" style="width:' + size + "px;height:" + size + "px;background:" + PAL[Number(id) % PAL.length] + ";font-size:" + Math.round(size * .4) + 'px">' + esc((name || "?").trim().slice(0, 2).toUpperCase()) + "</span>";
+const avatar = (name, id, size = 40, url) => url ? '<img class="avc" src="' + esc(url) + '" alt="' + esc(name || "") + '" loading="lazy" style="width:' + size + "px;height:" + size + 'px">' : '<span class="avc" style="width:' + size + "px;height:" + size + "px;background:" + PAL[Number(id) % PAL.length] + ";font-size:" + Math.round(size * .4) + 'px">' + esc((name || "?").trim().slice(0, 2).toUpperCase()) + "</span>";
 const hhmm = t => new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 const dmDate = t => { const d = new Date(t); return d.toDateString() === new Date().toDateString() ? hhmm(t) : String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0"); };
 const IC = {
@@ -1935,14 +2726,14 @@ async function refreshChats(){
 function connectDm(){
   if (dmSock) return;
   dmSock = io({ auth: { token }, query: { dm: "1" }, forceNew: true });   // a separate connection so messages arrive anywhere in the app
-  dmSock.on("dm", onDm); dmSock.on("notif", onNotif);
+  dmSock.on("dm", onDm); dmSock.on("notif", onNotif); liveHandlers(dmSock);
   dmSock.on("connect_error", e => { if (e.message === "unauthorized") logout(); });
   setInterval(() => { if (me && dmSock) refreshChats(); }, 60000);
 }
 function closeDmSock(){ if (dmSock){ dmSock.disconnect(); dmSock = null; } setUnread(0); setNotif(0); closeDm(); closeNt(); }
 function onDm(m){
   if (dmShow() && dmView === "thread" && dmWith && dmWith.id === m.from_id){ appendMsg(m); api("/api/chats/" + m.from_id).then(r => setUnread(r.unread)).catch(() => {}); }
-  else toast(m.name + ": " + m.body.slice(0, 60));
+  else if (!SET.disable_messages) toast(m.name + ": " + m.body.slice(0, 60));
   refreshChats();
 }
 const msgHtml = m => '<div class="dmb' + (m.from_id === me.id ? " me" : "") + '"><span>' + esc(m.body) + "</span><small>" + hhmm(m.created_at) + "</small></div>";
@@ -2043,18 +2834,22 @@ $("d-minus").onclick = () => setDailyGoal(DBD.goal - 1); $("d-plus").onclick = (
 $("d-close").onclick = () => $("dash").classList.add("hidden"); $("open-dash").onclick = openDash; $("n-dash").onclick = openDash;
 
 /* ---------- group timer: one shared clock for the whole room ---------- */
-const grp = { on: false, host: null, name: "" };
-const canGrp = () => grp.on && (grp.host === me.id || me.role === "admin");
+const grp = { on: false, host: null, name: "", vibe: null, rounds: 0 };
+const canGrp = () => grp.on && !grp.vibe && (grp.host === me.id || me.role === "admin");
+function restorePomo(){ POMO.focus = SET.pomo_focus; POMO.short = SET.pomo_short; POMO.long = SET.pomo_long; }
 function grpAct(a){ if (!socket) return; if (!canGrp()) return toast("Only the host controls the group timer."); socket.emit("rt-act", { action: a }); }
 function grpUI(){
   const b = $("grp-btn"), n = $("grp-note");
   b.setAttribute("aria-pressed", grp.on); $("pomo").classList.toggle("lock", grp.on && !canGrp());
+  b.classList.toggle("hidden", !!grp.vibe);
+  if (grp.vibe){ n.textContent = grp.name + " room timer: " + POMO.focus + " min focus, " + POMO.short + " min break. Everyone here is on the same clock."; return; }
   if (!grp.on){ b.disabled = false; b.textContent = "Start a group timer"; n.textContent = "Everyone in the room studies on the same clock."; }
   else { b.disabled = !canGrp(); b.textContent = canGrp() ? "Stop group timer" : "Group timer on"; n.textContent = "Hosted by " + grp.name + (canGrp() ? "" : ". Only the host controls it."); }
 }
 function applyGroup(s){
-  if (!s){ if (grp.on){ ps.running = false; ps.left = POMO[ps.phase] * 60000; } grp.on = false; grpUI(); renderPomo(); return; }
-  grp.on = true; grp.host = s.host; grp.name = s.hostName;
+  if (!s){ if (grp.on){ restorePomo(); ps.running = false; ps.left = POMO[ps.phase] * 60000; } grp.on = false; grp.vibe = null; grpUI(); renderPomo(); return; }
+  grp.on = true; grp.host = s.host; grp.name = s.hostName; grp.vibe = s.vibe || null; grp.rounds = s.rounds || 0;
+  if (s.ms){ POMO.focus = s.ms.focus / 60000; POMO.short = s.ms.short / 60000; POMO.long = s.ms.long / 60000; }
   if (s.completed){ beep(); if (s.completed === "focus"){ me.sessions = (me.sessions || 0) + 1; relabel("me"); if (socket) socket.emit("pomo-done"); } }
   ps.phase = s.phase; ps.running = s.running; ps.left = s.left; ps.at = Date.now(); ps.done = s.done;
   grpUI(); pomoSend();
