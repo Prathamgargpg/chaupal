@@ -108,11 +108,13 @@ const app = express();
 app.set("trust proxy", 1);
 app.use("/api/me/photo", express.json({ limit: "2mb" }));   // compressed profile / cover pictures
 app.use(express.json({ limit: "10kb" }));
-// browser security headers on every response
+// browser security headers on every response.
+// FRAME_ANCESTORS (optional) lists sites allowed to show the app in a frame, e.g. a preview panel; default: nobody
+const FRAME_ANCESTORS = String(process.env.FRAME_ANCESTORS || "").trim();
 app.use((req, res, next) => {
+  if (!FRAME_ANCESTORS) res.set("X-Frame-Options", "DENY");
   res.set({
     "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Cross-Origin-Opener-Policy": "same-origin",
     "Permissions-Policy": "camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()"
@@ -130,7 +132,7 @@ const cspFor = nonce => [
   "connect-src 'self' wss: https://cdn.jsdelivr.net https://storage.googleapis.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'"
+  "object-src 'none'", "base-uri 'self'", "form-action 'self'", `frame-ancestors ${FRAME_ANCESTORS || "'none'"}`
 ].join("; ");
 // Find the front-end folder even if the upload put it somewhere unexpected
 const staticDir = [path.join(__dirname, "public"), path.join(__dirname, "chaupal-app", "public")]
