@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chaupal – video meetings</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2563EB">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -570,6 +573,40 @@
   .mtog:disabled{opacity:.85;cursor:default}
   #d-stats{grid-template-columns:repeat(2,1fr)}
   .timer.lock .tctl .btn{opacity:.45}
+  /* notifications, likes, smaller desktop timer */
+  .nt-badge{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);min-width:26px;padding:1px 7px;border-radius:999px;background:#E5484D;color:#fff;font-size:12px;font-weight:700;line-height:18px;border:2px solid #fff;box-sizing:content-box;text-align:center}
+  .ntrow.unread{background:#F0F6FF}
+  .ntrow.unread::before{content:"";width:8px;height:8px;border-radius:50%;background:#2563EB;flex:none;margin-left:-6px}
+  .nttext{line-height:1.35;white-space:normal}.nttext em{font-style:normal;color:var(--muted)}
+  .ntf{padding:6px 12px!important;font-size:13px!important;margin:0!important;flex:none}
+  .pact{margin-top:4px}
+  .lk.on{color:#E5484D}
+  #room .pomo-chip{display:inline-flex;cursor:pointer}
+  #room .pomo-chip[aria-pressed=true]{border-color:#2563EB;background:#EEF4FF}
+  @media (min-width:821px){
+    .timer .scene{height:92px}
+    .tbody{padding:10px 16px 14px}
+    #pomo-time{font-size:36px;margin:2px 0 8px}
+    .tphase{font-size:11px}
+    .tctl .btn{height:32px;padding:0 13px;font-size:12.5px}
+    .tbar{margin:12px 0 10px}
+    .themes button{padding:6px 2px;font-size:11.5px}
+    .music{margin-top:12px;padding-top:10px}
+    .mtog{height:30px;font-size:12.5px}
+    .mname{margin-top:6px}.mfollow{margin-top:5px}
+    .grp{margin-top:10px}
+  }
+  @media (max-width:820px){.nt-badge{bottom:-7px;min-width:20px;line-height:14px;font-size:11px}}
+  #room .rchips{margin-left:auto}
+  /* leaderboard */
+  .lbrow{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:background .12s}
+  .lbrow:hover{background:#F4F7FE}
+  .lbrow.me{background:#EAF2FF;border:1px solid #CFE0FF}
+  .rk{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:#EEF2FA;color:var(--muted);flex:none}
+  .rk.r1{background:#FCD34D;color:#7A5200}.rk.r2{background:#D1D5DB;color:#374151}.rk.r3{background:#F0B27A;color:#6B3A10}
+  .lbs{text-align:right;display:flex;flex-direction:column;flex:none}.lbs small{color:var(--muted)}
+  .lbdiv{margin:12px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .lbopt{margin-top:14px}
 </style>
 </head>
 <body>
@@ -606,7 +643,7 @@
 <div id="lobby" class="hidden">
   <div class="topbar">
     <div class="brand">Chaupal</div>
-    <div class="who"><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost" id="open-dash">Dashboard</button><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
+    <div class="who"><button class="rbtn nt-btn" id="nt-btn" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nt-badge hidden"></span></button><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><span class="chip" id="streak"></span><span id="who"></span><button class="btn ghost hidden" id="install-btn" type="button">Install app</button><button class="btn ghost" id="open-dash">Dashboard</button><button class="btn ghost" id="open-dev">Settings</button><button class="btn ghost" id="open-profile">Profile</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="btn ghost" id="logout">Sign out</button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
   <div class="lobby">
@@ -675,6 +712,7 @@
         <span class="rchip" id="count"></span>
         <button class="rchip pomo-chip" id="pomo-chip" type="button" aria-label="Open study timer"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg><span id="pomo-chip-t">25:00</span></button>
         <button class="btn sm" id="copy">Share room</button>
+        <button class="rbtn nt-btn" id="nt-btn2" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nt-badge hidden"></span></button>
         <button class="rbtn dm-btn" id="dm-btn2" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button>
       </div>
     </header>
@@ -740,6 +778,10 @@
 </div>
 
 <div id="dm-bg" class="hidden"></div>
+<div id="nt" class="dmp hidden" role="dialog" aria-label="Notifications">
+  <div class="dm-head"><span class="dmlogo"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><b>Notifications</b><span class="sp"></span><button class="dmi" id="nt-readall" type="button" title="Mark all as read"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12l5 5L20 6"/></svg></button><button class="dmi" id="nt-close" type="button" title="Close"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dm-body" id="nt-body"></div>
+</div>
 <div id="dm" class="dmp hidden" role="dialog" aria-label="Messages">
   <div class="dm-head" id="dm-head"></div>
   <div class="dm-body" id="dm-body"></div>
@@ -795,12 +837,16 @@
 
 <div id="dash" class="modal hidden"><div class="card dashcard">
   <h2>Study dashboard</h2>
+  <div class="tabs" id="dash-tabs"><button data-dt="me" aria-selected="true">My stats</button><button data-dt="lb" aria-selected="false">Leaderboard</button></div>
+  <div id="dash-me">
   <div class="dtoday"><div><small class="sub">Today</small><b id="d-today">0 / 4</b><small class="sub">focus sessions</small></div><div class="dgoal"><button class="mini" id="d-minus" type="button" aria-label="Lower daily goal">-</button><span id="d-goal"></span><button class="mini" id="d-plus" type="button" aria-label="Raise daily goal">+</button></div></div>
   <div class="dbar"><i id="d-bar"></i></div>
   <div class="sgrid" id="d-stats"></div>
   <h3 class="pfh">Last 7 days</h3>
   <div class="dchart" id="d-chart"></div>
   <p class="hint">Each finished focus session counts as 25 minutes. The dashed line is your daily goal.</p>
+  </div>
+  <div id="dash-lb" class="hidden"></div>
   <button class="btn ghost full" id="d-close" type="button">Close</button>
 </div></div>
 
@@ -936,7 +982,7 @@ $("logout").onclick = logout;
 function afterLogin(){
   $("who").textContent = me.name;
   $("open-admin").classList.toggle("hidden", me.role !== "admin"); $("n-admin").classList.toggle("hidden", me.role !== "admin");
-  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); loadFeed(); loadRooms(); connectDm(); loadBlocks(); }).catch(() => {});
+  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); setNotif(r.notifUnread || 0); loadFeed(); loadRooms(); connectDm(); loadBlocks(); }).catch(() => {});
   route();
 }
 
@@ -1309,7 +1355,7 @@ setInterval(() => {
 $("pomo-go").onclick = () => ps.running ? pomoPause() : pomoStart();
 $("pomo-reset").onclick = pomoReset;
 $("pomo-skip").onclick = pomoNext;
-$("pomo-btn").onclick = () => { if (mob()) return openSheet("timer"); const hide = $("pomo").classList.toggle("hidden"); $("pomo-btn").setAttribute("aria-pressed", !hide); renderPomo(); };
+$("pomo-btn").onclick = () => { if (mob()) return openSheet("timer"); pomoDesk($("pomo").classList.contains("hidden")); renderPomo(); };
 
 /* ---------- admin ---------- */
 async function loadAdmin(){
@@ -1341,7 +1387,7 @@ $("admin-body").onclick = async e => {
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago"; };
 const setStreak = s => { const c = s && s.current ? s.current : 0; $("streak").textContent = c ? c + "-day streak" : "Start your streak"; $("rail-num").textContent = c; $("rail-streak").textContent = c ? c + "-day streak. Keep it up!" : "Log in daily to build a streak"; $("rail-bar").style.width = Math.min(100, c / 7 * 100) + "%"; };
 const postHtml = p => '<div class="post"><a class="lnk" data-u="' + p.uid + '">' + esc(p.name) + "</a>" + (p.title ? " · " + esc(p.title) : "") + " <small>" + ago(p.created_at) + "</small>" +
-  (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + (p.uid !== me.id ? ' <a class="lnk" data-rep-post="' + p.id + '" data-uid="' + p.uid + '">Report</a>' : "") + "<div>" + esc(p.body) + "</div></div>";
+  (p.uid === me.id || me.role === "admin" ? ' <a class="lnk" data-del="' + p.id + '">Delete</a>' : "") + (p.uid !== me.id ? ' <a class="lnk" data-rep-post="' + p.id + '" data-uid="' + p.uid + '">Report</a>' : "") + "<div>" + esc(p.body) + '</div><div class="pact"><a class="lnk lk' + (p.liked ? " on" : "") + '" data-like="' + p.id + '" data-on="' + (p.liked ? 1 : 0) + '">' + (p.liked ? "Liked" : "Like") + (p.likes ? " · " + p.likes : "") + "</a></div></div>";
 const followBtn = (id, on) => '<button class="btn ' + (on ? "ghost" : "") + '" data-f="' + id + '" data-on="' + (on ? 1 : 0) + '">' + (on ? "Following" : "Follow") + "</button>";
 const LABEL = { daily_login: () => "Logged in", joined_room: () => "Joined a meeting", pomodoro: () => "Finished a focus session", posted: () => "Shared a post",
   encouraged: d => "Encouraged " + d.to, encouraged_by: d => d.from + " encouraged you", followed: d => "Followed " + d.name };
@@ -1393,8 +1439,12 @@ $("open-activity").onclick = async () => {
 };
 $("act-close").onclick = () => $("act").classList.add("hidden");
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-u],[data-del],[data-f],[data-dm],[data-edit],[data-block],[data-report],[data-rep-post]"); if (!t) return;
+  const t = e.target.closest("[data-u],[data-del],[data-f],[data-dm],[data-edit],[data-block],[data-report],[data-rep-post],[data-like]"); if (!t) return;
   try {
+    if (t.dataset.like){
+      const on = t.dataset.on === "1", r = await api("/api/posts/" + t.dataset.like + "/like", on ? { method: "DELETE" } : { body: {} });
+      t.dataset.on = r.liked ? 1 : 0; t.classList.toggle("on", r.liked); t.textContent = (r.liked ? "Liked" : "Like") + (r.likes ? " \u00b7 " + r.likes : ""); return;
+    }
     if (t.dataset.u) return openUser(t.dataset.u);
     if (t.dataset.dm){ $("pv").classList.add("hidden"); return openThread(t.dataset.dm, t.dataset.name); }
     if (t.dataset.edit){ $("pv").classList.add("hidden"); return openProfile(); }
@@ -1686,7 +1736,7 @@ $("mus-follow").onchange = () => { MSET.follow = $("mus-follow").checked; saveMu
 musUI();
 
 /* ---------- pomodoro themes ---------- */
-const SCENES = { classic: "", astronaut: "<svg viewBox=\"0 0 300 132\" preserveAspectRatio=\"xMidYMid slice\"><g class=\"tw\" fill=\"#fff\"><circle cx=\"22\" cy=\"20\" r=\"1.6\"/><circle cx=\"64\" cy=\"48\" r=\"1.2\"/><circle cx=\"96\" cy=\"14\" r=\"1.8\"/><circle cx=\"170\" cy=\"30\" r=\"1.3\"/><circle cx=\"212\" cy=\"16\" r=\"1.6\"/><circle cx=\"268\" cy=\"38\" r=\"1.2\"/><circle cx=\"40\" cy=\"104\" r=\"1.4\"/><circle cx=\"276\" cy=\"112\" r=\"1.6\"/></g><circle cx=\"238\" cy=\"72\" r=\"24\" fill=\"#7C5CFF\"/><ellipse cx=\"238\" cy=\"72\" rx=\"40\" ry=\"9\" fill=\"none\" stroke=\"#C9B8FF\" stroke-width=\"3\" transform=\"rotate(-18 238 72)\"/><circle cx=\"54\" cy=\"94\" r=\"12\" fill=\"#FF8A65\"/><g class=\"float\"><rect x=\"118\" y=\"58\" width=\"16\" height=\"34\" rx=\"6\" fill=\"#C7CFEA\"/><rect x=\"128\" y=\"56\" width=\"38\" height=\"44\" rx=\"16\" fill=\"#F4F6FF\"/><rect x=\"140\" y=\"70\" width=\"14\" height=\"9\" rx=\"3\" fill=\"#6FD3FF\"/><rect x=\"160\" y=\"62\" width=\"26\" height=\"11\" rx=\"5.5\" fill=\"#F4F6FF\" transform=\"rotate(-28 162 67)\"/><rect x=\"108\" y=\"64\" width=\"26\" height=\"11\" rx=\"5.5\" fill=\"#F4F6FF\" transform=\"rotate(30 132 69)\"/><rect x=\"132\" y=\"94\" width=\"13\" height=\"24\" rx=\"6\" fill=\"#E3E8FA\"/><rect x=\"150\" y=\"94\" width=\"13\" height=\"24\" rx=\"6\" fill=\"#E3E8FA\" transform=\"rotate(8 156 96)\"/><circle cx=\"147\" cy=\"44\" r=\"22\" fill=\"#F4F6FF\"/><rect x=\"132\" y=\"34\" width=\"30\" height=\"21\" rx=\"10\" fill=\"#18246B\"/><ellipse cx=\"141\" cy=\"41\" rx=\"5\" ry=\"3\" fill=\"#6FD3FF\" opacity=\".75\"/></g></svg>", lofi: "<svg viewBox=\"0 0 300 132\" preserveAspectRatio=\"xMidYMid slice\"><rect x=\"70\" y=\"14\" width=\"160\" height=\"86\" rx=\"8\" fill=\"#1A1038\" stroke=\"#FFC3DE\" stroke-opacity=\".5\" stroke-width=\"3\"/><circle cx=\"200\" cy=\"38\" r=\"9\" fill=\"#FFE9A8\"/><g fill=\"#3A2370\"><rect x=\"78\" y=\"62\" width=\"22\" height=\"38\"/><rect x=\"104\" y=\"48\" width=\"20\" height=\"52\"/><rect x=\"128\" y=\"68\" width=\"24\" height=\"32\"/><rect x=\"156\" y=\"54\" width=\"18\" height=\"46\"/><rect x=\"178\" y=\"70\" width=\"22\" height=\"30\"/><rect x=\"204\" y=\"58\" width=\"22\" height=\"42\"/></g><g class=\"win\" fill=\"#FFD27A\"><rect x=\"109\" y=\"56\" width=\"4\" height=\"4\"/><rect x=\"115\" y=\"68\" width=\"4\" height=\"4\"/><rect x=\"161\" y=\"62\" width=\"4\" height=\"4\"/><rect x=\"209\" y=\"66\" width=\"4\" height=\"4\"/><rect x=\"85\" y=\"72\" width=\"4\" height=\"4\"/></g><g class=\"rain\" stroke=\"#BFA8FF\" stroke-width=\"1.2\" stroke-opacity=\".7\"><line x1=\"90\" y1=\"20\" x2=\"87\" y2=\"30\"/><line x1=\"112\" y1=\"24\" x2=\"109\" y2=\"34\"/><line x1=\"138\" y1=\"18\" x2=\"135\" y2=\"28\"/><line x1=\"160\" y1=\"26\" x2=\"157\" y2=\"36\"/><line x1=\"186\" y1=\"20\" x2=\"183\" y2=\"30\"/><line x1=\"214\" y1=\"26\" x2=\"211\" y2=\"36\"/></g><rect x=\"40\" y=\"100\" width=\"220\" height=\"8\" rx=\"4\" fill=\"#4B2A7A\"/><rect x=\"48\" y=\"64\" width=\"4\" height=\"36\" fill=\"#E7C8FF\"/><path d=\"M38 68h24l-6-14H44z\" fill=\"#FF8FB8\"/><ellipse cx=\"50\" cy=\"104\" rx=\"30\" ry=\"6\" fill=\"#FF8FB8\" opacity=\".25\"/><rect x=\"236\" y=\"86\" width=\"16\" height=\"14\" rx=\"3\" fill=\"#FFF1F7\"/><path d=\"M252 89h4a4 4 0 0 1 0 8h-4\" fill=\"none\" stroke=\"#FFF1F7\" stroke-width=\"2\"/><path class=\"steam\" d=\"M241 82c-3-4 3-6 0-10M247 82c-3-4 3-6 0-10\" stroke=\"#FFF1F7\" stroke-opacity=\".6\" fill=\"none\" stroke-width=\"1.6\"/></svg>", cozy: "<svg viewBox=\"0 0 300 132\" preserveAspectRatio=\"xMidYMid slice\"><path d=\"M0 8Q75 30 150 8T300 8\" fill=\"none\" stroke=\"#FFD27A\" stroke-opacity=\".5\"/><g class=\"tw\" fill=\"#FFD27A\"><circle cx=\"38\" cy=\"19\" r=\"2.2\"/><circle cx=\"92\" cy=\"26\" r=\"2.2\"/><circle cx=\"150\" cy=\"8\" r=\"2.2\"/><circle cx=\"208\" cy=\"26\" r=\"2.2\"/><circle cx=\"262\" cy=\"19\" r=\"2.2\"/></g><rect x=\"90\" y=\"34\" width=\"120\" height=\"82\" rx=\"6\" fill=\"#5A3321\"/><rect x=\"100\" y=\"28\" width=\"100\" height=\"8\" rx=\"3\" fill=\"#7A4630\"/><rect x=\"104\" y=\"50\" width=\"92\" height=\"66\" rx=\"4\" fill=\"#1E0F09\"/><ellipse cx=\"150\" cy=\"114\" rx=\"42\" ry=\"6\" fill=\"#FF9A3C\" opacity=\".35\"/><g class=\"flame\"><path d=\"M150 108c-16 0-22-12-14-26 3 8 9 8 8 0 8 6 14 12 16 20 4-4 6-10 4-16 10 10 8 22-14 22z\" fill=\"#FF8A2B\"/></g><g class=\"flame f2\"><path d=\"M150 108c-8 0-12-7-7-14 2 4 5 4 5 0 5 3 9 7 9 11 0 2-3 3-7 3z\" fill=\"#FFD27A\"/></g><rect x=\"176\" y=\"12\" width=\"6\" height=\"16\" fill=\"#FFF0DC\"/><ellipse class=\"flame\" cx=\"179\" cy=\"9\" rx=\"2.5\" ry=\"4\" fill=\"#FFD27A\"/><rect x=\"36\" y=\"88\" width=\"22\" height=\"20\" rx=\"4\" fill=\"#FFF0DC\"/><path d=\"M58 92h5a5 5 0 0 1 0 10h-5\" stroke=\"#FFF0DC\" stroke-width=\"2.4\" fill=\"none\"/><path class=\"steam\" d=\"M43 82c-3-5 3-7 0-12M51 82c-3-5 3-7 0-12\" stroke=\"#FFF0DC\" stroke-opacity=\".6\" fill=\"none\" stroke-width=\"1.6\"/><rect x=\"20\" y=\"116\" width=\"260\" height=\"10\" rx=\"5\" fill=\"#C9763B\" opacity=\".55\"/></svg>" };
+const SCENES = { classic: "", astronaut: "<svg viewBox=\"0 0 300 132\" preserveAspectRatio=\"xMidYMid meet\"><g class=\"tw\" fill=\"#fff\"><circle cx=\"22\" cy=\"20\" r=\"1.6\"/><circle cx=\"64\" cy=\"48\" r=\"1.2\"/><circle cx=\"96\" cy=\"14\" r=\"1.8\"/><circle cx=\"170\" cy=\"30\" r=\"1.3\"/><circle cx=\"212\" cy=\"16\" r=\"1.6\"/><circle cx=\"268\" cy=\"38\" r=\"1.2\"/><circle cx=\"40\" cy=\"104\" r=\"1.4\"/><circle cx=\"276\" cy=\"112\" r=\"1.6\"/></g><circle cx=\"238\" cy=\"72\" r=\"24\" fill=\"#7C5CFF\"/><ellipse cx=\"238\" cy=\"72\" rx=\"40\" ry=\"9\" fill=\"none\" stroke=\"#C9B8FF\" stroke-width=\"3\" transform=\"rotate(-18 238 72)\"/><circle cx=\"54\" cy=\"94\" r=\"12\" fill=\"#FF8A65\"/><g class=\"float\"><rect x=\"118\" y=\"58\" width=\"16\" height=\"34\" rx=\"6\" fill=\"#C7CFEA\"/><rect x=\"128\" y=\"56\" width=\"38\" height=\"44\" rx=\"16\" fill=\"#F4F6FF\"/><rect x=\"140\" y=\"70\" width=\"14\" height=\"9\" rx=\"3\" fill=\"#6FD3FF\"/><rect x=\"160\" y=\"62\" width=\"26\" height=\"11\" rx=\"5.5\" fill=\"#F4F6FF\" transform=\"rotate(-28 162 67)\"/><rect x=\"108\" y=\"64\" width=\"26\" height=\"11\" rx=\"5.5\" fill=\"#F4F6FF\" transform=\"rotate(30 132 69)\"/><rect x=\"132\" y=\"94\" width=\"13\" height=\"24\" rx=\"6\" fill=\"#E3E8FA\"/><rect x=\"150\" y=\"94\" width=\"13\" height=\"24\" rx=\"6\" fill=\"#E3E8FA\" transform=\"rotate(8 156 96)\"/><circle cx=\"147\" cy=\"44\" r=\"22\" fill=\"#F4F6FF\"/><rect x=\"132\" y=\"34\" width=\"30\" height=\"21\" rx=\"10\" fill=\"#18246B\"/><ellipse cx=\"141\" cy=\"41\" rx=\"5\" ry=\"3\" fill=\"#6FD3FF\" opacity=\".75\"/></g></svg>", lofi: "<svg viewBox=\"0 0 300 132\" preserveAspectRatio=\"xMidYMid meet\"><rect x=\"70\" y=\"14\" width=\"160\" height=\"86\" rx=\"8\" fill=\"#1A1038\" stroke=\"#FFC3DE\" stroke-opacity=\".5\" stroke-width=\"3\"/><circle cx=\"200\" cy=\"38\" r=\"9\" fill=\"#FFE9A8\"/><g fill=\"#3A2370\"><rect x=\"78\" y=\"62\" width=\"22\" height=\"38\"/><rect x=\"104\" y=\"48\" width=\"20\" height=\"52\"/><rect x=\"128\" y=\"68\" width=\"24\" height=\"32\"/><rect x=\"156\" y=\"54\" width=\"18\" height=\"46\"/><rect x=\"178\" y=\"70\" width=\"22\" height=\"30\"/><rect x=\"204\" y=\"58\" width=\"22\" height=\"42\"/></g><g class=\"win\" fill=\"#FFD27A\"><rect x=\"109\" y=\"56\" width=\"4\" height=\"4\"/><rect x=\"115\" y=\"68\" width=\"4\" height=\"4\"/><rect x=\"161\" y=\"62\" width=\"4\" height=\"4\"/><rect x=\"209\" y=\"66\" width=\"4\" height=\"4\"/><rect x=\"85\" y=\"72\" width=\"4\" height=\"4\"/></g><g class=\"rain\" stroke=\"#BFA8FF\" stroke-width=\"1.2\" stroke-opacity=\".7\"><line x1=\"90\" y1=\"20\" x2=\"87\" y2=\"30\"/><line x1=\"112\" y1=\"24\" x2=\"109\" y2=\"34\"/><line x1=\"138\" y1=\"18\" x2=\"135\" y2=\"28\"/><line x1=\"160\" y1=\"26\" x2=\"157\" y2=\"36\"/><line x1=\"186\" y1=\"20\" x2=\"183\" y2=\"30\"/><line x1=\"214\" y1=\"26\" x2=\"211\" y2=\"36\"/></g><rect x=\"40\" y=\"100\" width=\"220\" height=\"8\" rx=\"4\" fill=\"#4B2A7A\"/><rect x=\"48\" y=\"64\" width=\"4\" height=\"36\" fill=\"#E7C8FF\"/><path d=\"M38 68h24l-6-14H44z\" fill=\"#FF8FB8\"/><ellipse cx=\"50\" cy=\"104\" rx=\"30\" ry=\"6\" fill=\"#FF8FB8\" opacity=\".25\"/><rect x=\"236\" y=\"86\" width=\"16\" height=\"14\" rx=\"3\" fill=\"#FFF1F7\"/><path d=\"M252 89h4a4 4 0 0 1 0 8h-4\" fill=\"none\" stroke=\"#FFF1F7\" stroke-width=\"2\"/><path class=\"steam\" d=\"M241 82c-3-4 3-6 0-10M247 82c-3-4 3-6 0-10\" stroke=\"#FFF1F7\" stroke-opacity=\".6\" fill=\"none\" stroke-width=\"1.6\"/></svg>", cozy: "<svg viewBox=\"0 0 300 132\" preserveAspectRatio=\"xMidYMid meet\"><path d=\"M0 8Q75 30 150 8T300 8\" fill=\"none\" stroke=\"#FFD27A\" stroke-opacity=\".5\"/><g class=\"tw\" fill=\"#FFD27A\"><circle cx=\"38\" cy=\"19\" r=\"2.2\"/><circle cx=\"92\" cy=\"26\" r=\"2.2\"/><circle cx=\"150\" cy=\"8\" r=\"2.2\"/><circle cx=\"208\" cy=\"26\" r=\"2.2\"/><circle cx=\"262\" cy=\"19\" r=\"2.2\"/></g><rect x=\"90\" y=\"34\" width=\"120\" height=\"82\" rx=\"6\" fill=\"#5A3321\"/><rect x=\"100\" y=\"28\" width=\"100\" height=\"8\" rx=\"3\" fill=\"#7A4630\"/><rect x=\"104\" y=\"50\" width=\"92\" height=\"66\" rx=\"4\" fill=\"#1E0F09\"/><ellipse cx=\"150\" cy=\"114\" rx=\"42\" ry=\"6\" fill=\"#FF9A3C\" opacity=\".35\"/><g class=\"flame\"><path d=\"M150 108c-16 0-22-12-14-26 3 8 9 8 8 0 8 6 14 12 16 20 4-4 6-10 4-16 10 10 8 22-14 22z\" fill=\"#FF8A2B\"/></g><g class=\"flame f2\"><path d=\"M150 108c-8 0-12-7-7-14 2 4 5 4 5 0 5 3 9 7 9 11 0 2-3 3-7 3z\" fill=\"#FFD27A\"/></g><rect x=\"176\" y=\"12\" width=\"6\" height=\"16\" fill=\"#FFF0DC\"/><ellipse class=\"flame\" cx=\"179\" cy=\"9\" rx=\"2.5\" ry=\"4\" fill=\"#FFD27A\"/><rect x=\"36\" y=\"88\" width=\"22\" height=\"20\" rx=\"4\" fill=\"#FFF0DC\"/><path d=\"M58 92h5a5 5 0 0 1 0 10h-5\" stroke=\"#FFF0DC\" stroke-width=\"2.4\" fill=\"none\"/><path class=\"steam\" d=\"M43 82c-3-5 3-7 0-12M51 82c-3-5 3-7 0-12\" stroke=\"#FFF0DC\" stroke-opacity=\".6\" fill=\"none\" stroke-width=\"1.6\"/><rect x=\"20\" y=\"116\" width=\"260\" height=\"10\" rx=\"5\" fill=\"#C9763B\" opacity=\".55\"/></svg>" };
 function setTheme(t){
   if (!(t in SCENES)) t = "classic";
   $("pomo").dataset.theme = t; $("scene").innerHTML = SCENES[t];
@@ -1702,10 +1752,11 @@ const mob = () => matchMedia("(max-width:820px)").matches;
 function openSheet(w){
   const r = $("room");
   if (r.classList.contains("msheet") && r.dataset.sheet === w) return closeSheet();
+  if (w === "timer") $("pomo").classList.remove("hidden");
   r.dataset.sheet = w; r.classList.add("msheet"); $("sheet-bg").classList.remove("hidden"); renderPomo();
 }
 function closeSheet(){ $("room").classList.remove("msheet"); $("sheet-bg").classList.add("hidden"); }
-$("pomo-chip").onclick = () => openSheet("timer");
+$("pomo-chip").onclick = () => { if (mob()) return openSheet("timer"); pomoDesk($("pomo").classList.contains("hidden")); renderPomo(); };
 $("sheet-bg").onclick = closeSheet; $("sheet-x").onclick = closeSheet;
 window.addEventListener("resize", () => { if (!mob()) closeSheet(); });
 if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) $("share").classList.add("hidden");   // phones can't share screens
@@ -1884,11 +1935,11 @@ async function refreshChats(){
 function connectDm(){
   if (dmSock) return;
   dmSock = io({ auth: { token }, query: { dm: "1" }, forceNew: true });   // a separate connection so messages arrive anywhere in the app
-  dmSock.on("dm", onDm);
+  dmSock.on("dm", onDm); dmSock.on("notif", onNotif);
   dmSock.on("connect_error", e => { if (e.message === "unauthorized") logout(); });
   setInterval(() => { if (me && dmSock) refreshChats(); }, 60000);
 }
-function closeDmSock(){ if (dmSock){ dmSock.disconnect(); dmSock = null; } setUnread(0); closeDm(); }
+function closeDmSock(){ if (dmSock){ dmSock.disconnect(); dmSock = null; } setUnread(0); setNotif(0); closeDm(); closeNt(); }
 function onDm(m){
   if (dmShow() && dmView === "thread" && dmWith && dmWith.id === m.from_id){ appendMsg(m); api("/api/chats/" + m.from_id).then(r => setUnread(r.unread)).catch(() => {}); }
   else toast(m.name + ": " + m.body.slice(0, 60));
@@ -1927,10 +1978,11 @@ async function openThread(id, name){
     $("dm-body").scrollTop = 1e9; $("dm-in").focus(); refreshChats();
   } catch (e) { $("dm-body").innerHTML = '<p class="sub dmempty">' + esc(e.message) + "</p>"; }
 }
-function dmToggle(){ if (dmShow()) return closeDm(); dmView = "list"; dmOpen(); dmRender(); refreshChats(); }
+function dmToggle(){ closeNt(); if (dmShow()) return closeDm(); dmView = "list"; dmOpen(); dmRender(); refreshChats(); }
 document.querySelectorAll(".dm-btn").forEach(b => b.onclick = dmToggle);
-$("dm-bg").onclick = closeDm;
+$("dm-bg").onclick = () => { closeDm(); closeNt(); };
 $("dm").onclick = e => {
+  if (e.target.closest("[data-u]")){ closeDm(); return; }
   const t = e.target.closest("[data-chat],[data-pick],[data-dm-new],[data-dm-readall],[data-dm-back],[data-dm-close]"); if (!t) return;
   if (t.dataset.chat) return openThread(t.dataset.chat, t.dataset.name);
   if (t.dataset.pick) return openThread(t.dataset.pick, t.dataset.name);
@@ -1977,7 +2029,7 @@ $("ad-reports").onclick = async e => {
 /* ---------- study dashboard ---------- */
 let DBD = null;
 const hm = m => m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m";
-async function openDash(){ try { DBD = await api("/api/dashboard"); } catch (e) { return toast(e.message); } renderDash(); $("dash").classList.remove("hidden"); }
+async function openDash(){ dashTab("me"); try { DBD = await api("/api/dashboard"); } catch (e) { return toast(e.message); } renderDash(); $("dash").classList.remove("hidden"); }
 function renderDash(){
   const d = DBD, mx = Math.max(d.goal, ...d.week.map(x => x.sessions), 1), names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   $("d-today").textContent = d.today + " / " + d.goal; $("d-goal").textContent = "Daily goal: " + d.goal;
@@ -2009,6 +2061,72 @@ function applyGroup(s){
 }
 $("grp-btn").onclick = () => { if (!socket) return; if (!grp.on) socket.emit("rt-start"); else grpAct("stop"); };
 grpUI();
+
+/* ---------- notifications ---------- */
+let ntList = [];
+const ntShow = () => !$("nt").classList.contains("hidden");
+function setNotif(n){ document.querySelectorAll(".nt-badge").forEach(b => { b.textContent = n > 99 ? "99+" : n; b.classList.toggle("hidden", !n); }); }
+async function refreshNotifs(){ try { const r = await api("/api/notifs"); ntList = r.notifs; setNotif(r.unread); if (ntShow()) ntRender(); } catch {} }
+function ntText(n){
+  const a = "<b>" + esc(n.actor.name) + "</b>", q = n.text ? ': <em>"' + esc(n.text) + '"</em>' : "";
+  return n.type === "follow" ? a + " started following you" : n.type === "followback" ? a + " followed you back" : n.type === "like" ? a + " liked your post" + q : a + " sent you encouragement" + q;
+}
+function ntRender(){
+  $("nt-body").innerHTML = ntList.length ? ntList.map(n => '<div class="dmrow ntrow' + (n.read ? "" : " unread") + '" data-u="' + n.actor.id + '" data-nid="' + n.id + '">' + avatar(n.actor.name, n.actor.id) + '<div class="dmmid"><span class="nttext">' + ntText(n) + "</span><small>" + ago(n.created_at) + "</small></div>" +
+    (n.type === "follow" && !n.following ? '<button class="btn ntf" data-f="' + n.actor.id + '" data-on="0">Follow back</button>' : "") + "</div>").join("")
+    : '<p class="sub dmempty">Nothing yet. You will see it here when people follow you, like your posts or send you encouragement.</p>';
+}
+function closeNt(){ $("nt").classList.add("hidden"); if (!dmShow()) $("dm-bg").classList.add("hidden"); }
+function ntToggle(){ if (ntShow()) return closeNt(); closeDm(); $("nt").classList.remove("hidden"); $("dm-bg").classList.remove("hidden"); ntRender(); refreshNotifs(); }
+function onNotif(m){ toast(m.text); refreshNotifs(); }
+document.querySelectorAll(".nt-btn").forEach(b => b.onclick = ntToggle);
+$("nt").onclick = async e => {
+  if (e.target.closest("#nt-close")) return closeNt();
+  if (e.target.closest("#nt-readall")){ await api("/api/notifs/read-all", { body: {} }).catch(() => {}); return refreshNotifs(); }
+  if (e.target.closest("[data-f]")){ setTimeout(refreshNotifs, 600); return; }
+  const row = e.target.closest("[data-nid]");
+  if (row){ api("/api/notifs/" + row.dataset.nid + "/read", { body: {} }).then(refreshNotifs).catch(() => {}); closeNt(); }
+};
+
+/* ---------- pomodoro open / close on desktop ---------- */
+function pomoDesk(open){
+  if (mob()) return;
+  $("pomo").classList.toggle("hidden", !open);
+  document.querySelectorAll("#pomo-btn,#pomo-chip").forEach(b => b.setAttribute("aria-pressed", open));
+  try { localStorage.setItem("chaupal_pomo_open", open ? "1" : "0"); } catch {}
+}
+try { if (!mob() && localStorage.getItem("chaupal_pomo_open") === "0") $("pomo").classList.add("hidden"); } catch {}
+document.querySelectorAll("#pomo-btn,#pomo-chip").forEach(b => b.setAttribute("aria-pressed", !$("pomo").classList.contains("hidden")));
+
+/* ---------- weekly leaderboard ---------- */
+function dashTab(t){
+  document.querySelectorAll("#dash-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.dt === t));
+  $("dash-me").classList.toggle("hidden", t !== "me"); $("dash-lb").classList.toggle("hidden", t !== "lb");
+  if (t === "lb") loadBoard();
+}
+document.querySelectorAll("#dash-tabs button").forEach(b => b.onclick = () => dashTab(b.dataset.dt));
+const lbRow = r => '<div class="lbrow' + (r.me ? " me" : "") + '" data-u="' + r.id + '"><span class="rk r' + (r.rank <= 3 ? r.rank : 0) + '">' + r.rank + "</span>" + avatar(r.name, r.id, 36) +
+  '<div class="dmmid"><b>' + esc(r.name) + (r.me ? " (you)" : "") + "</b><small>" + esc(r.title || "Study buddy") + '</small></div><div class="lbs"><b>' + r.sessions + "</b><small>" + hm(r.minutes) + "</small></div></div>";
+async function loadBoard(){
+  $("dash-lb").innerHTML = '<p class="sub" style="padding:20px 0">Loading...</p>';
+  try {
+    const r = await api("/api/leaderboard");
+    let html = '<p class="sub" style="margin:12px 0">Top focusers over the last 7 days, by finished focus sessions.</p>';
+    html += r.top.length ? r.top.map(lbRow).join("") : '<p class="sub" style="padding:20px 0">No one has finished a focus session this week yet. Be the first!</p>';
+    if (r.me && !r.top.some(x => x.me)) html += '<div class="lbdiv">Your position</div>' + lbRow(r.me);
+    html += r.optedIn ? '<button class="linkbtn lbopt" data-optin="0">Hide me from the leaderboard</button>' : '<p class="sub" style="margin-top:14px">You are hidden from the leaderboard.</p><button class="btn lbopt" data-optin="1">Show me on the leaderboard</button>';
+    html += '<p class="hint">People with private profiles never appear here.</p>';
+    $("dash-lb").innerHTML = html;
+  } catch (e) { $("dash-lb").innerHTML = '<p class="sub" style="padding:20px 0">' + esc(e.message) + "</p>"; }
+}
+$("dash-lb").onclick = async e => { const b = e.target.closest("[data-optin]"); if (!b) return; await api("/api/leaderboard/optin", { method: "PUT", body: { on: b.dataset.optin === "1" } }).catch(() => {}); loadBoard(); };
+
+/* ---------- install as an app ---------- */
+let installEv = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEv = e; $("install-btn").classList.remove("hidden"); });
+window.addEventListener("appinstalled", () => { installEv = null; $("install-btn").classList.add("hidden"); });
+$("install-btn").onclick = async () => { if (!installEv) return; installEv.prompt(); try { await installEv.userChoice; } catch {} installEv = null; $("install-btn").classList.add("hidden"); };
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 
 /* ---------- boot ---------- */
 (async () => {
