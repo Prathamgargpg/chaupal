@@ -1,5 +1,272 @@
 --- index.orig.html	2026-11-14 08:08:48.247377768 +0000
-+++ index.html	2026-11-14 15:27:50.370668239 +0000
++++ index.html	2026-11-14 15:27:50.370668239 +0000--- index.orig.html	2026-11-14 08:08:48.247377768 +0000
++++ index.html	2026-11-14 15:41:33.717553486 +0000
+@@ -822,6 +822,46 @@
+   @media (max-width:820px){ .pm{left:12px;right:12px;top:auto;bottom:12px} .pp{width:auto!important} .strow{flex-direction:column;align-items:stretch;gap:6px} .strow select,.strow input{width:100%} }
+   @media (max-width:980px){ .pv-wrap{grid-template-columns:1fr;padding:16px} .pf-card{position:static} .pf-tabs{top:62px} .pv-top{padding:10px 16px} }
+   @media (max-width:560px){ .ep-grid{grid-template-columns:1fr} .pf-name{font-size:26px!important} .srow{grid-template-columns:110px 1fr 56px} .pf-tabs button{font-size:13px;padding:10px 4px} }
++  /* ===== chat drawer: slide handle (desktop; phones keep the bottom sheet) ===== */
++  #side-handle{display:none}
++  @media (min-width:821px){
++    #room{--sw:336px;grid-template-columns:72px minmax(0,1fr) var(--sw);transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1)}
++    #room.noside{--sw:0px;grid-template-columns:72px minmax(0,1fr) var(--sw)}
++    #room .side{overflow-x:clip;min-width:0}
++    #room .side>*{min-width:276px}
++    #room.noside .side{display:flex;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s .32s}
++    #room:not(.noside) .side{transition:opacity .25s ease .08s}
++    #side-handle{display:flex;align-items:center;justify-content:center;position:absolute;top:50%;right:var(--sw);transform:translateY(-50%);z-index:30;width:22px;height:64px;padding:0;border:1px solid var(--bd);border-right:0;border-radius:14px 0 0 14px;background:#fff;color:var(--mu);cursor:pointer;box-shadow:-8px 0 18px -12px rgba(15,27,61,.4);transition:right .32s cubic-bezier(.4,0,.2,1),background .15s,color .15s}
++    #side-handle:hover{background:#EFF6FF;color:var(--pr)}
++    #side-handle:focus-visible{outline:2px solid var(--pr);outline-offset:2px}
++    #side-handle .ic{width:16px;height:16px;stroke-width:2.4;transition:transform .32s}
++    #room.noside #side-handle .ic{transform:rotate(180deg)}
++    #side-handle .dot{display:none;position:absolute;top:9px;left:3px;width:9px;height:9px;border-radius:50%;background:#EF4444;border:2px solid #fff;box-sizing:content-box}
++    #side-handle.unread .dot{display:block}
++    body.nomsg #side-handle{display:none!important}
++  }
++  @media (min-width:821px) and (max-width:1180px){
++    #room{--sw:300px;grid-template-columns:minmax(0,1fr) var(--sw)}
++    #room.noside{--sw:0px;grid-template-columns:minmax(0,1fr) var(--sw)}
++  }
++  @media (prefers-reduced-motion:reduce){#room,#room .side,#side-handle,#side-handle .ic{transition:none!important}}
++  /* ===== tiles: avatar when camera is off, connecting skeleton, "more" menu, room account button ===== */
++  .tile .ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 50% 0%,#1E3166 0%,#0F1B3D 72%)}
++  .tile.nov .ph,.tile.conn .ph{display:flex}
++  .tile .ph .avc{width:clamp(56px,32%,128px)!important;height:auto!important;aspect-ratio:1;object-fit:cover;font-size:clamp(22px,3.2vw,46px);box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
++  .tile.conn .ph .avc{display:none}
++  .tile.conn .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.08) 50%,transparent 70%);background-size:220% 100%;animation:tshim 1.5s linear infinite}
++  @keyframes tshim{from{background-position:220% 0}to{background-position:-220% 0}}
++  .tmenu{position:fixed;z-index:70;min-width:180px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px -20px rgba(15,27,61,.45);padding:6px;display:flex;flex-direction:column}
++  .tmenu button{border:0;background:none;text-align:left;padding:10px 12px;border-radius:9px;font-weight:500;color:var(--ink);cursor:pointer}
++  .tmenu button:hover,.tmenu button:focus-visible{background:#EEF3FF}
++  .tmenu hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
++  .tmenu .danger{color:#B91C1C}
++  .rm-av{border:0;background:none;padding:0;margin-left:4px;border-radius:50%;cursor:pointer;display:inline-flex;flex:none;transition:box-shadow .15s}
++  .rm-av:hover{box-shadow:0 0 0 3px #DBE7FF}
++  .rm-av:focus-visible{outline:2px solid var(--pr);outline-offset:2px}
++  .rm-av .avc{width:38px!important;height:38px!important;object-fit:cover}
++  @media (prefers-reduced-motion:reduce){.tile.conn .ph::after{animation:none}}
+ </style>
+ </head>
+ <body>
+@@ -937,6 +977,7 @@
+         <button class="rbtn" id="tk-btn2" type="button" aria-label="Tasks" title="Tasks" data-testid="room-tasks-btn"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10l1.5 1.5L14 8M9 16h6"/></svg></button>
+         <button class="rbtn nt-btn" id="nt-btn2" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nt-badge hidden"></span></button>
+         <button class="rbtn dm-btn" id="dm-btn2" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button>
++        <button class="rm-av" id="pm-btn2" type="button" aria-label="Account menu" aria-haspopup="menu" title="Account" data-testid="room-account-btn"><span id="pm-av2"></span></button>
+       </div>
+     </header>
+ 
+@@ -997,6 +1038,7 @@
+       <div id="plist" class="hidden"><div class="plf" id="plf"><button data-plf="all" aria-selected="true" data-testid="plist-filter-all">All</button><button data-plf="pin" aria-selected="false" data-testid="plist-filter-pinned">Pinned</button><button data-plf="fol" aria-selected="false" data-testid="plist-filter-following">Following</button></div><div id="plist-body"></div></div>
+     </div>
+   </aside>
++  <button id="side-handle" type="button" aria-controls="chat" aria-expanded="true" aria-label="Hide chat" title="Hide chat"><span class="dot"></span><svg class="ic" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+   <div id="sheet-bg" class="hidden"></div>
+ </div>
+ 
+@@ -1151,6 +1193,7 @@
+   <div class="msg" id="pr-msg" role="alert"></div>
+ </div></div>
+ 
++<div id="tmenu" class="tmenu hidden" role="menu" data-testid="tile-menu"></div>
+ <div id="pm" class="pm hidden" role="menu" data-testid="profile-menu">
+   <button data-pm="view" data-testid="menu-view-profile">View profile</button><button data-pm="edit" data-testid="menu-profile-settings">Profile settings</button><button data-pm="privacy" data-testid="menu-privacy-settings">Privacy settings</button><button data-pm="settings" data-testid="menu-settings">Settings</button><button data-pm="tasks" data-testid="menu-tasks">Tasks</button><hr><button data-pm="logout" class="danger" id="logout" data-testid="menu-logout">Log out</button>
+ </div>
+@@ -1328,14 +1371,14 @@
+   let t = document.getElementById("t-" + id);
+   if (!t){
+     t = document.createElement("div");
+-    t.className = "tile" + (local ? " local" : "");
++    t.className = "tile" + (local ? " local" : " conn");
+     t.id = "t-" + id;
+-    t.innerHTML = '<video autoplay playsinline></video><button class="pinb" data-a="pin" title="Spotlight">' + TI.spot + '</button><div class="badge"></div>' + (local ? "" : '<span class="qb" data-q="wait" title="Connecting..." data-testid="tile-quality-' + id + '"><i></i><i></i><i></i></span>') + '<div class="status"></div><div class="name"></div><div class="tact">' +
+-      (local ? "" : '<button data-a="spin" class="spin" title="Pin" data-testid="tile-pin-' + id + '">' + TI.pin + '</button><button data-a="enc" title="Encourage">' + TI.smile + '</button><button data-a="msg" title="Message">' + TI.msg + '</button><button data-a="bio" title="View profile">' + TI.info + "</button>" +
++    t.innerHTML = '<video autoplay playsinline></video><div class="ph" aria-hidden="true"></div><button class="pinb" data-a="pin" title="Spotlight">' + TI.spot + '</button><div class="badge"></div>' + (local ? "" : '<span class="qb" data-q="wait" title="Connecting..." data-testid="tile-quality-' + id + '"><i></i><i></i><i></i></span>') + '<div class="status"></div><div class="name"></div><div class="tact">' +
++      (local ? "" : '<button data-a="spin" class="spin" title="Pin" data-testid="tile-pin-' + id + '">' + TI.pin + '</button><button data-a="enc" title="Encourage">' + TI.smile + '</button><button data-a="msg" title="Message">' + TI.msg + '</button><button data-a="bio" title="View profile">' + TI.info + "</button><button data-a=\"more\" title=\"More\" aria-haspopup=\"menu\">" + TI.more + "</button>" +
+         (me.role === "admin" ? '<button data-a="a-mic">Mute</button><button data-a="a-cam">Stop cam</button><button data-a="a-rm">Remove</button>' : "")) + "</div>";
+     t.onclick = e => {
+       const bt = e.target.closest("[data-a]"); if (!bt) return; const a = bt.dataset.a;
+-      if (a === "pin") togglePin(id); if (a === "spin") pinPeer(id, bt); if (a === "enc") openEnc(id); if (a === "bio"){ const i = info.get(id); if (i && i.userId) openUser(i.userId); } if (a === "msg"){ const i = info.get(id); if (i && i.userId) openThread(i.userId, i.name); } if (a.startsWith("a-")) adminAct(id, a, bt);
++      if (a === "pin") togglePin(id); if (a === "spin") pinPeer(id, bt); if (a === "enc") openEnc(id); if (a === "bio"){ const i = info.get(id); if (i && i.userId) openUser(i.userId); } if (a === "msg"){ const i = info.get(id); if (i && i.userId) openThread(i.userId, i.name); } if (a === "more") openTileMenu(id, bt); if (a.startsWith("a-")) adminAct(id, a, bt);
+     };
+     $("grid").appendChild(t);
+   }
+@@ -1351,6 +1394,8 @@
+   el.innerHTML = '<span class="who"><b>' + esc(nm) + "</b>" + (i.title ? " <small>" + esc(i.title) + "</small>" : "") + "</span>" +
+     '<span class="cnt">' + (i.sessions ? '<i title="Focus sessions done">' + i.sessions + "</i>" : "") + (i.cheers ? '<i title="Encouragements received">+' + i.cheers + "</i>" : "") + (!SET.hide_pin_counts && i.pins ? '<i class="pc" title="Pins">' + TI.pinS + i.pins + "</i>" : "") + "</span>" +
+     (i.goal ? '<span class="goal">' + esc(i.goal) + "</span>" : "");
++  const ph = t.querySelector(".ph");
++  if (ph){ const mine = id === "me", k = nm + "|" + (mine ? me.avatar_url || "" : ""); if (ph.dataset.k !== k){ ph.dataset.k = k; ph.innerHTML = avatar(i.name || fallback || "?", (mine ? me.id : i.userId) || 0, 128, mine ? me.avatar_url : null); } }
+   t.dataset.s = (nm + " " + (i.title || "") + " " + (i.goal || "")).toLowerCase();
+   const sp = t.querySelector(".spin"); if (sp){ const on = myPins.has(i.userId); sp.classList.toggle("on", on); sp.title = on ? "Unpin" : "Pin"; sp.classList.toggle("hidden", !!(SET.disable_pinning || i.noPin)); }
+   const bl = id !== "me" && blockedUsers.has(i.userId), vv = t.querySelector("video"); t.classList.toggle("blk", bl); if (vv && id !== "me") vv.muted = bl;
+@@ -1482,6 +1527,7 @@
+     clearTimeout(entry.dropT);
+     if (s === "disconnected") entry.dropT = setTimeout(() => { if (entry.pc === pc && pc.connectionState === "disconnected" && socket && socket.id < id) retryPeer(id); }, 6000);
+     if (!el) return;
++    if (s === "connected" || s === "failed") el.parentNode.classList.remove("conn");   // skeleton is for the first connect only
+     if (s === "failed") el.innerHTML = esc(failMsg()) + '<br><button class="retry" data-retry="' + esc(id) + '">Try again</button>';
+     else el.textContent = s === "connected" ? "" : s === "disconnected" ? "Connection lost. Reconnecting…" : "Connecting…";
+     if (s === "failed") console.warn("WebRTC failed for", id, relayOn ? "(relay on)" : "(no relay configured)");
+@@ -1583,6 +1629,7 @@
+   const b = document.createElement("b"); b.textContent = name + ": ";
+   d.append(b, document.createTextNode(text));
+   $("log").appendChild(d); $("log").scrollTop = 1e9;
++  if (name !== "You" && $("room").classList.contains("noside")) $("side-handle").classList.add("unread");
+ }
+ $("chat-form").onsubmit = e => {
+   e.preventDefault();
+@@ -1590,7 +1637,18 @@
+   socket.emit("chat", text); addChat("You", text);
+   $("chat-in").value = "";
+ };
+-$("toggle-chat").onclick = () => { if (mob()) return openSheet("chat"); const off = $("room").classList.toggle("noside"); $("toggle-chat").setAttribute("aria-pressed", !off); };
++function setSide(open, save = true){
++  $("room").classList.toggle("noside", !open);
++  $("toggle-chat").setAttribute("aria-pressed", open);
++  const h = $("side-handle"), t = open ? "Hide chat" : "Show chat";
++  h.setAttribute("aria-expanded", open); h.setAttribute("aria-label", t); h.title = t;
++  if (open) h.classList.remove("unread");
++  if (save) try { localStorage.setItem("chaupal_side_open", open ? "1" : "0"); } catch {}
++}
++const toggleSide = () => setSide($("room").classList.contains("noside"));
++$("toggle-chat").onclick = () => { if (mob()) return openSheet("chat"); toggleSide(); };
++$("side-handle").onclick = toggleSide;
++try { if (!mob() && localStorage.getItem("chaupal_side_open") === "0") setSide(false, false); } catch {}
+ $("copy").onclick = async () => {
+   const url = location.origin + location.pathname + "#" + $("room-code").textContent;
+   try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Share Room", 1500); }
+@@ -2017,17 +2075,27 @@
+ }
+ function ROUNDS(){ return (grp.vibe && grp.rounds) || SET.pomo_rounds || 4; }
+ async function loadSettings(){ try { applySettings((await api("/api/settings")).settings); } catch {} }
++// "Mirror for myself" only changes what I see; "Mirror for others" only changes what is sent.
++// When the effects pipeline is running, my own tile is already showing the flipped picture, so the CSS flip is
++// needed only when the two settings disagree. Otherwise the two flips cancel out and my view looks un-mirrored.
++function syncMirror(){
++  let sent = false; try { sent = !!(fx.on && SET.mirror_others); } catch {}
++  const flip = !!SET.mirror_self !== sent;
++  $("grid").classList.toggle("mirself", flip);
++  const pv = $("fx-prev"); if (pv) pv.style.transform = flip ? "scaleX(-1)" : "none";
++}
+ function applySettings(n){
+   const full = !ps.running && ps.left === POMO[ps.phase] * 60000;
+   Object.assign(SET, n);
+   if (!grp.vibe) restorePomo();
+   if (full && !grp.on) ps.left = POMO[ps.phase] * 60000;
+   if (perPage !== SET.tiles){ perPage = SET.tiles; $("per").value = perPage; try { localStorage.setItem("chaupal_per", perPage); } catch {} }
+-  $("grid").classList.toggle("noself", !SET.self_view); $("grid").classList.toggle("mirself", !!SET.mirror_self);
++  $("grid").classList.toggle("noself", !SET.self_view);
+   document.body.classList.toggle("nomsg", !!SET.disable_messages);
+   if (SET.disable_messages){ const b = document.querySelector('.tabs2 [data-t="plist"]'); if (b) b.click(); }
+   if (SET.low_res && FX.quality !== "360"){ FX.quality = "360"; saveFx(); applyQuality(); }
+   if (localStream) fxApply();
++  syncMirror();
+   relabelAll(); layout(); renderPomo();
+ }
+ function fillSettings(){
+@@ -2065,10 +2133,16 @@
+ }
+ 
+ /* ---------- account menu + privacy ---------- */
+-function setMenuAvatar(){ $("pm-av").innerHTML = avatar(me.name, me.id, 32, me.avatar_url); }
++function setMenuAvatar(){ $("pm-av").innerHTML = avatar(me.name, me.id, 32, me.avatar_url); $("pm-av2").innerHTML = avatar(me.name, me.id, 38, me.avatar_url); }
+ const pmClose = () => $("pm").classList.add("hidden");
+-$("pm-btn").onclick = e => { e.stopPropagation(); $("pm").classList.toggle("hidden"); };
+-document.addEventListener("click", e => { if (!e.target.closest("#pm") && !e.target.closest("#pm-btn")) pmClose(); });
++$("pm-btn").onclick = e => { e.stopPropagation(); $("pm").style.top = $("pm").style.right = ""; $("pm").classList.toggle("hidden"); };
++$("pm-btn2").onclick = e => {
++  e.stopPropagation(); const pm = $("pm"), r = $("pm-btn2").getBoundingClientRect();
++  if (innerWidth > 820){ pm.style.top = (r.bottom + 8) + "px"; pm.style.right = Math.max(12, innerWidth - r.right) + "px"; } else pm.style.top = pm.style.right = "";
++  pm.classList.toggle("hidden");
++};
++document.addEventListener("click", e => { if (!e.target.closest("#pm") && !e.target.closest("#pm-btn") && !e.target.closest("#pm-btn2")) pmClose();
++  if (!e.target.closest("#tmenu") && !e.target.closest('[data-a="more"]')) tmClose(); });
+ $("pm").onclick = e => {
+   const b = e.target.closest("[data-pm]"); if (!b) return; pmClose();
+   const a = b.dataset.pm;
+@@ -2078,6 +2152,56 @@
+   if (a === "settings") openDev();
+   if (a === "tasks") openTasks();
+ };
++// ---- tile "more" menu ----
++let tmenuFor = null;
++function tmClose(){ $("tmenu").classList.add("hidden"); tmenuFor = null; }
++function openTileMenu(id, btn){
++  const i = info.get(id); if (!i || !i.userId) return toast("Their profile is still loading. Try again in a moment.");
++  if (tmenuFor === id && !$("tmenu").classList.contains("hidden")) return tmClose();
++  tmenuFor = id; const m = $("tmenu"), bl = blockedUsers.has(i.userId);
++  m.innerHTML = '<button data-tm="bio">View profile</button><button data-tm="msg">Message</button><hr><button data-tm="report">Report</button><button data-tm="block" class="danger">' + (bl ? "Unblock" : "Block") + "</button>";
++  m.classList.remove("hidden"); const r = btn.getBoundingClientRect();
++  m.style.top = Math.max(8, Math.min(r.bottom + 6, innerHeight - m.offsetHeight - 8)) + "px";
++  m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, innerWidth - m.offsetWidth - 8)) + "px";
++}
++$("tmenu").onclick = async e => {
++  const b = e.target.closest("[data-tm]"); if (!b) return;
++  const i = tmenuFor && info.get(tmenuFor), a = b.dataset.tm; tmClose(); if (!i || !i.userId) return;
++  if (a === "bio") openUser(i.userId);
++  if (a === "msg") openThread(i.userId, i.name);
++  if (a === "report") openReport(i.userId, "user", null);
++  if (a === "block"){
++    const on = blockedUsers.has(i.userId);
++    if (!on && !confirm("Block " + (i.name || "this person") + "? You won't see or hear them in rooms.")) return;
++    try { await api("/api/block/" + i.userId, on ? { method: "DELETE" } : { body: {} }); await loadBlocks(); toast(on ? "Unblocked." : "Blocked."); }
++    catch (err) { toast(err.message || "Couldn't update. Try again."); }
++  }
++};
++document.addEventListener("keydown", e => { if (e.key === "Escape") tmClose(); });
++
++// ---- camera-off avatar + connecting skeleton ----
++// The server doesn't tell other people when someone turns their camera off (the browser just sends black frames),
++// so for other people's tiles we look at a tiny 16x9 sample of the picture once a second.
++const pxC = document.createElement("canvas"); pxC.width = 16; pxC.height = 9;
++const pxX = pxC.getContext("2d", { willReadFrequently: true });
++function hasPicture(v){
++  try { pxX.drawImage(v, 0, 0, 16, 9); const d = pxX.getImageData(0, 0, 16, 9).data; let mx = 0;
++    for (let k = 0; k < d.length; k += 4){ const y = d[k] * .299 + d[k + 1] * .587 + d[k + 2] * .114; if (y > mx) mx = y; }
++    return mx > 10; } catch { return true; }
++}
++function refreshTiles(){
++  if (document.hidden || $("room").classList.contains("hidden")) return;
++  document.querySelectorAll("#grid .tile").forEach(t => {
++    const v = t.querySelector("video"); if (!v) return;
++    if (t.classList.contains("local")){ t.classList.toggle("nov", !screenStream && !(camTrack && camTrack.enabled)); return; }
++    const vt = v.srcObject && v.srcObject.getVideoTracks && v.srcObject.getVideoTracks()[0], live = !!(vt && vt.readyState === "live");
++    if (live && v.videoWidth > 0 && v.readyState >= 2){ t.classList.remove("conn"); t._dk = hasPicture(v) ? 0 : (t._dk || 0) + 1; t.classList.toggle("nov", t._dk >= 2); }
++    else if (!t.classList.contains("conn")) t.classList.add("nov");
++    t._age = (t._age || 0) + 1; if (t._age > 20) t.classList.remove("conn");   // never leave the skeleton up for more than ~20s
++  });
++}
++setInterval(refreshTiles, 1000);
++$("cam").addEventListener("click", () => setTimeout(refreshTiles, 60));
+ function prTab(t){
+   document.querySelectorAll("#pr-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.pr === t));
+   document.querySelectorAll("[data-prp]").forEach(p => p.classList.toggle("hidden", p.dataset.prp !== t));
+@@ -2389,6 +2513,7 @@
+ 
+ /* ---------- room interface v2: goals, view switch, find people, session summary ---------- */
+ const TI = {
++  more: '<svg class="ic" viewBox="0 0 24 24" style="fill:currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
+   pin: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v1H7v-1l3-3z"/></svg>',
+   pinS: '<svg class="ic" viewBox="0 0 24 24" style="width:12px;height:12px;margin-right:2px"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v1H7v-1l3-3z"/></svg>',
+   spot: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+@@ -2575,7 +2700,7 @@
+   if (!screenStream) swapSender("video", fx.out);
+   fx.z = 1; fx.cx = .5; fx.cy = .5; fx.on = true;
+   fx.timer = new Worker(URL.createObjectURL(new Blob(["setInterval(()=>postMessage(0),33)"])));   // a worker keeps ticking when the tab is in the background
+-  fx.timer.onmessage = fxDraw; refreshLocalTile();
++  fx.timer.onmessage = fxDraw; refreshLocalTile(); syncMirror();
+ }
+ function fxStop(full){
+   if (!fx.on) return;
+@@ -2583,6 +2708,7 @@
+   if (!full){ fx.raw.enabled = fx.out.enabled; localStream.removeTrack(fx.out); localStream.addTrack(fx.raw); camTrack = fx.raw; if (!screenStream) swapSender("video", fx.raw); }
+   fx.out.stop(); if (full) fx.raw.stop();
+   fx.src.srcObject = null; if (!full) refreshLocalTile();
++  syncMirror();
+ }
+ async function fxApply(){
+   if (!fxSupported || !localStream || !camTrack) return;
 @@ -822,6 +822,46 @@
    @media (max-width:820px){ .pm{left:12px;right:12px;top:auto;bottom:12px} .pp{width:auto!important} .strow{flex-direction:column;align-items:stretch;gap:6px} .strow select,.strow input{width:100%} }
    @media (max-width:980px){ .pv-wrap{grid-template-columns:1fr;padding:16px} .pf-card{position:static} .pf-tabs{top:62px} .pv-top{padding:10px 16px} }
