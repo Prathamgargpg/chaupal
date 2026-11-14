@@ -2075,17 +2075,27 @@ async function testVideoConnection(){
 }
 function ROUNDS(){ return (grp.vibe && grp.rounds) || SET.pomo_rounds || 4; }
 async function loadSettings(){ try { applySettings((await api("/api/settings")).settings); } catch {} }
+// "Mirror for myself" only changes what I see; "Mirror for others" only changes what is sent.
+// When the effects pipeline is running, my own tile is already showing the flipped picture, so the CSS flip is
+// needed only when the two settings disagree. Otherwise the two flips cancel out and my view looks un-mirrored.
+function syncMirror(){
+  let sent = false; try { sent = !!(fx.on && SET.mirror_others); } catch {}
+  const flip = !!SET.mirror_self !== sent;
+  $("grid").classList.toggle("mirself", flip);
+  const pv = $("fx-prev"); if (pv) pv.style.transform = flip ? "scaleX(-1)" : "none";
+}
 function applySettings(n){
   const full = !ps.running && ps.left === POMO[ps.phase] * 60000;
   Object.assign(SET, n);
   if (!grp.vibe) restorePomo();
   if (full && !grp.on) ps.left = POMO[ps.phase] * 60000;
   if (perPage !== SET.tiles){ perPage = SET.tiles; $("per").value = perPage; try { localStorage.setItem("chaupal_per", perPage); } catch {} }
-  $("grid").classList.toggle("noself", !SET.self_view); $("grid").classList.toggle("mirself", !!SET.mirror_self);
+  $("grid").classList.toggle("noself", !SET.self_view);
   document.body.classList.toggle("nomsg", !!SET.disable_messages);
   if (SET.disable_messages){ const b = document.querySelector('.tabs2 [data-t="plist"]'); if (b) b.click(); }
   if (SET.low_res && FX.quality !== "360"){ FX.quality = "360"; saveFx(); applyQuality(); }
   if (localStream) fxApply();
+  syncMirror();
   relabelAll(); layout(); renderPomo();
 }
 function fillSettings(){
@@ -2690,7 +2700,7 @@ function fxStart(){
   if (!screenStream) swapSender("video", fx.out);
   fx.z = 1; fx.cx = .5; fx.cy = .5; fx.on = true;
   fx.timer = new Worker(URL.createObjectURL(new Blob(["setInterval(()=>postMessage(0),33)"])));   // a worker keeps ticking when the tab is in the background
-  fx.timer.onmessage = fxDraw; refreshLocalTile();
+  fx.timer.onmessage = fxDraw; refreshLocalTile(); syncMirror();
 }
 function fxStop(full){
   if (!fx.on) return;
@@ -2698,6 +2708,7 @@ function fxStop(full){
   if (!full){ fx.raw.enabled = fx.out.enabled; localStream.removeTrack(fx.out); localStream.addTrack(fx.raw); camTrack = fx.raw; if (!screenStream) swapSender("video", fx.raw); }
   fx.out.stop(); if (full) fx.raw.stop();
   fx.src.srcObject = null; if (!full) refreshLocalTile();
+  syncMirror();
 }
 async function fxApply(){
   if (!fxSupported || !localStream || !camTrack) return;
