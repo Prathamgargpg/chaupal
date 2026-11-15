@@ -888,11 +888,12 @@
   .sp-info{flex:1;min-width:0}
   .sp-info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sp-empty{color:var(--mu,#5B6B8C);text-align:center;padding:18px 8px;margin:0}
-  .ft{display:none;position:fixed;right:24px;bottom:28px;z-index:40;width:76px;height:76px;padding:0;border:0;border-radius:50%;background:conic-gradient(var(--ftc,#38BDF8) var(--p,0%),rgba(255,255,255,.22) 0);box-shadow:0 14px 30px -12px rgba(7,21,54,.6);cursor:pointer;color:#fff}
+  .ft{display:none;position:fixed;right:24px;bottom:28px;z-index:40;width:80px;height:80px;padding:0;border:0;border-radius:50%;background:conic-gradient(var(--ftc,#38BDF8) var(--p,0%),rgba(255,255,255,.22) 0);box-shadow:0 14px 30px -12px rgba(7,21,54,.6);cursor:pointer;color:#fff}
   .ft::before{content:"";position:absolute;inset:6px;border-radius:50%;background:#15204A}
   .ft span,.ft small{position:relative;display:block;line-height:1.15}
   .ft span{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
-  .ft small{font-size:9.5px;opacity:.8;text-transform:uppercase;letter-spacing:.04em}
+  .ft small{font-size:9px;opacity:.8;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;max-width:62px;margin:0 auto;overflow:hidden;text-overflow:clip}
+  .ft[data-ph="long"] small{font-size:7.5px}
   .ft[data-ph="short"],.ft[data-ph="long"]{--ftc:#34D399}
   .ft:focus-visible{outline:2px solid var(--pr,#2563EB);outline-offset:3px}
   @media (min-width:821px){#room.noside .ft{display:grid;place-content:center;text-align:center}}
@@ -2512,7 +2513,7 @@ $("cam").addEventListener("click", () => setTimeout(refreshTiles, 60));
 // ---- floating timer (shows when the chat drawer is closed, so the clock is never hidden) ----
 function syncFT(){
   const f = $("ft"); if (!f) return;
-  $("ft-t").textContent = fmt(rem(ps)); $("ft-ph").textContent = PH[ps.phase] + (ps.running ? "" : " \u23F8");
+  $("ft-t").textContent = fmt(rem(ps)); $("ft-ph").textContent = ps.running ? PH[ps.phase] : "Paused";
   f.dataset.ph = ps.phase; f.style.setProperty("--p", (100 - rem(ps) / (POMO[ps.phase] * 600)) + "%");
 }
 $("ft").onclick = () => $("pp-btn").click();
