@@ -32,17 +32,27 @@ Open http://localhost:3000, create an account (the first account becomes admin).
 | `METERED_API_KEY`, `METERED_DOMAIN` | TURN relay via Metered (recommended) |
 | `TURN_URL`, `TURN_USERNAME`, `TURN_CREDENTIAL` | Alternative: your own TURN server |
 | `FRAME_ANCESTORS` | Optional: sites allowed to embed the app |
+| `AUTO_MOD` | Set to `off` to disable auto-moderation (on by default) |
 
 ### Free-tier limits to know
 - The free service sleeps after inactivity, so the first visit can take up to a minute.
 - Without `DATABASE_URL`, the SQLite file is wiped on restart or redeploy and accounts disappear.
 - Meetings in progress end if the server restarts.
 
+## Auto-moderation
+On by default. Set `AUTO_MOD=off` to turn it off.
+- **Text** (posts, comments, DMs, room chat, goals, encouragements, names and bios) is checked on the server. Slurs, sexual content, threats and abuse (English and common Hinglish, including disguised spellings like `f.u.c.k` or `sh1t`) are blocked. Milder swearing is masked (`b*******`). Offensive names and bios are refused.
+- **Live video and screen share** are checked in each browser with an on-device model (NSFWJS). No frames leave the device. Two unsafe readings in a row hide that video for the viewer. The server then turns the sender's camera and screen share off for 10 minutes: right away if the sender's own browser detected it, or once 2 viewers report it (1 viewer in a one-on-one room, which isn't counted as a strike).
+- **Profile pictures** are checked in the browser before upload.
+- **Posts** reported by 3 different people are hidden until an admin reviews them. Dismissing the report restores the post.
+- **Strikes:** 3 confirmed violations within 24 hours suspend the account for 24 hours. Every automatic action appears in Admin → Reports as "flagged by auto-moderation", and admins can dismiss it or lift the suspension.
+
 ## When people can't connect
 Some office and mobile networks block direct WebRTC. Add a TURN relay (Metered.ca has a free tier) by setting the Metered or TURN variables above. The app picks them up automatically, and `/healthz` reports whether TURN is active.
 
 ## Files
 - `server.js` – Express, auth API, Socket.IO signaling
+- `moderation.js` – the text filter used by auto-moderation
 - `index.html` – the whole front end
 - `sw.js` – service worker
 - `render.yaml` – Render config

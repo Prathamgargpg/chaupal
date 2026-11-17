@@ -8,6 +8,7 @@ import Database from "better-sqlite3";
 import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { checkText } from "./moderation.js";
 import crypto from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,7 +32,8 @@ fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
    file is restored from Postgres at startup and saved back shortly after every change and on shutdown. */
 let pool = null;
 if (process.env.DATABASE_URL) {
-  pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false }, max: 2 });
+  // sslmode in the URL makes pg print a security warning on every start; TLS is configured by the ssl option instead
+  pool = new pg.Pool({ connectionString: process.env.DATABASE_URL.replace(/([?&])sslmode=[^&]*&?/i, "$1").replace(/[?&]$/, ""), ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false }, max: 2 });
   await pool.query("CREATE TABLE IF NOT EXISTS app_snapshot (id INT PRIMARY KEY, data BYTEA NOT NULL, updated_at TIMESTAMPTZ DEFAULT now())");
   const r = await pool.query("SELECT data FROM app_snapshot WHERE id = 1");
   for (const ext of ["", "-wal", "-shm"]) fs.rmSync(DB_PATH + ext, { force: true });
@@ -49,7 +51,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
 )`);
 for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["daily_goal", "INTEGER DEFAULT 4"], ["show_leaderboard", "INTEGER DEFAULT 1"],
   ["avatar", "TEXT DEFAULT ''"], ["cover", "TEXT DEFAULT ''"], ["photo_v", "INTEGER DEFAULT 0"], ["pronouns", "TEXT DEFAULT ''"], ["age", "INTEGER DEFAULT 0"], ["country", "TEXT DEFAULT ''"],
-  ["relationship", "TEXT DEFAULT ''"], ["looking_for", "TEXT DEFAULT '[]'"], ["interests", "TEXT DEFAULT '[]'"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["settings", "TEXT DEFAULT '{}'"], ["dm_privacy", "TEXT DEFAULT 'everyone'"], ["pw_changed_at", "INTEGER DEFAULT 0"]])
+  ["relationship", "TEXT DEFAULT ''"], ["looking_for", "TEXT DEFAULT '[]'"], ["interests", "TEXT DEFAULT '[]'"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["settings", "TEXT DEFAULT '{}'"], ["dm_privacy", "TEXT DEFAULT 'everyone'"], ["pw_changed_at", "INTEGER DEFAULT 0"], ["suspended_until", "INTEGER DEFAULT 0"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
@@ -80,8 +82,9 @@ CREATE INDEX IF NOT EXISTS idx_pins_pinned ON pins(pinned_id);
 CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, text TEXT NOT NULL, due TEXT DEFAULT '', done INTEGER DEFAULT 0, created_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id);`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
-const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, (avatar != '') has_avatar, (cover != '') has_cover, photo_v, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, last_seen, dm_privacy, show_leaderboard, pw_changed_at FROM users WHERE id = ?");
+const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, (avatar != '') has_avatar, (cover != '') has_cover, photo_v, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, last_seen, dm_privacy, show_leaderboard, pw_changed_at, suspended_until FROM users WHERE id = ?");
 const pwHashOf = db.prepare("SELECT password_hash FROM users WHERE id = ?");
+if (!db.prepare("PRAGMA table_info(posts)").all().some(x => x.name === "hidden")) db.exec("ALTER TABLE posts ADD COLUMN hidden INTEGER DEFAULT 0");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
 
 let savedChanges = -1, saving = false;
@@ -213,12 +216,48 @@ const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/* ---------- auto-moderation ---------- */
+// Text is screened on the server (moderation.js). Live video is screened in each browser, which reports here (see "mod-video").
+// Every automatic action is filed as a report from "Auto-moderation" so admins can review or undo it.
+const AUTO_MOD = process.env.AUTO_MOD !== "off";
+const SUSPEND_AFTER = 3, SUSPEND_MS = 24 * 3600000, VIDEO_BAN_MS = 10 * 60000;
+const MOD_BLOCK_MSG = "This was blocked because it breaks the community rules (offensive, sexual or abusive language). Repeated violations lead to a 24-hour suspension.";
+const AUTO_REASONS = { text: "Blocked offensive message", video: "Inappropriate live video detected", "video-1": "Inappropriate live video reported by one viewer's device (not counted as a strike)", photo: "Inappropriate photo detected", post: "Post hidden after several user reports" };
+const suspendedMsg = until => `Your account is suspended until ${new Date(until).toUTCString()} for breaking the community rules. Contact the admin if you think this is a mistake.`;
+function autoFlag(uid, kind, context, ref = null){
+  const now = Date.now();
+  db.prepare("INSERT INTO reports (reporter_id, target_id, kind, ref_id, reason, context, created_at) VALUES (0, ?, ?, ?, ?, ?, ?)")
+    .run(uid, "auto-" + kind, ref, "Auto-moderation: " + (AUTO_REASONS[kind] || kind), String(context || "").slice(0, 280), now);
+  if (kind === "post" || kind === "video-1") return;   // hidden posts and single-viewer video flags are for admins to judge, not a strike
+  const strikes = db.prepare("SELECT COUNT(*) c FROM reports WHERE reporter_id = 0 AND target_id = ? AND kind NOT IN ('auto-post', 'auto-video-1') AND status = 'open' AND created_at > ?").get(uid, now - SUSPEND_MS).c;
+  const u = db.prepare("SELECT role, suspended_until FROM users WHERE id = ?").get(uid);
+  if (strikes >= SUSPEND_AFTER && u && u.role !== "admin" && !(u.suspended_until > now)){
+    db.prepare("UPDATE users SET suspended_until = ? WHERE id = ?").run(now + SUSPEND_MS, uid);
+    for (const so of io.sockets.sockets.values()) if (so.user.id === uid){ so.emit("suspended", { message: suspendedMsg(now + SUSPEND_MS) }); setTimeout(() => so.disconnect(true), 500); }
+  }
+}
+// returns { block: message } or { text: cleaned text with mild swear words masked }
+function screenText(uid, text, where){
+  if (!AUTO_MOD) return { text };
+  const r = checkText(text);
+  if (r.severe){ autoFlag(uid, "text", where + ": " + text); return { block: MOD_BLOCK_MSG }; }
+  return { text: r.clean };
+}
+// names and bios are shown everywhere, so any offensive word is refused (only severe ones count as a strike)
+function screenProfile(uid, ...parts){
+  if (!AUTO_MOD) return null;
+  const all = parts.filter(Boolean).join(" \n "), r = checkText(all);
+  if (r.severe && uid) autoFlag(uid, "text", "profile: " + all);
+  return r.severe || r.mild ? "Please remove the offensive words from your name, bio or interests." : null;
+}
+
 app.post("/api/signup", limit, wrap(async (req, res) => {
   const { name, email, password } = req.body || {};
   const e = String(email || "").trim().toLowerCase();
   const n = String(name || "").trim().slice(0, 40) || e.split("@")[0];
   if (!EMAIL_RE.test(e)) return res.status(400).json({ error: "Enter a valid email address." });
   if (String(password || "").length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
+  const badName = screenProfile(0, n); if (badName) return res.status(400).json({ error: "Please choose a name without offensive words." });
   if (findByEmail.get(e)) return res.status(409).json({ error: "An account with this email already exists. Sign in instead." });
   const hash = await bcrypt.hash(password, 10);
   let info;
@@ -241,6 +280,7 @@ app.post("/api/login", limit, wrap(async (req, res) => {
   const ok = row && (await bcrypt.compare(String(password || ""), row.password_hash));
   if (!ok) return res.status(401).json({ error: "Email or password is incorrect." });
   if (row.disabled) return res.status(403).json({ error: "This account has been disabled. Contact the admin." });
+  if (row.suspended_until > Date.now()) return res.status(403).json({ error: suspendedMsg(row.suspended_until) });
   recordLogin(row.id);
   res.json({ token: sign(row), user: publicUser(row) });
 }));
@@ -294,6 +334,7 @@ function auth(req, res, next) {
     const p = jwt.verify(h.replace(/^Bearer /, ""), JWT_SECRET);
     const u = findById.get(p.id);
     if (!u || u.disabled || !tokenFresh(p, u)) throw new Error("no user");
+    if (u.suspended_until > Date.now()) return res.status(403).json({ error: suspendedMsg(u.suspended_until), suspended: true });
     req.user = u; next();
   } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
@@ -310,6 +351,12 @@ app.put("/api/password", limit, auth, wrap(async (req, res) => {
   kick(req.user.id);
   res.json({ ok: true, token: sign(findById.get(req.user.id)) });
 }));
+// the browser checks a profile picture before uploading it; a refused picture counts as a strike
+app.post("/api/mod/self-flag", auth, (req, res) => {
+  const score = Number((req.body || {}).score);
+  if (AUTO_MOD && score >= 0.7 && score <= 1) autoFlag(req.user.id, "photo", `profile picture, confidence ${Math.round(score * 100)}%`);
+  res.json({ ok: true });
+});
 app.get("/api/titles", auth, (_req, res) => res.json({ titles: TITLES }));
 const RELS = ["Single", "In a relationship", "Engaged", "Married", "It's complicated", "Prefer not to say"];
 const LOOKING = ["Accountability partner(s)", "Study buddy", "A focus group/community", "Professional networking", "Friends", "Mentorship"];
@@ -319,6 +366,8 @@ app.put("/api/me", auth, (req, res) => {
   const b = req.body || {};
   const { name, title, bio, visibility, show_streak, show_activity } = b;
   const n = String(name || "").trim().slice(0, 40) || req.user.name;
+  const bad = screenProfile(req.user.id, n, bio, b.pronouns, Array.isArray(b.interests) ? b.interests.join(", ") : "");
+  if (bad) return res.status(400).json({ error: bad });
   db.prepare("UPDATE users SET name = ?, title = ?, bio = ? WHERE id = ?")
     .run(n, TITLES.includes(title) ? title : "", String(bio || "").trim().slice(0, 600), req.user.id);
   if (visibility !== undefined) db.prepare("UPDATE users SET visibility = ?, show_streak = ?, show_activity = ? WHERE id = ?")
@@ -450,7 +499,7 @@ function streakOf(uid) {
 const eventsOf = (uid, n) => db.prepare("SELECT type, data, created_at FROM events WHERE user_id = ? ORDER BY id DESC LIMIT ?").all(uid, n).map(e => ({ ...e, data: JSON.parse(e.data || "{}") }));
 const follows = (a, b) => !!db.prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followee_id = ?").get(a, b);
 const canView = (v, o) => v.id === o.id || v.role === "admin" || o.visibility === "public" || (o.visibility === "followers" && follows(v.id, o.id));
-const POSTQ = "SELECT p.id, p.body, p.created_at, u.id uid, u.name, u.title, u.visibility, (u.avatar != '') has_avatar, u.photo_v FROM posts p JOIN users u ON u.id = p.user_id WHERE u.disabled = 0 AND ";
+const POSTQ = "SELECT p.id, p.body, p.created_at, u.id uid, u.name, u.title, u.visibility, (u.avatar != '') has_avatar, u.photo_v FROM posts p JOIN users u ON u.id = p.user_id WHERE u.disabled = 0 AND p.hidden = 0 AND ";
 
 app.get("/api/timeline", auth, (req, res) => res.json({ events: eventsOf(req.user.id, 50), streak: streakOf(req.user.id) }));
 
@@ -513,8 +562,9 @@ app.get("/api/users/:id/follows", auth, (req, res) => {
 });
 
 app.post("/api/posts", auth, (req, res) => {
-  const body = String((req.body || {}).body || "").trim().slice(0, 1000);
+  let body = String((req.body || {}).body || "").trim().slice(0, 1000);
   if (!body) return res.status(400).json({ error: "Write something first." });
+  const sc = screenText(req.user.id, body, "post"); if (sc.block) return res.status(400).json({ error: sc.block }); body = sc.text;
   if (db.prepare("SELECT COUNT(*) c FROM posts WHERE user_id = ? AND created_at >= ?").get(req.user.id, dayStart()).c >= 20)
     return res.status(429).json({ error: "You've reached today's limit of 20 posts." });
   const id = db.prepare("INSERT INTO posts (user_id, body, created_at) VALUES (?, ?, ?)").run(req.user.id, body, Date.now()).lastInsertRowid;
@@ -540,7 +590,7 @@ app.delete("/api/posts/:id", auth, (req, res) => {
 /* ---------- comments ---------- */
 const commentCount = pid => db.prepare("SELECT COUNT(*) c FROM comments WHERE post_id = ?").get(pid).c;
 const postFor = (viewer, pid) => {
-  const p = db.prepare("SELECT p.id, p.user_id, p.body FROM posts p JOIN users u ON u.id = p.user_id WHERE p.id = ? AND u.disabled = 0").get(pid);
+  const p = db.prepare("SELECT p.id, p.user_id, p.body FROM posts p JOIN users u ON u.id = p.user_id WHERE p.id = ? AND u.disabled = 0 AND p.hidden = 0").get(pid);
   return p && !blockedEither(viewer.id, p.user_id) && canView(viewer, findById.get(p.user_id)) ? p : null;
 };
 app.get("/api/posts/:id/comments", auth, (req, res) => {
@@ -552,8 +602,9 @@ app.get("/api/posts/:id/comments", auth, (req, res) => {
 app.post("/api/posts/:id/comments", auth, (req, res) => {
   const p = postFor(req.user, Number(req.params.id));
   if (!p) return res.status(404).json({ error: "Post not found." });
-  const body = String((req.body || {}).body || "").trim().slice(0, 280);
+  let body = String((req.body || {}).body || "").trim().slice(0, 280);
   if (!body) return res.status(400).json({ error: "Write a comment first." });
+  const sc = screenText(req.user.id, body, "comment"); if (sc.block) return res.status(400).json({ error: sc.block }); body = sc.text;
   db.prepare("INSERT INTO comments (post_id, user_id, body, created_at) VALUES (?, ?, ?, ?)").run(p.id, req.user.id, body, Date.now());
   notify(p.user_id, "comment", req.user, p.id, body.slice(0, 60), req.user.name + " commented on your post");
   emitPostUpdate(p.id, p.user_id);
@@ -595,8 +646,9 @@ app.get("/api/chats/:id", auth, (req, res) => {
 app.post("/api/chats/:id", auth, (req, res) => {
   const me = req.user.id, o = findById.get(Number(req.params.id));
   if (!o || o.disabled || o.id === me || blockedEither(me, o.id)) return res.status(400).json({ error: "You can't message this user." });
-  const body = String((req.body || {}).body || "").trim().slice(0, 1000);
+  let body = String((req.body || {}).body || "").trim().slice(0, 1000);
   if (!body) return res.status(400).json({ error: "Write a message first." });
+  const sc = screenText(me, body, "message to " + o.name); if (sc.block) return res.status(400).json({ error: sc.block }); body = sc.text;
   const repliedBefore = !!db.prepare("SELECT 1 FROM dms WHERE from_id = ? AND to_id = ?").get(o.id, me);
   if (!repliedBefore && (o.visibility === "private" || o.dm_privacy === "nobody" || (o.dm_privacy === "following" && !follows(o.id, me))))
     return res.status(403).json({ error: "This user isn't accepting messages from you." });
@@ -689,6 +741,12 @@ app.post("/api/report", auth, (req, res) => {
   if (recent.length >= 10) return res.status(429).json({ error: "You've sent a lot of reports. Please try again later." });
   recent.push(now); repHits.set(me, recent);
   db.prepare("INSERT INTO reports (reporter_id, target_id, kind, ref_id, reason, context, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").run(me, target.id, kind, ref, String(b.reason || "").trim().slice(0, 300), context.slice(0, 280), now);
+  // three different people reporting the same post hides it until an admin looks at it
+  if (kind === "post" && AUTO_MOD && db.prepare("SELECT COUNT(DISTINCT reporter_id) c FROM reports WHERE kind = 'post' AND ref_id = ? AND status = 'open' AND reporter_id != 0").get(ref).c >= 3
+      && db.prepare("UPDATE posts SET hidden = 1 WHERE id = ? AND hidden = 0").run(ref).changes){
+    autoFlag(target.id, "post", context, ref);
+    return res.json({ ok: true, hidden: true });
+  }
   res.json({ ok: true });
 });
 
@@ -786,18 +844,25 @@ app.delete("/api/admin/rooms/:id", auth, admin, (req, res) => {
 });
 
 app.get("/api/admin/reports", auth, admin, (req, res) => {
-  res.json({ reports: db.prepare(`SELECT r.id, r.kind, r.reason, r.context, r.status, r.created_at, r.target_id, a.name reporter, t.name target, t.disabled target_disabled
+  res.json({ reports: db.prepare(`SELECT r.id, r.kind, r.ref_id, r.reason, r.context, r.status, r.created_at, r.target_id, COALESCE(a.name, 'Auto-moderation') reporter, t.suspended_until target_suspended, t.name target, t.disabled target_disabled
     FROM reports r LEFT JOIN users a ON a.id = r.reporter_id LEFT JOIN users t ON t.id = r.target_id ${req.query.status === "all" ? "" : "WHERE r.status = 'open'"} ORDER BY r.id DESC LIMIT 200`).all() });
 });
 app.patch("/api/admin/reports/:id", auth, admin, (req, res) => {
   const st = (req.body || {}).status;
   if (!["resolved", "dismissed"].includes(st)) return res.status(400).json({ error: "Bad status." });
-  db.prepare("UPDATE reports SET status = ? WHERE id = ?").run(st, Number(req.params.id)); res.json({ ok: true });
+  db.prepare("UPDATE reports SET status = ? WHERE id = ?").run(st, Number(req.params.id));
+  // dismissing a report on a hidden post puts the post back
+  const r = db.prepare("SELECT kind, ref_id FROM reports WHERE id = ?").get(Number(req.params.id));
+  if (st === "dismissed" && r && r.ref_id && (r.kind === "post" || r.kind === "auto-post")){
+    db.prepare("UPDATE posts SET hidden = 0 WHERE id = ?").run(r.ref_id);
+    db.prepare("UPDATE reports SET status = 'dismissed' WHERE ref_id = ? AND kind IN ('post', 'auto-post') AND status = 'open'").run(r.ref_id);
+  }
+  res.json({ ok: true });
 });
 app.get("/api/admin/users", auth, admin, (_req, res) => {
   const socks = [...io.sockets.sockets.values()];
   res.json({
-    users: db.prepare(`SELECT id, email, name, title, role, disabled,
+    users: db.prepare(`SELECT id, email, name, title, role, disabled, suspended_until,
       (SELECT COUNT(*) FROM encouragements WHERE from_id = users.id) sent,
       (SELECT COUNT(*) FROM encouragements WHERE to_id = users.id) received FROM users ORDER BY id`).all(),
     online: [...new Set(socks.map(x => x.user.id))],
@@ -808,7 +873,8 @@ app.get("/api/admin/users", auth, admin, (_req, res) => {
 app.patch("/api/admin/users/:id", auth, admin, wrap(async (req, res) => {
   const id = Number(req.params.id);
   if (!findById.get(id)) return res.status(404).json({ error: "User not found." });
-  const { role, disabled, password } = req.body || {};
+  const { role, disabled, password, unsuspend } = req.body || {};
+  if (unsuspend){ db.prepare("UPDATE users SET suspended_until = 0 WHERE id = ?").run(id); db.prepare("UPDATE reports SET status = 'resolved' WHERE target_id = ? AND reporter_id = 0 AND status = 'open'").run(id); }
   if (id === req.user.id && (role === "user" || disabled)) return res.status(400).json({ error: "You can't demote or disable yourself." });
   if (role) { const nr = role === "admin" ? "admin" : "user"; db.prepare("UPDATE users SET role = ? WHERE id = ?").run(nr, id); for (const s of io.sockets.sockets.values()) if (s.user.id === id) s.user.role = nr; }
   if (disabled !== undefined) db.prepare("UPDATE users SET disabled = ? WHERE id = ?").run(disabled ? 1 : 0, id);
@@ -897,7 +963,7 @@ io.use((socket, next) => {
   try {
     const p = jwt.verify(socket.handshake.auth?.token || "", JWT_SECRET);
     const u = findById.get(p.id);
-    if (!u || u.disabled || !tokenFresh(p, u)) throw new Error("no user");
+    if (!u || u.disabled || !tokenFresh(p, u) || u.suspended_until > Date.now()) throw new Error("no user");
     socket.user = { id: u.id, name: u.name, title: u.title || "", bio: u.bio || "", role: u.role || "user" };
     next();
   } catch { next(new Error("unauthorized")); }
@@ -905,7 +971,7 @@ io.use((socket, next) => {
 
 const sockSettings = s => s.settings || (s.settings = userSettings(s.user.id));
 const peerInfo = s => ({
-  id: s.id, userId: s.user.id, pins: sockSettings(s).hide_my_pins ? null : pinCount(s.user.id), noPin: sockSettings(s).disable_pinning, name: s.user.name, title: s.user.title, bio: s.user.bio, goal: s.goal || "", sessions: s.sessions || 0, cheers: s.cheers || 0,
+  id: s.id, userId: s.user.id, vban: (videoBans.get(s.user.id) || 0) > Date.now() ? videoBans.get(s.user.id) : 0, pins: sockSettings(s).hide_my_pins ? null : pinCount(s.user.id), noPin: sockSettings(s).disable_pinning, name: s.user.name, title: s.user.title, bio: s.user.bio, goal: s.goal || "", sessions: s.sessions || 0, cheers: s.cheers || 0,
   pomo: s.pomo ? { ...s.pomo, left: s.pomo.running ? Math.max(0, s.pomo.left - (Date.now() - s.pomo.at)) : s.pomo.left } : null
 });
 /* group timer: one shared Pomodoro clock per room, kept by the server so everyone stays in sync */
@@ -931,6 +997,23 @@ function gtEnd(room){
   io.in(room).emit("rt-state", { ...gtOut(room), completed: was });
 }
 const ROOM_RE = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
+
+/* live video moderation: browsers run an on-device image classifier on the videos they show and report here.
+   Self-detection acts at once; reports about someone else need 2 different viewers (or the only other person in the room). */
+const videoBans = new Map();   // userId -> time their camera / screen share is allowed again
+function videoBan(t, src, score, confirmed = true){
+  const now = Date.now(), uid = t.user.id;
+  if ((videoBans.get(uid) || 0) > now) return;
+  const until = now + VIDEO_BAN_MS; videoBans.set(uid, until);
+  for (const so of io.sockets.sockets.values()) if (so.user.id === uid) so.emit("forced", { action: "cam-off", auto: true, until });
+  for (const so of io.sockets.sockets.values()) if (so.room && so.room === t.room) so.emit("mod-hide", { id: t.id, until });
+  autoFlag(uid, confirmed ? "video" : "video-1", `${src === "screen" ? "screen share" : src === "camera" ? "camera" : "video"}, confidence ${Math.round(score * 100)}%, room ${t.room || "-"}`);
+  setTimeout(() => {
+    if ((videoBans.get(uid) || 0) > Date.now()) return;
+    videoBans.delete(uid);
+    for (const so of io.sockets.sockets.values()) if (so.user.id === uid){ so.emit("forced", { action: "cam-on", auto: true }); if (so.room) io.in(so.room).emit("mod-unhide", { id: so.id }); }
+  }, VIDEO_BAN_MS + 500);
+}
 
 io.on("connection", socket => {
   if (socket.handshake.query.dm === "1"){   // app-wide connection: track who is online
@@ -963,7 +1046,9 @@ io.on("connection", socket => {
     socket.room = room; socket.joinedAt = Date.now(); socket.camMs = 0; socket.camSince = 0;
     logEvent(socket.user.id, "joined_room", { room });
     socket.to(room).emit("peer-joined", peerInfo(socket));
-    ack({ peers: members.map(peerInfo), myPins: db.prepare("SELECT pinned_id id FROM pins WHERE pinner_id = ?").all(socket.user.id).map(r => r.id),
+    const vb = videoBans.get(socket.user.id) || 0;
+    if (vb > Date.now()) setTimeout(() => socket.emit("forced", { action: "cam-off", auto: true, until: vb }), 300);
+    ack({ autoMod: AUTO_MOD, peers: members.map(peerInfo), myPins: db.prepare("SELECT pinned_id id FROM pins WHERE pinner_id = ?").all(socket.user.id).map(r => r.id),
       following: db.prepare("SELECT followee_id id FROM follows WHERE follower_id = ?").all(socket.user.id).map(r => r.id), timer: gtOut(room), settings: rm ? { name: rm.name, video: !!rm.video_allowed, audio: !!rm.audio_allowed, vibe: roomVibe(rm), vibeLabel: VIBES[roomVibe(rm)].label } : null });
   });
 
@@ -999,9 +1084,28 @@ io.on("connection", socket => {
     ack({ ok: true, on: true });
   });
 
-  socket.on("chat", text => {
+  socket.on("mod-video", ({ to, score, src } = {}) => {
+    if (!AUTO_MOD || !socket.room) return;
+    const now = Date.now(); if (now - (socket.modAt || 0) < 3000) return; socket.modAt = now;   // rate limit
+    score = Number(score); if (!(score >= 0.7 && score <= 1)) return;
+    const t = to ? io.sockets.sockets.get(to) : socket;
+    if (!t || t.room !== socket.room) return;
+    if (t === socket) return videoBan(t, src === "screen" ? "screen" : "camera", score);   // the sender's own device saw it
+    if (t.user.id === socket.user.id) return;
+    t.modVotes = new Map([...(t.modVotes || new Map())].filter(([, at]) => now - at < 60000));
+    t.modVotes.set(socket.user.id, now);
+    const others = [...(io.sockets.adapter.rooms.get(t.room) || [])].map(id => io.sockets.sockets.get(id)).filter(x => x && x.user.id !== t.user.id);
+    const viewers = new Set(others.map(x => x.user.id)).size;
+    if (t.modVotes.size >= Math.max(1, Math.min(2, viewers))) videoBan(t, "video", score, t.modVotes.size >= 2);
+  });
+
+  socket.on("chat", (text, ack) => {
     if (!socket.room || typeof text !== "string") return;
-    socket.to(socket.room).emit("chat", { name: socket.user.name, text: text.slice(0, 1000) });
+    const reply = typeof ack === "function" ? ack : null;
+    const sc = screenText(socket.user.id, text.slice(0, 1000), "room chat");
+    if (sc.block) return reply ? reply({ error: sc.block }) : socket.emit("mod-warn", { message: sc.block });
+    socket.to(socket.room).emit("chat", { name: socket.user.name, text: sc.text });
+    if (reply) reply({ ok: true, text: sc.text });
   });
 
   // encouragement: one per cooldown window, max per day, enforced here on the server
@@ -1010,7 +1114,8 @@ io.on("connection", socket => {
     const t = io.sockets.sockets.get(to);
     if (!t || !socket.room || t.room !== socket.room || t.user.id === socket.user.id)
       return ack({ error: "Pick someone else in this meeting." });
-    const msg = String(message || "You've got this!").trim().slice(0, 80) || "You've got this!";
+    let msg = String(message || "You've got this!").trim().slice(0, 80) || "You've got this!";
+    const sc = screenText(socket.user.id, msg, "encouragement"); if (sc.block) return ack({ error: sc.block }); msg = sc.text;
     const now = Date.now();
     const result = db.transaction(() => {
       const q = quota(socket.user.id);
@@ -1076,7 +1181,9 @@ io.on("connection", socket => {
   });
   // what you are working on, shown under your name on your tile
   socket.on("goal", g => {
-    socket.goal = String(g || "").trim().slice(0, 80);
+    const sc = screenText(socket.user.id, String(g || "").trim().slice(0, 80), "goal");
+    if (sc.block) socket.emit("mod-warn", { message: sc.block });
+    socket.goal = sc.block ? "" : sc.text;
     if (socket.room) socket.to(socket.room).emit("peer-updated", peerInfo(socket));
   });
 

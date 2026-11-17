@@ -58,6 +58,8 @@
   .tile video{width:100%;height:100%;object-fit:cover;display:block}
   .tile.local video{transform:scaleX(-1)}
   .tile.local.sharing video{transform:none;object-fit:contain}
+  .tile.modhide video{visibility:hidden}
+  .tile.modhide::after{content:"Video hidden by auto-moderation";position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;background:#0F1B3D;color:#C9D4F0;font-size:13px;pointer-events:none}
   .tile .name{position:absolute;left:10px;bottom:10px;background:rgba(7,21,54,.8);padding:4px 10px;border-radius:6px;font-size:14px}
   .chat{width:300px;border-left:1px solid #16306B;display:flex;flex-direction:column;background:#08183D}
   .chat .log{flex:1;overflow:auto;padding:12px;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
@@ -1697,6 +1699,7 @@ function addTile(id, stream, label, local){
   const v = t.querySelector("video");
   if (v.srcObject !== stream) v.srcObject = stream;
   if (local) v.muted = true; else applySink(v);
+  t.classList.toggle("modhide", !local && (MODV.hidden.get(id) || 0) > Date.now());
   relabel(id, label);
   updateCount(); layout();
 }
@@ -1746,12 +1749,13 @@ async function enterRoom(code){
       roomSettings = res.settings; applyBlocks(); applyGroup(res.timer);
       myPins = new Set(res.myPins || []); myFollowing = new Set(res.following || []);
       // the newcomer starts a connection to everyone already inside
-      for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); await connectTo(p.id, p.name, true); }
+      if (res.autoMod !== false) modStart();
+      for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); if (p.vban) modHideTile(p.id, p.vban); await connectTo(p.id, p.name, true); }
       pomoSend(); if (me.goal) socket.emit("goal", me.goal); socket.emit("cam", !!(camTrack && camTrack.enabled));
     });
   });
 
-  socket.on("peer-joined", p => { info.set(p.id, p); if (!peers.has(p.id)) peers.set(p.id, { pc: null, name: p.name, chain: Promise.resolve() }); });
+  socket.on("peer-joined", p => { info.set(p.id, p); if (p.vban) modHideTile(p.id, p.vban); if (!peers.has(p.id)) peers.set(p.id, { pc: null, name: p.name, chain: Promise.resolve() }); });
   socket.on("peer-left", ({ id }) => closePeer(id));
   socket.on("rt-state", applyGroup);
   socket.on("peer-updated", p => {
@@ -1764,7 +1768,12 @@ async function enterRoom(code){
   socket.on("encouraged", d => { me.cheers = (me.cheers || 0) + 1; relabel("me"); toast(d.from + ": " + d.message); });
   socket.on("room-settings", s => { roomSettings = s; applyBlocks(); toast("Room settings changed: video " + (s.video ? "on" : "off") + ", audio " + (s.audio ? "on" : "off")); });
   socket.on("room-closed", () => { alert("This room was closed by the admin."); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); });
-  socket.on("forced", ({ action }) => {
+  socket.on("forced", ({ action, auto, until }) => {
+    if (auto){
+      if (action === "cam-off") modLockSelf(until);
+      else { MODV.until = 0; syncButtons(); toast("Your camera and screen share are allowed again. Please keep them study-friendly."); }
+      return;
+    }
     if (action === "remove"){ alert("An admin removed you from this meeting."); leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return; }
     const what = action.startsWith("mic") ? "microphone" : "camera";
     if (what === "microphone") micLocked = action === "mic-off"; else camLocked = action === "cam-off";
@@ -1779,6 +1788,10 @@ async function enterRoom(code){
   });
 
   socket.on("chat", ({ name, text }) => addChat(name, text));
+  socket.on("mod-warn", d => toast(d.message));
+  socket.on("mod-hide", ({ id, until }) => { if (id !== socket.id) modHideTile(id, until); });
+  socket.on("mod-unhide", ({ id }) => modUnhideTile(id));
+  socket.on("suspended", d => { alert(d.message); logout(); });
 }
 
 function failMsg(){
@@ -1886,7 +1899,7 @@ function closePeer(id){
 }
 
 function leaveRoom(){
-  fxStop(true); setRoomVibe(null);
+  fxStop(true); setRoomVibe(null); modStop();
   if (socket){ socket.disconnect(); socket = null; }
   for (const id of [...peers.keys()]) closePeer(id);
   [localStream, screenStream].forEach(s => s && s.getTracks().forEach(t => t.stop()));
@@ -1907,7 +1920,7 @@ function syncButtons(){
   setBtn("cam", camTrack && camTrack.enabled, "Camera on", "Camera off");
 }
 $("mic").onclick = () => { const a = localStream.getAudioTracks()[0]; if (blocked("mic")) return toast("The admin has turned off microphones here."); if (a){ a.enabled = !a.enabled; syncButtons(); } };
-$("cam").onclick = () => { if (blocked("cam")) return toast("The admin has turned off video here."); if (camTrack){ camTrack.enabled = !camTrack.enabled; syncButtons(); if (socket) socket.emit("cam", camTrack.enabled); } };
+$("cam").onclick = () => { if (blocked("cam")) return toast(modWait() || "The admin has turned off video here."); if (camTrack){ camTrack.enabled = !camTrack.enabled; syncButtons(); if (socket) socket.emit("cam", camTrack.enabled); } };
 
 function swapVideoTrack(track){
   for (const { pc } of peers.values()){
@@ -1918,6 +1931,7 @@ function swapVideoTrack(track){
 }
 $("share").onclick = async () => {
   if (screenStream){ stopShare(); return; }
+  if (blocked("cam")) return toast(modWait() || "The admin has turned off video here.");
   try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); } catch { return; }
   const track = screenStream.getVideoTracks()[0];
   swapVideoTrack(track);
@@ -1946,7 +1960,7 @@ function addChat(name, text){
 $("chat-form").onsubmit = e => {
   e.preventDefault();
   const text = $("chat-in").value.trim(); if (!text || !socket) return;
-  socket.emit("chat", text); addChat("You", text);
+  socket.emit("chat", text, r => { if (r && r.error) toast(r.error); else addChat("You", (r && r.text) || text); });
   $("chat-in").value = "";
 };
 function setSide(open, save = true){
@@ -2063,6 +2077,18 @@ async function shrinkImage(file, kind){
 let photoKind = "avatar";
 async function savePhoto(kind, data){
   document.body.classList.add("ep-busy");
+  if (data){   // check the picture on this device before it is uploaded
+    try {
+      await modLoad();
+      const img = new Image(); img.src = data; await img.decode();
+      const sc = await modScore(img);
+      if (sc >= MOD_UNSAFE){
+        document.body.classList.remove("ep-busy");
+        api("/api/mod/self-flag", { body: { score: Math.min(1, sc) } }).catch(() => {});
+        return alert("This picture can't be used because it looks inappropriate. Please choose a different one.");
+      }
+    } catch {}   // if the checker can't load, the upload still goes through
+  }
   try {
     const r = await api("/api/me/photo", { body: { kind, data } });
     Object.assign(me, r.user); epPhotos(); setMenuAvatar();
@@ -2134,10 +2160,11 @@ async function loadAdmin(){
   const on = new Set(online), rooms = {};
   live.forEach(l => (rooms[l.room] = rooms[l.room] || []).push(l.name));
   $("admin-live").textContent = (turn ? "Video relay (TURN): on. " : "Video relay (TURN): NOT set up. Missing in Render: " + ((turnMissing || []).join(", ") || "settings") + ". People on different networks may not see each other. ") + (Object.keys(rooms).length ? "Live now: " + Object.entries(rooms).map(([r, n]) => r + " (" + n.join(", ") + ")").join("; ") : "No live meetings right now.");
-  $("admin-body").innerHTML = users.map(u => '<tr><td>' + (on.has(u.id) ? '<span class="dot"></span>' : "") + esc(u.name) + "<br><small>" + esc(u.email) + "</small></td><td>" + esc(u.title || "-") + "</td><td>" + u.role + (u.disabled ? " (disabled)" : "") + "</td><td>" + u.sent + " / " + u.received + "</td><td>" +
+  $("admin-body").innerHTML = users.map(u => '<tr><td>' + (on.has(u.id) ? '<span class="dot"></span>' : "") + esc(u.name) + "<br><small>" + esc(u.email) + "</small></td><td>" + esc(u.title || "-") + "</td><td>" + u.role + (u.disabled ? " (disabled)" : "") + (u.suspended_until > Date.now() ? " (suspended)" : "") + "</td><td>" + u.sent + " / " + u.received + "</td><td>" +
     '<button class="btn ghost" data-a="role" data-id="' + u.id + '" data-v="' + (u.role === "admin" ? "user" : "admin") + '">' + (u.role === "admin" ? "Remove admin" : "Make admin") + "</button>" +
     '<button class="btn ghost" data-a="dis" data-id="' + u.id + '" data-v="' + (u.disabled ? 0 : 1) + '">' + (u.disabled ? "Enable" : "Disable") + "</button>" +
     '<button class="btn ghost" data-a="pw" data-id="' + u.id + '">Reset password</button>' +
+    (u.suspended_until > Date.now() ? '<button class="btn ghost" data-a="unsus" data-id="' + u.id + '">Lift suspension</button>' : "") +
     '<button class="btn ghost" data-a="del" data-id="' + u.id + '">Delete</button></td></tr>').join("");
 }
 $("open-admin").onclick = async () => { try { await loadAdmin(); $("admin").classList.remove("hidden"); } catch (e) { alert(e.message); } };
@@ -2148,6 +2175,7 @@ $("admin-body").onclick = async e => {
   try {
     if (a === "role") await api(url, { method: "PATCH", body: { role: b.dataset.v } });
     if (a === "dis") await api(url, { method: "PATCH", body: { disabled: b.dataset.v === "1" } });
+    if (a === "unsus") await api(url, { method: "PATCH", body: { unsuspend: true } });
     if (a === "pw"){ const p = prompt("New password (at least 8 characters)"); if (!p) return; await api(url, { method: "PATCH", body: { password: p } }); alert("Password changed."); }
     if (a === "del"){ if (!confirm("Delete this user permanently?")) return; await api(url, { method: "DELETE" }); }
     await loadAdmin();
@@ -2431,6 +2459,13 @@ $("st-save").onclick = async () => {
   try { applySettings((await api("/api/settings", { method: "PUT", body })).settings); $("st").classList.add("hidden"); toast("Settings saved"); }
   catch (e) { $("st-msg").textContent = e.message; }
 };
+// mirror switches take effect the moment they're flipped (for me and for everyone watching), then save in the background
+document.querySelectorAll('[data-set="mirror_self"], [data-set="mirror_others"]').forEach(x => x.addEventListener("change", () => {
+  const k = x.dataset.set; SET[k] = x.checked;
+  if (k === "mirror_others" && x.checked && !fxSupported) toast("This browser can't flip the video others see. Try Chrome, Edge or Firefox.");
+  if (localStream) fxApply();
+  syncMirror(); saveSet({ [k]: x.checked });
+}));
 async function saveSet(patch){ try { applySettings((await api("/api/settings", { method: "PUT", body: patch })).settings); } catch (e) { toast(e.message); } }
 
 /* ---------- pinning people in a room ---------- */
@@ -2863,7 +2898,7 @@ function beepUrl(){
 $("dev-test").onclick = async () => { const a = new Audio(beepUrl()); await applySink(a); a.play().catch(() => {}); };
 
 /* ---------- study rooms (homepage) + admin room controls ---------- */
-const blocked = k => me.role !== "admin" && (k === "mic" ? micLocked || (roomSettings && !roomSettings.audio) : camLocked || (roomSettings && !roomSettings.video));
+const blocked = k => (k === "cam" && MODV.until > Date.now()) || me.role !== "admin" && (k === "mic" ? micLocked || (roomSettings && !roomSettings.audio) : camLocked || (roomSettings && !roomSettings.video));
 function applyBlocks(){
   if (!localStream) return;
   const a = localStream.getAudioTracks()[0];
@@ -2872,6 +2907,75 @@ function applyBlocks(){
   $("room-name").textContent = (roomSettings && roomSettings.name) || "Study Room";
   const rv = $("room-vibe"), vb = roomSettings && roomSettings.vibe; rv.classList.toggle("hidden", !vb); setRoomVibe(vb); if (vb){ rv.dataset.vibe = vb; rv.innerHTML = (VIBE_IC[vb] || "") + esc(roomSettings.vibeLabel); }
   syncButtons();
+}
+/* ---------- auto-moderation: on-device check of live video and pictures ----------
+   Runs NSFWJS (TensorFlow.js) in this browser: frames never leave the device. It checks my outgoing camera / screen
+   and the videos I'm watching every few seconds. Two unsafe readings in a row hide that video here and report it;
+   the server turns the sender's video off for 10 minutes and files a report for the admins. */
+const MOD_UNSAFE = .75, MOD_EVERY = 4000, MOD_BAN = 10 * 60000;
+const MODV = { on: false, net: null, loading: null, cv: null, ctx: null, hits: new Map(), hidden: new Map(), timer: 0, busy: false, until: 0 };
+const NSFW_CDN = "https://cdn.jsdelivr.net/npm/nsfwjs@4.4.0/dist/";
+const NSFW_FILES = [["models/mobilenet_v2/model.min.js", "sha384-VsoJuRePCgpUmSlvPwW/IXzJGJk8PP0RQuAAGfhwKz2sGb7NroFRHBqD/EySC0vU"], ["models/mobilenet_v2/group1-shard1of1.min.js", "sha384-5F6gcz+dyppqYc8BDH0IbKZcRbVl2c+nUSShQMb1AFhdQES+d3bG5hHNOOIE5Yha"], ["browser/nsfwjs.min.js", "sha384-AgEYUP1dk2mGxhfUGZ4muudxnzuhFD4HFvGAOgeRu1a/78Ls+Jmx/TWEF4qU3aOF"]];
+const loadScript = (src, sri) => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.integrity = sri; s.crossOrigin = "anonymous"; s.onload = ok; s.onerror = () => no(new Error("Couldn't load " + src)); document.head.appendChild(s); });
+function modLoad(){
+  if (MODV.net) return Promise.resolve(MODV.net);
+  if (!MODV.loading) MODV.loading = (async () => {
+    for (const [f, sri] of NSFW_FILES) await loadScript(NSFW_CDN + f, sri);   // model, weights, then the library (it bundles TensorFlow.js)
+    MODV.net = await window.nsfwjs.load("MobileNetV2");
+    return MODV.net;
+  })().catch(e => { MODV.loading = null; console.warn("Auto-moderation couldn't start:", e.message); throw e; });
+  return MODV.loading;
+}
+// chance (0-1) that a frame or picture is sexual content
+async function modScore(el){
+  const w = el.videoWidth || el.naturalWidth, h = el.videoHeight || el.naturalHeight;
+  if (!w || !h || (el.readyState !== undefined && el.readyState < 2)) return null;
+  if (!MODV.cv){ MODV.cv = document.createElement("canvas"); MODV.cv.width = MODV.cv.height = 224; MODV.ctx = MODV.cv.getContext("2d", { willReadFrequently: true }); }
+  MODV.ctx.drawImage(el, 0, 0, 224, 224);
+  const p = await MODV.net.classify(MODV.cv, 5), g = n => (p.find(x => x.className === n) || {}).probability || 0;
+  return g("Porn") + g("Hentai") + Math.max(0, g("Sexy") - .6) * .5;
+}
+const modWait = () => MODV.until > Date.now() ? "Auto-moderation paused your video. You can turn it on again in " + Math.ceil((MODV.until - Date.now()) / 60000) + " min." : "";
+function modLockSelf(until){
+  MODV.until = Math.max(MODV.until, until || Date.now() + MOD_BAN);
+  if (screenStream) stopShare();
+  if (camTrack && camTrack.enabled){ camTrack.enabled = false; if (socket) socket.emit("cam", false); }
+  syncButtons();
+  toast("Your video was turned off automatically because it may show inappropriate content. " + modWait());
+}
+function modHideTile(id, until){
+  MODV.hidden.set(id, until); const t = $("t-" + id); if (t) t.classList.add("modhide");
+  setTimeout(() => { if ((MODV.hidden.get(id) || 0) <= Date.now()) modUnhideTile(id); }, Math.max(1000, until - Date.now() + 1000));
+}
+function modUnhideTile(id){ MODV.hidden.delete(id); const t = $("t-" + id); if (t) t.classList.remove("modhide"); }
+function modStart(){
+  MODV.on = true;
+  setTimeout(() => { if (MODV.on) modLoad().then(() => { if (MODV.on && !MODV.timer) MODV.timer = setInterval(modTick, MOD_EVERY); }).catch(() => {}); }, 3000);   // let the call connect first
+}
+function modStop(){ MODV.on = false; clearInterval(MODV.timer); MODV.timer = 0; MODV.hits.clear(); MODV.hidden.clear(); }
+async function modTick(){
+  if (!MODV.on || !MODV.net || MODV.busy || !socket) return;
+  MODV.busy = true;
+  try {
+    const list = [], mine = document.querySelector("#t-me video");
+    if (mine && ((camTrack && camTrack.enabled) || screenStream)) list.push(["me", mine]);
+    for (const t of document.querySelectorAll("#grid .tile:not(.local):not(.modhide)")){
+      const v = t.querySelector("video"), s = v && v.srcObject;
+      if (s && s.getVideoTracks().some(x => x.readyState === "live" && !x.muted)) list.push([t.id.slice(2), v]);
+    }
+    for (const [id, v] of list){
+      const sc = await modScore(v); if (sc == null) continue;
+      const src = id === "me" ? (screenStream ? "screen" : "camera") : "video", k = id + ":" + src;
+      if (sc < MOD_UNSAFE){ MODV.hits.delete(k); continue; }
+      const first = MODV.hits.get(k);
+      if (!first || Date.now() - first > 3 * MOD_EVERY + 2000){ MODV.hits.set(k, Date.now()); continue; }   // need two unsafe readings in a row
+      MODV.hits.delete(k);
+      if (!socket) break;
+      if (id === "me"){ socket.emit("mod-video", { score: Math.min(1, sc), src }); modLockSelf(Date.now() + MOD_BAN); }
+      else { modHideTile(id, Date.now() + MOD_BAN); socket.emit("mod-video", { to: id, score: Math.min(1, sc) }); }
+    }
+  } catch (e) { console.warn("Auto-moderation check failed:", e); }
+  finally { MODV.busy = false; }
 }
 const ADM = {};
 function adminAct(id, a, btn){
@@ -3277,6 +3381,7 @@ function connectDm(){
   if (dmSock) return;
   dmSock = io({ auth: { token }, query: { dm: "1" }, forceNew: true });   // a separate connection so messages arrive anywhere in the app
   dmSock.on("dm", onDm); dmSock.on("notif", onNotif); liveHandlers(dmSock);
+  dmSock.on("suspended", d => { alert(d.message); logout(); });
   dmSock.on("connect_error", e => { if (e.message === "unauthorized") logout(); });
   setInterval(() => { if (me && dmSock) refreshChats(); }, 60000);
 }
@@ -3351,8 +3456,8 @@ $("rp-send").onclick = async () => {
 };
 async function loadReports(){
   const { reports } = await api("/api/admin/reports");
-  $("ad-reports").innerHTML = reports.length ? '<div style="overflow-x:auto"><table><thead><tr><th>Report</th><th>Reason</th><th>Actions</th></tr></thead><tbody>' + reports.map(r => "<tr><td><b>" + esc(r.target) + "</b> reported by " + esc(r.reporter) + "<br><small>" + r.kind + " · " + ago(r.created_at) + "</small></td><td>" + esc(r.reason || "No reason given") + (r.context ? '<br><small>"' + esc(r.context) + '"</small>' : "") + "</td><td>" +
-    '<button class="btn ghost" data-rp="resolved" data-id="' + r.id + '">Resolve</button><button class="btn ghost" data-rp="dismissed" data-id="' + r.id + '">Dismiss</button>' + (r.target_disabled ? "" : '<button class="btn ghost" data-rp="ban" data-id="' + r.id + '" data-uid="' + r.target_id + '">Disable user</button>') + "</td></tr>").join("") + "</tbody></table></div>"
+  $("ad-reports").innerHTML = reports.length ? '<div style="overflow-x:auto"><table><thead><tr><th>Report</th><th>Reason</th><th>Actions</th></tr></thead><tbody>' + reports.map(r => "<tr><td><b>" + esc(r.target) + "</b>" + (r.reporter === "Auto-moderation" ? " flagged by auto-moderation" : " reported by " + esc(r.reporter)) + "<br><small>" + esc(r.kind.replace(/^auto-/, "").replace("video-1", "video")) + " · " + ago(r.created_at) + "</small></td><td>" + esc(r.reason || "No reason given") + (r.context ? '<br><small>"' + esc(r.context) + '"</small>' : "") + "</td><td>" +
+    '<button class="btn ghost" data-rp="resolved" data-id="' + r.id + '">Resolve</button><button class="btn ghost" data-rp="dismissed" data-id="' + r.id + '">Dismiss</button>' + (r.target_suspended > Date.now() ? '<button class="btn ghost" data-rp="unsuspend" data-id="' + r.id + '" data-uid="' + r.target_id + '">Lift suspension</button>' : "") + (r.target_disabled ? "" : '<button class="btn ghost" data-rp="ban" data-id="' + r.id + '" data-uid="' + r.target_id + '">Disable user</button>') + "</td></tr>").join("") + "</tbody></table></div>"
     : '<p class="sub" style="padding:16px 0">No open reports. All quiet.</p>';
 }
 $("ad-reports").onclick = async e => {
@@ -3362,7 +3467,8 @@ $("ad-reports").onclick = async e => {
       if (!confirm("Disable this user? They will be signed out and unable to log in.")) return;
       await api("/api/admin/users/" + b.dataset.uid, { method: "PATCH", body: { disabled: true } });
       await api("/api/admin/reports/" + b.dataset.id, { method: "PATCH", body: { status: "resolved" } });
-    } else await api("/api/admin/reports/" + b.dataset.id, { method: "PATCH", body: { status: b.dataset.rp } });
+    } else if (b.dataset.rp === "unsuspend") await api("/api/admin/users/" + b.dataset.uid, { method: "PATCH", body: { unsuspend: true } });
+    else await api("/api/admin/reports/" + b.dataset.id, { method: "PATCH", body: { status: b.dataset.rp } });
     loadReports();
   } catch (err) { alert(err.message); }
 };
