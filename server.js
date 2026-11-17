@@ -49,7 +49,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
 )`);
 for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["daily_goal", "INTEGER DEFAULT 4"], ["show_leaderboard", "INTEGER DEFAULT 1"],
   ["avatar", "TEXT DEFAULT ''"], ["cover", "TEXT DEFAULT ''"], ["photo_v", "INTEGER DEFAULT 0"], ["pronouns", "TEXT DEFAULT ''"], ["age", "INTEGER DEFAULT 0"], ["country", "TEXT DEFAULT ''"],
-  ["relationship", "TEXT DEFAULT ''"], ["looking_for", "TEXT DEFAULT '[]'"], ["interests", "TEXT DEFAULT '[]'"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["settings", "TEXT DEFAULT '{}'"], ["dm_privacy", "TEXT DEFAULT 'everyone'"]])
+  ["relationship", "TEXT DEFAULT ''"], ["looking_for", "TEXT DEFAULT '[]'"], ["interests", "TEXT DEFAULT '[]'"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["settings", "TEXT DEFAULT '{}'"], ["dm_privacy", "TEXT DEFAULT 'everyone'"], ["pw_changed_at", "INTEGER DEFAULT 0"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
@@ -80,7 +80,8 @@ CREATE INDEX IF NOT EXISTS idx_pins_pinned ON pins(pinned_id);
 CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, text TEXT NOT NULL, due TEXT DEFAULT '', done INTEGER DEFAULT 0, created_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id);`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
-const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, (avatar != '') has_avatar, (cover != '') has_cover, photo_v, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, last_seen, dm_privacy, show_leaderboard FROM users WHERE id = ?");
+const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, (avatar != '') has_avatar, (cover != '') has_cover, photo_v, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, last_seen, dm_privacy, show_leaderboard, pw_changed_at FROM users WHERE id = ?");
+const pwHashOf = db.prepare("SELECT password_hash FROM users WHERE id = ?");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
 
 let savedChanges = -1, saving = false;
@@ -161,6 +162,12 @@ app.get("/", (_req, res) => {
 });
 
 const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
+// a login token stops working once the password changes after it was issued
+const tokenFresh = (p, u) => !u.pw_changed_at || (p.iat || 0) >= Math.floor(u.pw_changed_at / 1000);
+async function setPassword(id, password){
+  db.prepare("UPDATE users SET password_hash = ?, pw_changed_at = ? WHERE id = ?").run(await bcrypt.hash(String(password), 10), Date.now(), id);
+  db.prepare("DELETE FROM reset_tokens WHERE user_id = ?").run(id);
+}
 const jsonArr = s => { try { const a = JSON.parse(s || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } };
 // photos of public users have plain links; photos of private / followers-only users get a signed link only for allowed viewers
 const imgSig = (owner, kind, viewer, exp) => crypto.createHmac("sha256", JWT_SECRET).update(`img:${owner}:${kind}:${viewer}:${exp}`).digest("base64url").slice(0, 32);
@@ -241,8 +248,10 @@ app.post("/api/login", limit, wrap(async (req, res) => {
 /* ---------- forgot / reset password ---------- */
 const hashTok = t => crypto.createHash("sha256").update(t).digest("hex");
 const htmlEsc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const mailReady = () => !!(process.env.BREVO_API_KEY && process.env.MAIL_FROM);
 async function sendMail(to, subject, html, text) {
-  if (!process.env.BREVO_API_KEY || !process.env.MAIL_FROM) { console.log("[mail not configured] To:", to, "|", text); return false; }
+  // never log the message body: it can contain a live password-reset link
+  if (!mailReady()) { console.log("[mail not configured] Skipped email to", to.replace(/^(.).*@/, "$1***@"), "|", subject); return false; }
   const r = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: { "api-key": process.env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
@@ -265,15 +274,17 @@ app.post("/api/forgot", limit, wrap(async (req, res) => {
       `<p>Hi ${htmlEsc(u.name)},</p><p>Click to choose a new password. The link works for 30 minutes.</p><p><a href="${link}">Reset my password</a></p><p>If you didn't ask for this, ignore this email.</p>`,
       `Hi ${u.name}, open this link to choose a new password (valid 30 minutes): ${link}`).catch(e2 => console.error("Mail error:", e2.message));
   }
-  res.json({ ok: true });
+  // mail:false only says the server can't send email at all; it reveals nothing about the address
+  res.json({ ok: true, mail: mailReady() });
 }));
 app.post("/api/reset", limit, wrap(async (req, res) => {
   const { token, password } = req.body || {};
   if (String(password || "").length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
   const row = db.prepare("SELECT * FROM reset_tokens WHERE token_hash = ? AND expires_at > ?").get(hashTok(String(token || "")), Date.now());
   if (!row) return res.status(400).json({ error: "This reset link is invalid or has expired. Request a new one." });
-  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(await bcrypt.hash(String(password), 10), row.user_id);
-  db.prepare("DELETE FROM reset_tokens WHERE user_id = ?").run(row.user_id);
+  if (String(password).length > 200) return res.status(400).json({ error: "Password is too long." });
+  await setPassword(row.user_id, password);
+  kick(row.user_id);
   res.json({ ok: true });
 }));
 
@@ -282,12 +293,23 @@ function auth(req, res, next) {
   try {
     const p = jwt.verify(h.replace(/^Bearer /, ""), JWT_SECRET);
     const u = findById.get(p.id);
-    if (!u || u.disabled) throw new Error("no user");
+    if (!u || u.disabled || !tokenFresh(p, u)) throw new Error("no user");
     req.user = u; next();
   } catch { res.status(401).json({ error: "Please sign in again." }); }
 }
 
 app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id), notifUnread: notifUnread(req.user.id) }); });
+// change password while signed in: needs the current one, signs out other devices, returns a fresh token
+app.put("/api/password", limit, auth, wrap(async (req, res) => {
+  const { current, password } = req.body || {};
+  if (!(await bcrypt.compare(String(current || ""), pwHashOf.get(req.user.id).password_hash))) return res.status(400).json({ error: "Your current password is wrong." });
+  if (String(password || "").length < 8) return res.status(400).json({ error: "New password must be at least 8 characters." });
+  if (String(password).length > 200) return res.status(400).json({ error: "Password is too long." });
+  if (String(password) === String(current)) return res.status(400).json({ error: "Choose a password different from your current one." });
+  await setPassword(req.user.id, password);
+  kick(req.user.id);
+  res.json({ ok: true, token: sign(findById.get(req.user.id)) });
+}));
 app.get("/api/titles", auth, (_req, res) => res.json({ titles: TITLES }));
 const RELS = ["Single", "In a relationship", "Engaged", "Married", "It's complicated", "Prefer not to say"];
 const LOOKING = ["Accountability partner(s)", "Study buddy", "A focus group/community", "Professional networking", "Friends", "Mentorship"];
@@ -792,9 +814,9 @@ app.patch("/api/admin/users/:id", auth, admin, wrap(async (req, res) => {
   if (disabled !== undefined) db.prepare("UPDATE users SET disabled = ? WHERE id = ?").run(disabled ? 1 : 0, id);
   if (password !== undefined) {
     if (String(password).length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
-    db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(await bcrypt.hash(String(password), 10), id);
+    await setPassword(id, password);
   }
-  if (disabled) kick(id);
+  if (disabled || password !== undefined) kick(id);
   res.json({ ok: true });
 }));
 app.delete("/api/admin/users/:id", auth, admin, (req, res) => {
@@ -875,7 +897,7 @@ io.use((socket, next) => {
   try {
     const p = jwt.verify(socket.handshake.auth?.token || "", JWT_SECRET);
     const u = findById.get(p.id);
-    if (!u || u.disabled) throw new Error("no user");
+    if (!u || u.disabled || !tokenFresh(p, u)) throw new Error("no user");
     socket.user = { id: u.id, name: u.name, title: u.title || "", bio: u.bio || "", role: u.role || "user" };
     next();
   } catch { next(new Error("unauthorized")); }
