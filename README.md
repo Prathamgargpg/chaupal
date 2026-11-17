@@ -1,4 +1,4 @@
-# Chaupal – study rooms with video (Socket.IO + WebRTC)
+# Study here – study rooms with video (Socket.IO + WebRTC)
 
 Sign up / sign in, join study rooms with shared focus timers, video + audio, screen share, chat, posts, follows and DMs.
 

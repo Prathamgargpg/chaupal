@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chaupal – video meetings</title>
+<title>Study here – video meetings</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#2563EB">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -11,7 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="/socket.io/socket.io.js"></script>
-<script>try{if(localStorage.getItem("chaupal_theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
+<script>try{for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);if(k&&k.indexOf("chaupal_")===0){var n="studyhere_"+k.slice(8);if(localStorage.getItem(n)===null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}</script>
+<script>try{if(localStorage.getItem("studyhere_theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
 <style>
   :root{
     --bg:#EAF2FF; --panel:#FFFFFF; --ink:#0B1E4B; --muted:#52648F;
@@ -1161,7 +1162,7 @@ html[data-theme="dark"] .tg i::after{background:#fff}
     <div class="float"><div class="fc c1"><b></b><span></span></div><div class="fc c2"><b></b><span></span></div><div class="fc c3"><b></b><span></span></div></div>
   </section>
   <div class="card">
-    <h1>Chaupal</h1>
+    <h1>Study here</h1>
     <p class="sub">Video meetings for small groups. Sign in to start or join one.</p>
     <div class="tabs" role="tablist" id="auth-tabs">
       <button role="tab" id="tab-in" aria-selected="true">Sign in</button>
@@ -1183,7 +1184,7 @@ html[data-theme="dark"] .tg i::after{background:#fff}
 
 <div id="lobby" class="hidden">
   <div class="topbar">
-    <div class="brand">Chaupal</div>
+    <div class="brand">Study here</div>
     <div class="who"><button class="rbtn nt-btn" id="nt-btn" type="button" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nt-badge hidden"></span></button><button class="rbtn dm-btn" id="dm-btn" type="button" aria-label="Messages"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg><span class="dm-badge hidden"></span></button><button class="rbtn" id="tk-btn" type="button" aria-label="Tasks" title="Tasks" data-testid="topbar-tasks-btn"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10l1.5 1.5L14 8M9 16h6"/></svg></button><button class="rbtn pp-btn" id="pp-btn" type="button" aria-label="Pomodoro timer" title="Pomodoro timer" data-testid="topbar-pomodoro-btn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg><span class="pp-t hidden" id="pp-btn-t"></span></button><button class="rbtn" id="open-dev" type="button" aria-label="Settings" title="Settings" data-testid="topbar-settings-btn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button><span class="chip" id="streak"></span><button class="btn ghost hidden" id="install-btn" type="button">Install app</button><button class="btn ghost" id="open-dash">Dashboard</button><button class="btn ghost hidden" id="open-admin">Admin</button><button class="pm-av" id="pm-btn" type="button" aria-label="Account menu" data-testid="profile-menu-btn"><span id="pm-av"></span><span id="who"></span><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m6 9 6 6 6-6"/></svg></button></div>
   </div>
   <div class="greet"><h1>Ready when you are.</h1><p class="sub">Start a room or join one with a code.</p></div>
@@ -1542,7 +1543,7 @@ html[data-theme="dark"] .tg i::after{background:#fff}
 
 <script>
 const $ = id => document.getElementById(id);
-let token = localStorage.getItem("chaupal_token");
+let token = localStorage.getItem("studyhere_token");
 let me = null, mode = "in";
 
 function show(which){ for (const id of ["auth","lobby","room"]) $(id).classList.toggle("hidden", id !== which); }
@@ -1559,12 +1560,12 @@ async function api(path, opts = {}) {
   } catch {
     throw new Error(location.protocol === "file:"
       ? "This page was opened as a file. Run the server and open http://localhost:3000, or use your Render link."
-      : "Can't reach the Chaupal server. If you're on Render's free plan it may be waking up. Wait a minute and try again.");
+      : "Can't reach the Study here server. If you're on Render's free plan it may be waking up. Wait a minute and try again.");
   }
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     if (data && data.error) throw new Error(data.error);
-    if (res.status === 404) throw new Error("This page isn't running on the Chaupal server (404). Open the Render link, not GitHub Pages.");
+    if (res.status === 404) throw new Error("This page isn't running on the Study here server (404). Open the Render link, not GitHub Pages.");
     throw new Error("Server error (" + res.status + "). Check the Render logs.");
   }
   return data || {};
@@ -1610,7 +1611,7 @@ async function submitAuth(){
     if (mode === "up") body.name = $("dname").value;
     const data = await api(mode === "up" ? "/api/signup" : "/api/login", { body });
     token = data.token; me = data.user;
-    localStorage.setItem("chaupal_token", token);
+    localStorage.setItem("studyhere_token", token);
     afterLogin();
   } catch (e) { $("auth-msg").textContent = e.message; }
 }
@@ -1620,7 +1621,7 @@ $("auth-btn").onclick = submitAuth;
 function logout(){
   leaveRoom(); closeDmSock();
   token = null; me = null;
-  localStorage.removeItem("chaupal_token");
+  localStorage.removeItem("studyhere_token");
   history.replaceState(null, "", location.pathname);
   show("auth");
 }
@@ -1710,14 +1711,14 @@ async function enterRoom(code){
 
   localStream = await getMedia();
   if (!localStream){
-    alert("Chaupal needs camera or microphone access. Allow it in your browser and try again.");
+    alert("Study here needs camera or microphone access. Allow it in your browser and try again.");
     leaveRoom(); history.replaceState(null, "", location.pathname); show("lobby"); return;
   }
   camTrack = localStream.getVideoTracks()[0] || null;
   await fxApply();
   syncButtons();
   me.sessions = 0; me.cheers = 0; me.sent = 0;
-  try { me.goal = localStorage.getItem("chaupal_goal") || ""; } catch { me.goal = ""; }
+  try { me.goal = localStorage.getItem("studyhere_goal") || ""; } catch { me.goal = ""; }
   $("goal-in").value = me.goal; $("me-av").textContent = (me.name || "Y")[0].toUpperCase();
   info.set("me", me);
   addTile("me", localStream, me.name + " (you)", true);
@@ -1942,12 +1943,12 @@ function setSide(open, save = true){
   const h = $("side-handle"), t = open ? "Hide chat" : "Show chat";
   h.setAttribute("aria-expanded", open); h.setAttribute("aria-label", t); h.title = t;
   if (open) h.classList.remove("unread");
-  if (save) try { localStorage.setItem("chaupal_side_open", open ? "1" : "0"); } catch {}
+  if (save) try { localStorage.setItem("studyhere_side_open", open ? "1" : "0"); } catch {}
 }
 const toggleSide = () => setSide($("room").classList.contains("noside"));
 $("toggle-chat").onclick = () => { if (mob()) return openSheet("chat"); toggleSide(); };
 $("side-handle").onclick = toggleSide;
-try { if (!mob() && localStorage.getItem("chaupal_side_open") === "0") setSide(false, false); } catch {}
+try { if (!mob() && localStorage.getItem("studyhere_side_open") === "0") setSide(false, false); } catch {}
 $("copy").onclick = async () => {
   const url = location.origin + location.pathname + "#" + $("room-code").textContent;
   try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Share Room", 1500); }
@@ -2390,7 +2391,7 @@ function applySettings(n){
   Object.assign(SET, n);
   if (!grp.vibe) restorePomo();
   if (full && !grp.on) ps.left = POMO[ps.phase] * 60000;
-  if (!perAuto && perPage !== SET.tiles){ perPage = SET.tiles; $("per").value = perPage; try { localStorage.setItem("chaupal_per", perPage); } catch {} }
+  if (!perAuto && perPage !== SET.tiles){ perPage = SET.tiles; $("per").value = perPage; try { localStorage.setItem("studyhere_per", perPage); } catch {} }
   $("grid").classList.toggle("noself", !SET.self_view);
   document.body.classList.toggle("nomsg", !!SET.disable_messages);
   if (SET.disable_messages){ const b = document.querySelector('.tabs2 [data-t="plist"]'); if (b) b.click(); }
@@ -2550,7 +2551,7 @@ setInterval(() => { if ($("spaces").classList.contains("open")) loadRooms().then
 // ---- getting-started strip (progress is kept per account in this browser) ----
 const QSTEPS = [["join", "Join"], ["pin", "Pin"], ["enc", "Encourage"], ["cam", "Video on"], ["goal", "Set a goal"], ["prof", "Profile"], ["m30", "30 minutes"]];
 let QS = null, camSec = 0;
-const qKey = () => "chaupal_quest_" + (me ? me.id : "x");
+const qKey = () => "studyhere_quest_" + (me ? me.id : "x");
 function qLoad(){ try { QS = JSON.parse(localStorage.getItem(qKey())) || {}; } catch { QS = {}; } QS.done = QS.done || {}; QS.uid = me.id; camSec = QS.cam || 0; }
 function qSave(){ if (!QS) return; QS.cam = Math.round(camSec); try { localStorage.setItem(qKey(), JSON.stringify(QS)); } catch {} }
 function qTick(){
@@ -2578,7 +2579,7 @@ setInterval(qTick, 2000);
 // ---- light / dark theme ----
 function setColorScheme(t, save = true){
   const dk = t === "dark"; document.documentElement.setAttribute("data-theme", dk ? "dark" : "light");
-  if (save) try { localStorage.setItem("chaupal_theme", dk ? "dark" : "light"); } catch {}
+  if (save) try { localStorage.setItem("studyhere_theme", dk ? "dark" : "light"); } catch {}
   const b = $("n-theme"); if (b){ b.setAttribute("aria-pressed", dk); b.title = dk ? "Switch to light mode" : "Switch to dark mode"; b.setAttribute("aria-label", dk ? "Light mode" : "Dark mode"); b.querySelector(".lbl").textContent = dk ? "Light mode" : "Dark mode"; }
   const pb = $("pm-theme"); if (pb) pb.textContent = dk ? "Light mode" : "Dark mode";
 }
@@ -2676,9 +2677,9 @@ document.querySelectorAll("#pp-ph button").forEach(b => b.onclick = () => {
 /* ---------- vibe backgrounds + ambient sounds (made live with Web Audio, no files to download) ---------- */
 const AMBS = { rain: "Rain", cafe: "Cafe", ocean: "Ocean waves", fire: "Fireplace", brown: "Brown noise" };
 const VIBE_AMB = { pomodoro: "cafe", deep: "rain", chill: "ocean", cram: "brown" };
-let AMBSET = { vol: .45, by: {} }; try { AMBSET = { ...AMBSET, ...JSON.parse(localStorage.getItem("chaupal_amb") || "{}") }; } catch {}
+let AMBSET = { vol: .45, by: {} }; try { AMBSET = { ...AMBSET, ...JSON.parse(localStorage.getItem("studyhere_amb") || "{}") }; } catch {}
 const amb = { ctx: null, out: null, nodes: [], timers: [], kind: "off", vibe: null };
-const saveAmb = () => { try { localStorage.setItem("chaupal_amb", JSON.stringify(AMBSET)); } catch {} };
+const saveAmb = () => { try { localStorage.setItem("studyhere_amb", JSON.stringify(AMBSET)); } catch {} };
 function noise(ctx, type){
   const n = ctx.sampleRate * 4, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
   let last = 0, b0 = 0, b1 = 0, b2 = 0;
@@ -2739,9 +2740,9 @@ $("amb-vol").oninput = () => { AMBSET.vol = Number($("amb-vol").value); saveAmb(
 document.addEventListener("pointerdown", () => { if (amb.ctx && amb.kind !== "off") amb.ctx.resume().catch(() => {}); });
 
 /* ---------- room page: pagination, side tabs, nav, participants ---------- */
-try { const v = localStorage.getItem("chaupal_per"); if (v === "auto") perAuto = true; else if ([4, 8, 12].includes(Number(v))) perPage = Number(v); } catch {}
+try { const v = localStorage.getItem("studyhere_per"); if (v === "auto") perAuto = true; else if ([4, 8, 12].includes(Number(v))) perPage = Number(v); } catch {}
 $("per").value = perAuto ? "0" : perPage;
-$("per").onchange = () => { const v = Number($("per").value); perAuto = v === 0; if (!perAuto) perPage = [8, 12].includes(v) ? v : 4; page = 0; try { localStorage.setItem("chaupal_per", perAuto ? "auto" : perPage); } catch {} layout(); };
+$("per").onchange = () => { const v = Number($("per").value); perAuto = v === 0; if (!perAuto) perPage = [8, 12].includes(v) ? v : 4; page = 0; try { localStorage.setItem("studyhere_per", perAuto ? "auto" : perPage); } catch {} layout(); };
 $("pg-first").onclick = () => { page = 0; layout(); };
 $("pg-last").onclick = () => { page = 1e6; layout(); };
 $("pg-prev").onclick = () => { page = Math.max(0, page - 1); layout(); };
@@ -2764,8 +2765,8 @@ $("n-admin").onclick = () => $("open-admin").click();
 setInterval(() => { if (roomStart){ const m = Math.floor((Date.now() - roomStart) / 60000); $("elapsed").textContent = m >= 60 ? Math.floor(m / 60) + "h " + m % 60 + "m" : m + "m"; } }, 15000);
 
 /* ---------- audio / video device settings ---------- */
-const DEV = (() => { try { return JSON.parse(localStorage.getItem("chaupal_dev")) || {}; } catch { return {}; } })();
-const saveDev = () => { try { localStorage.setItem("chaupal_dev", JSON.stringify(DEV)); } catch {} };
+const DEV = (() => { try { return JSON.parse(localStorage.getItem("studyhere_dev")) || {}; } catch { return {}; } })();
+const saveDev = () => { try { localStorage.setItem("studyhere_dev", JSON.stringify(DEV)); } catch {} };
 const canSink = "setSinkId" in HTMLMediaElement.prototype;
 function applySink(el){ return canSink && DEV.spk ? el.setSinkId(DEV.spk).catch(() => {}) : Promise.resolve(); }
 function fillSel(id, list, cur, name){
@@ -2907,7 +2908,7 @@ const TI = {
   msg: '<svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg>'
 };
 let pendingLeave = false;
-function setGoal(v){ v = v.trim().slice(0, 80); me.goal = v; try { localStorage.setItem("chaupal_goal", v); } catch {} if (socket) socket.emit("goal", v); relabel("me"); layout(); }
+function setGoal(v){ v = v.trim().slice(0, 80); me.goal = v; try { localStorage.setItem("studyhere_goal", v); } catch {} if (socket) socket.emit("goal", v); relabel("me"); layout(); }
 $("goal-in").onchange = () => setGoal($("goal-in").value);
 $("goal-in").onkeydown = e => { if (e.key === "Enter") e.target.blur(); };
 $("find").oninput = () => { page = 0; layout(); };
@@ -3007,10 +3008,10 @@ function MusicEngine(ctx){
     level(){ const d = new Float32Array(an.fftSize); an.getFloatTimeDomainData(d); let s = 0; for (const x of d) s += x * x; return Math.sqrt(s / d.length); }
   };
 }
-const MSET = (() => { try { return { on: false, vol: .5, follow: false, ...JSON.parse(localStorage.getItem("chaupal_music")) }; } catch { return { on: false, vol: .5, follow: false }; } })();
+const MSET = (() => { try { return { on: false, vol: .5, follow: false, ...JSON.parse(localStorage.getItem("studyhere_music")) }; } catch { return { on: false, vol: .5, follow: false }; } })();
 const MNAMES = { classic: "Calm piano", astronaut: "Deep space drift", lofi: "Rainy night beats", cozy: "Fireside strings" };
 let mus = null;
-const saveMus = () => { try { localStorage.setItem("chaupal_music", JSON.stringify(MSET)); } catch {} };
+const saveMus = () => { try { localStorage.setItem("studyhere_music", JSON.stringify(MSET)); } catch {} };
 function musUI(){
   const th = $("pomo").dataset.theme || "classic";
   $("mus-btn").setAttribute("aria-pressed", MSET.on); $("mus-t").textContent = MSET.on ? "Music on" : "Music off";
@@ -3040,11 +3041,11 @@ function setTheme(t){
   if (!(t in SCENES)) t = "classic";
   $("pomo").dataset.theme = t; $("scene").innerHTML = SCENES[t];
   document.querySelectorAll(".themes button").forEach(b => b.setAttribute("aria-checked", b.dataset.th === t));
-  try { localStorage.setItem("chaupal_theme", t); } catch {}
+  try { localStorage.setItem("studyhere_theme", t); } catch {}
   musUI(); musSync();
 }
 document.querySelectorAll(".themes button").forEach(b => b.onclick = () => setTheme(b.dataset.th));
-{ let t = "astronaut"; try { t = localStorage.getItem("chaupal_theme") || t; } catch {} setTheme(t); }
+{ let t = "astronaut"; try { t = localStorage.getItem("studyhere_theme") || t; } catch {} setTheme(t); }
 
 /* ---------- mobile: bottom sheets for timer and chat ---------- */
 const mob = () => matchMedia("(max-width:820px)").matches;
@@ -3063,11 +3064,11 @@ if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) $("shar
 /* ---------- video effects: quality, zoom / auto-frame, enhance, filters, face effects ---------- */
 const QUAL = { auto: { w: 1280, h: 720, f: 30, bps: 1500000 }, "360": { w: 640, h: 360, f: 15, bps: 400000 }, "720": { w: 1280, h: 720, f: 30, bps: 1500000 }, "1080": { w: 1920, h: 1080, f: 30, bps: 3000000 } };
 const FXD = { quality: "auto", fit: "cover", zoom: 1, auto: false, bright: 1, contrast: 1, sat: 1, smooth: 0, filter: "none", face: "none" };
-const FX = (() => { try { return { ...FXD, ...JSON.parse(localStorage.getItem("chaupal_fx")) }; } catch { return { ...FXD }; } })();
+const FX = (() => { try { return { ...FXD, ...JSON.parse(localStorage.getItem("studyhere_fx")) }; } catch { return { ...FXD }; } })();
 const FILTERS = { none: "", warm: "sepia(.25) saturate(1.2) hue-rotate(-8deg)", cool: "saturate(1.1) hue-rotate(12deg) brightness(1.03)", vivid: "saturate(1.6) contrast(1.1)", bw: "grayscale(1)", noir: "grayscale(1) contrast(1.4) brightness(.9)", vintage: "sepia(.6) contrast(.95) brightness(1.05)", dream: "brightness(1.1) saturate(1.2) contrast(.92) blur(.6px)" };
 const fxSupported = "filter" in CanvasRenderingContext2D.prototype && typeof HTMLCanvasElement.prototype.captureStream === "function" && typeof Worker !== "undefined";
 const fx = { on: false, raw: null, out: null, src: null, cv: null, ctx: null, timer: null, lm: null, lmr: null, loading: false, failed: false, last: 0, gap: 30, frame: 0, z: 1, cx: .5, cy: .5 };
-const saveFx = () => { try { localStorage.setItem("chaupal_fx", JSON.stringify(FX)); } catch {} };
+const saveFx = () => { try { localStorage.setItem("studyhere_fx", JSON.stringify(FX)); } catch {} };
 const fxActive = () => !!SET.mirror_others || FX.zoom > 1 || FX.auto || FX.bright !== 1 || FX.contrast !== 1 || FX.sat !== 1 || FX.smooth > 0 || FX.filter !== "none" || FX.face !== "none";
 const fxFilter = () => ("brightness(" + FX.bright + ") contrast(" + FX.contrast + ") saturate(" + FX.sat + ") " + (FILTERS[FX.filter] || "")).trim();
 const fxNote = t => { $("fx-note").textContent = t; };
@@ -3399,9 +3400,9 @@ function pomoDesk(open){
   if (mob()) return;
   $("pomo").classList.toggle("hidden", !open);
   document.querySelectorAll("#pomo-btn,#pomo-chip").forEach(b => b.setAttribute("aria-pressed", open));
-  try { localStorage.setItem("chaupal_pomo_open", open ? "1" : "0"); } catch {}
+  try { localStorage.setItem("studyhere_pomo_open", open ? "1" : "0"); } catch {}
 }
-try { if (!mob() && localStorage.getItem("chaupal_pomo_open") === "0") $("pomo").classList.add("hidden"); } catch {}
+try { if (!mob() && localStorage.getItem("studyhere_pomo_open") === "0") $("pomo").classList.add("hidden"); } catch {}
 document.querySelectorAll("#pomo-btn,#pomo-chip").forEach(b => b.setAttribute("aria-pressed", !$("pomo").classList.contains("hidden")));
 
 /* ---------- weekly leaderboard ---------- */
@@ -3440,7 +3441,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
   if (rt){ resetToken = rt; show("auth"); setMode("reset"); return; }
   if (!token){ show("auth"); return; }
   try { const r = await api("/api/me"); me = r.user; quota = r.quota; afterLogin(); }
-  catch { token = null; localStorage.removeItem("chaupal_token"); show("auth"); }
+  catch { token = null; localStorage.removeItem("studyhere_token"); show("auth"); }
 })();
 </script>
 </body>

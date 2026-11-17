@@ -1,6 +1,6 @@
 // Minimal service worker: lets the app be installed and shows the app shell if the network drops.
 // It always asks the network first, so updates appear right after a deploy.
-const CACHE = "chaupal-shell-v1";
+const CACHE = "studyhere-shell-v1";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", e => {

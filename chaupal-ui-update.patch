@@ -127,12 +127,12 @@
 +  const h = $("side-handle"), t = open ? "Hide chat" : "Show chat";
 +  h.setAttribute("aria-expanded", open); h.setAttribute("aria-label", t); h.title = t;
 +  if (open) h.classList.remove("unread");
-+  if (save) try { localStorage.setItem("chaupal_side_open", open ? "1" : "0"); } catch {}
++  if (save) try { localStorage.setItem("studyhere_side_open", open ? "1" : "0"); } catch {}
 +}
 +const toggleSide = () => setSide($("room").classList.contains("noside"));
 +$("toggle-chat").onclick = () => { if (mob()) return openSheet("chat"); toggleSide(); };
 +$("side-handle").onclick = toggleSide;
-+try { if (!mob() && localStorage.getItem("chaupal_side_open") === "0") setSide(false, false); } catch {}
++try { if (!mob() && localStorage.getItem("studyhere_side_open") === "0") setSide(false, false); } catch {}
  $("copy").onclick = async () => {
    const url = location.origin + location.pathname + "#" + $("room-code").textContent;
    try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Share Room", 1500); }
@@ -154,7 +154,7 @@
    Object.assign(SET, n);
    if (!grp.vibe) restorePomo();
    if (full && !grp.on) ps.left = POMO[ps.phase] * 60000;
-   if (perPage !== SET.tiles){ perPage = SET.tiles; $("per").value = perPage; try { localStorage.setItem("chaupal_per", perPage); } catch {} }
+   if (perPage !== SET.tiles){ perPage = SET.tiles; $("per").value = perPage; try { localStorage.setItem("studyhere_per", perPage); } catch {} }
 -  $("grid").classList.toggle("noself", !SET.self_view); $("grid").classList.toggle("mirself", !!SET.mirror_self);
 +  $("grid").classList.toggle("noself", !SET.self_view);
    document.body.classList.toggle("nomsg", !!SET.disable_messages);
@@ -393,12 +393,12 @@
 +  const h = $("side-handle"), t = open ? "Hide chat" : "Show chat";
 +  h.setAttribute("aria-expanded", open); h.setAttribute("aria-label", t); h.title = t;
 +  if (open) h.classList.remove("unread");
-+  if (save) try { localStorage.setItem("chaupal_side_open", open ? "1" : "0"); } catch {}
++  if (save) try { localStorage.setItem("studyhere_side_open", open ? "1" : "0"); } catch {}
 +}
 +const toggleSide = () => setSide($("room").classList.contains("noside"));
 +$("toggle-chat").onclick = () => { if (mob()) return openSheet("chat"); toggleSide(); };
 +$("side-handle").onclick = toggleSide;
-+try { if (!mob() && localStorage.getItem("chaupal_side_open") === "0") setSide(false, false); } catch {}
++try { if (!mob() && localStorage.getItem("studyhere_side_open") === "0") setSide(false, false); } catch {}
  $("copy").onclick = async () => {
    const url = location.origin + location.pathname + "#" + $("room-code").textContent;
    try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied"; setTimeout(() => $("copy").textContent = "Share Room", 1500); }

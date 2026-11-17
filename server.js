@@ -13,7 +13,9 @@ import crypto from "crypto";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 const MAX_ROOM_SIZE = Number(process.env.MAX_ROOM_SIZE || 8);
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "chaupal.db");
+// Keeps using the old chaupal.db if it already exists, so renaming the app loses no data
+const DB_PATH = process.env.DB_PATH || [path.join(__dirname, "data", "studyhere.db"), path.join(__dirname, "data", "chaupal.db")]
+  .find(f => fs.existsSync(f)) || path.join(__dirname, "data", "studyhere.db");
 
 let JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -135,7 +137,7 @@ const cspFor = nonce => [
   "object-src 'none'", "base-uri 'self'", "form-action 'self'", `frame-ancestors ${FRAME_ANCESTORS || "'none'"}`
 ].join("; ");
 // Find the front-end folder even if the upload put it somewhere unexpected
-const staticDir = [path.join(__dirname, "public"), path.join(__dirname, "chaupal-app", "public")]
+const staticDir = [path.join(__dirname, "public"), path.join(__dirname, "studyhere-app", "public"), path.join(__dirname, "chaupal-app", "public")]
   .find(d => fs.existsSync(path.join(d, "index.html")));
 const indexFile = [path.join(__dirname, "index.html"), staticDir && path.join(staticDir, "index.html")].find(f => f && fs.existsSync(f));
 let indexCache = { at: 0, html: "" };
@@ -152,7 +154,7 @@ app.get("/sw.js", (_req, res) => res.type("application/javascript").set("Cache-C
 app.get("/", (_req, res) => {
   const files = fs.readdirSync(__dirname).filter(f => f !== "node_modules" && !f.startsWith(".env")).join(", ");
   res.status(500).type("text").send(
-    "Chaupal server is running, but index.html was not found.\n" +
+    "Study here server is running, but index.html was not found.\n" +
     "Create the file public/index.html in your GitHub repo.\n\n" +
     "Files next to server.js: " + files
   );
@@ -244,7 +246,7 @@ async function sendMail(to, subject, html, text) {
   const r = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: { "api-key": process.env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
-    body: JSON.stringify({ sender: { name: "Chaupal", email: process.env.MAIL_FROM }, to: [{ email: to }], subject, htmlContent: html, textContent: text })
+    body: JSON.stringify({ sender: { name: "Study here", email: process.env.MAIL_FROM }, to: [{ email: to }], subject, htmlContent: html, textContent: text })
   });
   if (!r.ok) console.error("Mail failed:", r.status, (await r.text()).slice(0, 200));
   return r.ok;
@@ -259,7 +261,7 @@ app.post("/api/forgot", limit, wrap(async (req, res) => {
     db.prepare("INSERT INTO reset_tokens (user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?)").run(u.id, hashTok(tok), now + 30 * 60000, now);
     const base = (process.env.APP_URL || "").replace(/\/$/, "") || req.protocol + "://" + req.get("host");
     const link = `${base}/?reset=${tok}`;
-    sendMail(u.email, "Reset your Chaupal password",
+    sendMail(u.email, "Reset your Study here password",
       `<p>Hi ${htmlEsc(u.name)},</p><p>Click to choose a new password. The link works for 30 minutes.</p><p><a href="${link}">Reset my password</a></p><p>If you didn't ask for this, ignore this email.</p>`,
       `Hi ${u.name}, open this link to choose a new password (valid 30 minutes): ${link}`).catch(e2 => console.error("Mail error:", e2.message));
   }
@@ -1071,6 +1073,6 @@ io.on("connection", socket => {
   });
 });
 
-server.listen(PORT, () => console.log(`Chaupal running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Study here running on http://localhost:${PORT}`));
 // optional second port for the API only (used by the Emergent preview; not needed on Render)
 if (process.env.API_PORT) http.createServer(app).listen(Number(process.env.API_PORT));

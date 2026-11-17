@@ -1,5 +1,5 @@
 {
-  "name": "chaupal",
+  "name": "studyhere",
   "version": "1.0.0",
   "description": "Free video meetings: Socket.IO signaling + WebRTC, with signup/login",
   "type": "module",

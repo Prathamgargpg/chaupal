@@ -1,5 +1,6 @@
 services:
   - type: web
+    # Keep this matching the existing Render service name; changing it makes Render create a second service.
     name: chaupal
     runtime: node
     plan: free

@@ -7,7 +7,7 @@ USER=Prathamgargpg
 
 git init -q
 git add .
-git commit -qm "Chaupal video meetings" || true
+git commit -qm "Study here video meetings" || true
 git branch -M main
 
 if command -v gh >/dev/null 2>&1; then
