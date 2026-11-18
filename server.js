@@ -154,6 +154,9 @@ function sendIndex(_req, res){
 }
 if (indexFile){ app.get("/", sendIndex); app.get("/index.html", sendIndex); }
 if (staticDir) app.use(express.static(staticDir, { index: false }));
+// app install files: manifest + icons
+app.get("/manifest.webmanifest", (_req, res) => res.type("application/manifest+json").set("Cache-Control", "public, max-age=86400").sendFile(path.join(__dirname, "manifest.webmanifest")));
+app.use("/icons", express.static(path.join(__dirname, "icons"), { maxAge: "7d", index: false }));
 app.get("/sw.js", (_req, res) => res.type("application/javascript").set("Cache-Control", "no-cache").sendFile(path.join(__dirname, "sw.js")));
 app.get("/", (_req, res) => {
   const files = fs.readdirSync(__dirname).filter(f => f !== "node_modules" && !f.startsWith(".env")).join(", ");
