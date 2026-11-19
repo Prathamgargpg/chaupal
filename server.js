@@ -925,11 +925,12 @@ async function meteredServers(){
   } catch (e) { meteredError = e.message; console.error("Metered TURN fetch failed:", e.message, "- check METERED_DOMAIN (e.g. yourapp.metered.live) and METERED_API_KEY"); }
   return meteredCache.list;
 }
-if (process.env.TURN_URL || process.env.TURN_USERNAME || process.env.TURN_CREDENTIAL){
+if (!meteredOn() && (process.env.TURN_URL || process.env.TURN_USERNAME || process.env.TURN_CREDENTIAL)){
   const c = turnConfig();
   console.log(c.ready ? "TURN relay is ON (" + c.urls.length + " addresses)." : "TURN relay is OFF. Missing: " + c.missing.join(", "));
 }
-if (meteredOn()) console.log("Metered TURN relay is ON (API key mode).");
+// check the Metered key once at startup so the logs say straight away whether it works
+if (meteredOn()) meteredServers().then(l => console.log(l ? `Metered TURN relay is ON: key accepted, ${l.length} relay servers.` : "Metered TURN relay is NOT working: " + meteredError));
 app.get("/api/ice", auth, wrap(async (req, res) => {
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -944,7 +945,7 @@ app.get("/api/ice", auth, wrap(async (req, res) => {
 }));
 
 app.get("/healthz", (_req, res) => {
-  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok", permanent: !!pool, turn: turnReady(), turnMissing: turnConfig().missing }); }
+  try { db.prepare("SELECT 1").get(); res.json({ ok: true, db: "ok", permanent: !!pool, turn: turnReady() || !!meteredCache.list, metered: meteredOn() ? (meteredCache.list ? "ok" : meteredError || "not checked yet") : "off", turnMissing: meteredOn() ? [] : turnConfig().missing }); }
   catch (e) { res.status(500).json({ ok: false, db: String(e.message) }); }
 });
 
