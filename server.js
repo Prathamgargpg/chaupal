@@ -523,8 +523,9 @@ app.get("/api/users/:id", auth, (req, res) => {
   const self = o.id === req.user.id || req.user.role === "admin";
   const showAct = self || o.show_activity;
   const week = Date.now() - 7 * 864e5;
-  const left = showAct ? db.prepare("SELECT data, created_at FROM events WHERE user_id = ? AND type = 'left_room' ORDER BY id DESC LIMIT 60").all(o.id).map(e => ({ ...JSON.parse(e.data || "{}"), at: e.created_at })) : null;
-  const sessions = left && { recent: left.slice(0, 8), weekRoom: left.filter(e => e.at >= week).reduce((a, e) => a + (e.ms || 0), 0), weekCam: left.filter(e => e.at >= week).reduce((a, e) => a + (e.cam || 0), 0) };
+  // the last 32 days of sessions, so the profile can total "last 7 days" or "this month" in the viewer's own timezone
+  const left = showAct ? db.prepare("SELECT data, created_at FROM events WHERE user_id = ? AND type = 'left_room' AND created_at > ? ORDER BY id DESC LIMIT 500").all(o.id, Date.now() - 32 * 864e5).map(e => ({ ...JSON.parse(e.data || "{}"), at: e.created_at })) : null;
+  const sessions = left && { all: left.map(e => ({ at: e.at, ms: e.ms || 0 })), recent: left.slice(0, 8), weekRoom: left.filter(e => e.at >= week).reduce((a, e) => a + (e.ms || 0), 0), weekCam: left.filter(e => e.at >= week).reduce((a, e) => a + (e.cam || 0), 0) };
   const partners = db.prepare("SELECT u.id, u.name, u.title, u.visibility, (u.avatar != '') has_avatar, u.photo_v FROM follows a JOIN follows b ON b.follower_id = a.followee_id AND b.followee_id = a.follower_id JOIN users u ON u.id = a.followee_id WHERE a.follower_id = ? AND u.disabled = 0 LIMIT 30").all(o.id)
     .map(p => ({ id: p.id, name: p.name, title: p.title || "", avatar_url: photoUrl(p, "avatar", req.user), online: online.has(p.id) }));
   res.json({ ...base, bio: o.bio, streak: self || o.show_streak ? streakOf(o.id) : null,
