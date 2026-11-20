@@ -1370,6 +1370,83 @@ html[data-theme="dark"] .emo-tabs button[aria-selected=true],html[data-theme="da
 .sess-list .srow{grid-template-columns:minmax(170px,auto) 1fr 64px}
 @media (max-width:560px){.sess-list .srow{grid-template-columns:118px 1fr 54px;font-size:12.5px}}
 html[data-theme="dark"] .sess-head select{background-color:#3A2A20;border-color:#4A382C;color:#FDBA74}
+
+/* ===== screen share approval ===== */
+#room .ctl#share.share-ready{background:#DCFCE7!important;color:#15803D!important;box-shadow:0 0 0 3px rgba(34,197,94,.35);animation:srPulse 1.6s ease-in-out infinite}
+#room .ctl#share.share-wait{background:#FEF3C7!important;color:#B45309!important}
+@keyframes srPulse{50%{box-shadow:0 0 0 7px rgba(34,197,94,.12)}}
+#share-reqs{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:10px;width:min(360px,calc(100vw - 32px))}
+.sreq{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center;background:#fff;border:1px solid #F1DFD3;border-radius:16px;padding:14px;box-shadow:0 20px 50px -20px rgba(67,20,7,.5);animation:sheetIn .2s ease-out}
+.sreq.done{opacity:.6;pointer-events:none}
+.sreq-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#F97316,#E11D48)}
+.sreq-ic .ic{width:20px;height:20px}
+.sreq-t{display:flex;flex-direction:column;min-width:0}
+.sreq-t b{font-size:14px;color:#431407}
+.sreq-t small{font-size:12px;color:#8C6F5B}
+.sreq-b{grid-column:1/-1;display:flex;gap:8px}
+.sreq-b .btn{flex:1;padding:9px}
+html[data-theme="dark"] .sreq{background:#2A211B;border-color:#3D3029}
+html[data-theme="dark"] .sreq-t b{color:#FFEDD5}
+html[data-theme="dark"] .sreq-t small{color:#D3B49F}
+
+/* ===== achievement medals ===== */
+.bsum{margin:4px 2px 0;font-size:13px;color:var(--mu,#8C6F5B);font-weight:600}
+.bgrid{grid-template-columns:repeat(auto-fill,minmax(168px,1fr))!important;gap:14px!important}
+.badge3{--g1:#F59E0B;--g2:#B45309;--rb:#B45309;position:relative;border:1px solid #F1DFD3;border-radius:18px;padding:18px 14px 14px;background:#fff;display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;transition:transform .18s,box-shadow .18s}
+.badge3.t-silver{--g1:#CBD5E1;--g2:#64748B;--rb:#475569}
+.badge3.t-gold{--g1:#FDE047;--g2:#EA9A0C;--rb:#B45309}
+.badge3.t-saffron{--g1:#F97316;--g2:#E11D48;--rb:#9F1239}
+.badge3.got{background:linear-gradient(180deg,#FFFBF7,#FFF3EA);border-color:#FAD6BE}
+.badge3.got:hover{transform:translateY(-3px);box-shadow:0 18px 36px -22px rgba(194,65,12,.6)}
+.badge3 b{font-size:14.5px;color:#431407;margin-top:4px}
+.badge3 small{font-size:12px;color:#8C6F5B;line-height:1.35}
+.medal{position:relative;width:66px;height:72px;display:flex;justify-content:center}
+.medal .rib{position:absolute;bottom:0;left:50%;width:30px;height:26px;transform:translateX(-50%);background:linear-gradient(90deg,var(--rb) 0 45%,transparent 45% 55%,var(--rb) 55%);clip-path:polygon(0 0,45% 0,45% 100%,22% 80%,0 100%,0 0,55% 0,100% 0,100% 100%,78% 80%,55% 100%,55% 0)}
+.medal .disc{position:relative;z-index:1;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;color:#fff;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.55),transparent 42%),linear-gradient(145deg,var(--g1),var(--g2));box-shadow:inset 0 -4px 0 rgba(0,0,0,.14),inset 0 0 0 3px rgba(255,255,255,.35),0 10px 18px -10px var(--g2)}
+.medal .disc .ic{width:28px;height:28px;stroke-width:2;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.badge3.got .medal .disc{animation:medalIn .5s ease-out both}
+@keyframes medalIn{from{transform:scale(.7) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+.badge3:not(.got) .medal .disc{background:#F3EAE3;color:#C9B4A5;box-shadow:inset 0 0 0 3px #fff}
+.badge3:not(.got) .medal .rib{background:linear-gradient(90deg,#E7D9CE 0 45%,transparent 45% 55%,#E7D9CE 55%)}
+.medal .lock{position:absolute;z-index:2;right:2px;top:38px;width:22px;height:22px;border-radius:50%;background:#fff;border:1px solid #EADBD0;display:grid;place-items:center;color:#A1887A}
+.medal .lock .ic{width:12px;height:12px}
+.bdone{margin-top:4px;font-size:11.5px;font-weight:700;color:#15803D;background:#DCFCE7;border-radius:999px;padding:3px 10px}
+.bprog{display:block;width:100%;height:6px;border-radius:999px;background:#F3EAE3;margin-top:6px;overflow:hidden}
+.bprog i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#F97316,#E11D48)}
+.bnum{font-size:11.5px;color:#A1887A;font-weight:600}
+.pf-lvl{width:auto!important;height:28px!important;clip-path:none!important;padding:0 10px 0 8px!important;border-radius:999px;display:inline-flex!important;align-items:center;gap:4px;font-size:13px!important;background:linear-gradient(135deg,#F97316,#E11D48)!important;box-shadow:0 6px 14px -8px #E11D48;vertical-align:middle}
+.pf-lvl .ic{width:14px;height:14px;fill:#FDE68A;stroke:#FDE68A}
+html[data-theme="dark"] .badge3{background:#2A211B;border-color:#3D3029}
+html[data-theme="dark"] .badge3.got{background:linear-gradient(180deg,#33261E,#3A2A20);border-color:#5A3A26}
+html[data-theme="dark"] .badge3 b{color:#FFEDD5}
+html[data-theme="dark"] .badge3 small,html[data-theme="dark"] .bnum{color:#C9AA95}
+html[data-theme="dark"] .badge3:not(.got) .medal .disc{background:#3A2E27;color:#6E5A4C;box-shadow:inset 0 0 0 3px #2A211B}
+html[data-theme="dark"] .medal .lock{background:#2A211B;border-color:#4A382C}
+html[data-theme="dark"] .bprog{background:#3A2E27}
+@media (prefers-reduced-motion:reduce){.badge3.got .medal .disc{animation:none}}
+
+/* ===== streak celebration popup ===== */
+.cele{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:20px;background:rgba(67,20,7,.45);backdrop-filter:blur(3px);animation:fadeIn .2s ease-out}
+.cele.out{opacity:0;transition:opacity .22s}
+@keyframes fadeIn{from{opacity:0}}
+.cele-card{width:min(380px,100%);padding:30px 26px 24px!important;border-radius:26px!important;box-shadow:0 40px 90px -30px rgba(67,20,7,.7);animation:celeIn .45s cubic-bezier(.2,1.4,.4,1) both;position:relative;overflow:hidden}
+.cele-card::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 60% at 50% 0%,rgba(253,186,116,.35),transparent 70%);pointer-events:none}
+@keyframes celeIn{from{transform:translateY(24px) scale(.9);opacity:0}}
+.cele-tag{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#C2410C;background:#FFEDD5;border-radius:999px;padding:4px 12px;position:relative}
+.cele-medal{transform:scale(1.5);margin:30px 0 26px}
+.cele-medal .disc{animation:medalSpin .9s ease-out .15s both!important}
+@keyframes medalSpin{from{transform:rotateY(180deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+.cele-card h2{margin:4px 0 6px;font-size:24px;color:#431407;line-height:1.2}
+.cele-sub{margin:0;color:#7C5A46;font-size:14.5px}
+.cele-next{margin:10px 0 18px;font-size:12.5px;font-weight:700;color:#C2410C}
+.cele-card .btn{width:100%;position:relative}
+.cele-conf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.cele-conf i{position:absolute;top:-12px;left:var(--x);width:8px;height:13px;border-radius:2px;background:var(--c);transform:rotate(var(--r));animation:confFall 2.6s cubic-bezier(.3,.6,.5,1) var(--d) forwards}
+@keyframes confFall{to{transform:translateY(105vh) rotate(calc(var(--r) + 540deg))}}
+html[data-theme="dark"] .cele-card h2{color:#FFEDD5}
+html[data-theme="dark"] .cele-sub{color:#D3B49F}
+html[data-theme="dark"] .cele-tag{background:#4A2A18;color:#FDBA74}
+@media (prefers-reduced-motion:reduce){.cele-conf{display:none}.cele-card,.cele-medal .disc{animation:none!important}}
 </style>
 </head>
 <body>
@@ -1885,7 +1962,7 @@ $("logout").onclick = logout;
 function afterLogin(){
   $("who").textContent = me.name; setMenuAvatar(); loadSettings();
   $("open-admin").classList.toggle("hidden", me.role !== "admin"); $("pm-admin").classList.toggle("hidden", me.role !== "admin"); $("n-admin").classList.toggle("hidden", me.role !== "admin");
-  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setUnread(r.unread || 0); setNotif(r.notifUnread || 0); loadFeed(); loadRooms(); connectDm(); loadBlocks(); }).catch(() => {});
+  api("/api/me").then(r => { quota = r.quota; setStreak(r.streak); setTimeout(() => celebrate(r.streak), 900); setUnread(r.unread || 0); setNotif(r.notifUnread || 0); loadFeed(); loadRooms(); connectDm(); loadBlocks(); }).catch(() => {});
   route();
 }
 
@@ -1991,6 +2068,7 @@ async function enterRoom(code){
       myPins = new Set(res.myPins || []); myFollowing = new Set(res.following || []);
       // the newcomer starts a connection to everyone already inside
       if (res.autoMod !== false) modStart();
+      shareBtnUI();
       for (const p of res.peers){ if (p.pomo) p.pomo.at = Date.now(); info.set(p.id, p); if (p.vban) modHideTile(p.id, p.vban); await connectTo(p.id, p.name, true); }
       pomoSend(); if (me.goal) socket.emit("goal", me.goal); socket.emit("cam", !!(camTrack && camTrack.enabled));
     });
@@ -2030,6 +2108,12 @@ async function enterRoom(code){
 
   socket.on("chat", ({ name, text }) => addChat(name, text));
   socket.on("mod-warn", d => toast(d.message));
+  socket.on("share-decision", d => {
+    sharePending = false;
+    if (d.ok){ shareOK = true; toast((d.by || "An admin") + " approved your screen share. Tap the Share screen button to start."); }
+    else toast(d.expired ? "No admin answered your screen share request. You can ask again." : (d.by || "An admin") + " declined your screen share request.");
+    shareBtnUI();
+  });
   socket.on("mod-hide", ({ id, until }) => { if (id !== socket.id) modHideTile(id, until); });
   socket.on("mod-unhide", ({ id }) => modUnhideTile(id));
   socket.on("suspended", d => { alert(d.message); logout(); });
@@ -2140,6 +2224,7 @@ function closePeer(id){
 }
 
 function leaveRoom(){
+  shareOK = false; sharePending = false; shareBtnUI();
   fxStop(true); setRoomVibe(null); modStop(); closeSheet(); $("chat-btn").classList.remove("unread");
   if (socket){ socket.disconnect(); socket = null; }
   for (const id of [...peers.keys()]) closePeer(id);
@@ -2170,25 +2255,44 @@ function swapVideoTrack(track){
     if (sender) sender.replaceTrack(track);
   }
 }
+/* screen sharing needs an admin's OK (admins share freely) */
+let shareOK = false, sharePending = false;
+function shareBtnUI(){
+  const b = $("share"), adm = me && me.role === "admin";
+  b.classList.toggle("share-ready", !adm && shareOK && !screenStream); b.classList.toggle("share-wait", !adm && sharePending);
+  if (!screenStream) b.title = adm || shareOK ? "Share screen" : sharePending ? "Waiting for an admin to approve" : "Ask an admin to share your screen";
+}
 $("share").onclick = async () => {
   if (screenStream){ stopShare(); return; }
   if (blocked("cam")) return toast(modWait() || "The admin has turned off video here.");
+  if (me.role !== "admin" && !shareOK){
+    if (sharePending) return toast("Still waiting for an admin to approve your screen share.");
+    if (!socket) return;
+    return socket.emit("share-req", r => {
+      if (r && r.ok){ shareOK = true; shareBtnUI(); return startShare(); }
+      if (r && r.pending){ sharePending = true; shareBtnUI(); return toast("Asked an admin to approve your screen share. You'll get a message here."); }
+      toast((r && r.error) || "Couldn't ask for screen sharing.");
+    });
+  }
+  startShare();
+};
+async function startShare(){
   try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); } catch { return; }
   const track = screenStream.getVideoTracks()[0];
   swapVideoTrack(track);
   const tile = $("t-me");
   tile.querySelector("video").srcObject = screenStream;
   tile.classList.add("sharing");
-  $("share").setAttribute("aria-pressed", "true"); $("share").title = "Stop sharing";
+  $("share").setAttribute("aria-pressed", "true"); $("share").title = "Stop sharing"; shareBtnUI();
   track.onended = stopShare;
-};
+}
 function stopShare(){
   if (!screenStream) return;
   screenStream.getTracks().forEach(t => t.stop()); screenStream = null;
   if (camTrack) swapVideoTrack(camTrack);
   const tile = $("t-me");
   if (tile){ tile.querySelector("video").srcObject = localStream; tile.classList.remove("sharing"); }
-  $("share").setAttribute("aria-pressed", "false"); $("share").title = "Share screen";
+  $("share").setAttribute("aria-pressed", "false"); shareBtnUI();
 }
 
 /* emoji and stickers: stickers travel as a short code like [sticker:chai] and are drawn here */
@@ -2507,7 +2611,7 @@ async function openUser(id, tab = "sum"){
     (u.restricted ? "" : '<span class="pf-seen' + (u.online ? " on" : "") + '" id="pf-seen" data-testid="profile-seen-status"><i></i>' + seenText(u) + "</span>") + "</div>" +
     '<div class="pf-headrow"><div class="pf-av" data-testid="profile-avatar">' + avatar(u.name, u.id, 128, u.avatar_url) + (u.isMe ? '<button class="pf-cam" data-photo="avatar" title="Change profile picture" data-testid="profile-change-avatar-btn">' + SVG.cam + "</button>" : "") + "</div>" +
     '<div class="pf-social">' + (u.instagram ? '<a href="' + esc(socialUrl(u.instagram, "https://instagram.com/")) + '" target="_blank" rel="noopener" title="Instagram" data-testid="profile-instagram-link">' + SVG.ig + "</a>" : "") + (u.linkedin ? '<a href="' + esc(socialUrl(u.linkedin, "https://linkedin.com/in/")) + '" target="_blank" rel="noopener" title="LinkedIn" data-testid="profile-linkedin-link">' + SVG.li + "</a>" : "") + "</div></div>" +
-    '<h2 class="pf-name" data-testid="profile-name"><span class="n">' + esc(u.name) + "</span>" + (lvl ? '<span class="pf-lvl" title="Days logged in">' + lvl + "</span>" : "") + "</h2>" +
+    '<h2 class="pf-name" data-testid="profile-name"><span class="n">' + esc(u.name) + "</span>" + (lvl ? '<span class="pf-lvl" title="Level ' + lvl + ': one level for every day you log in"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Lv ' + lvl + "</span>" : "") + "</h2>" +
     '<div class="pf-sub">' + (u.pronouns ? "<span>(" + esc(u.pronouns) + ")</span>" : "") + (u.country ? '<span class="pf-flag" title="' + esc((COUNTRIES.find(c => c[0] === u.country) || [])[1] || u.country) + '">' + flag(u.country) + "</span>" : "") + (u.title ? '<span class="tag">' + esc(u.title) + "</span>" : "") + "</div>" +
     (u.age ? '<div class="pf-age">' + u.age + " years</div>" : '<div style="height:10px"></div>') +
     (u.relationship ? '<div class="pf-row">' + SVG.heart + esc(u.relationship) + "</div>" : "") +
@@ -2541,14 +2645,47 @@ function pfTab(t){
     h = (u.interests && u.interests.length ? '<div class="pf-box" data-testid="profile-interests">' + u.interests.map(i => '<span class="ichip">' + esc(i) + "</span>").join("") + "</div>" : u.isMe ? '<div class="pf-box sub" style="margin:0">Add your interests from Edit profile.</div>' : "") +
       '<h3 class="pf-h">Recent sessions</h3>' + sessionsHtml(u);
   }
-  else if (t === "ach") h = '<div class="bgrid">' + BADGES.map(([n, d, f]) => '<div class="badge2' + (f(s) ? " got" : "") + '"><b>' + n + "</b><small>" + d + "</small></div>").join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
+  else if (t === "ach") h = '<p class="bsum">' + BADGES.filter(b => b[2](s)).length + " of " + BADGES.length + ' unlocked</p><div class="bgrid">' + BADGES.map(b => badgeHtml(b, s)).join("") + "</div>" + (u.streak ? "" : '<p class="sub">Streak badges are hidden by this user.</p>');
   else if (t === "ptn") h = '<p class="sub" style="margin:0 0 14px">People who follow each other with ' + (u.isMe ? "you" : esc(u.name.split(" ")[0])) + ".</p>" + (u.partners && u.partners.length ? '<div class="ptn-grid" data-testid="partners-grid">' + u.partners.map(p => '<div class="ptn" data-u="' + p.id + '"><span class="avw' + (p.online ? " on" : "") + '" data-on-uid="' + p.id + '">' + avatar(p.name, p.id, 64, p.avatar_url) + "</span><b>" + esc(p.name) + "</b><small>" + esc(p.title || "Study buddy") + "</small></div>").join("") + "</div>" : '<p class="sub">No focus partners yet. Follow people and when they follow back they appear here.</p>');
   else h = '<div class="sgrid">' + [["Current streak", u.streak ? s.current + " days" : "Hidden"], ["Best streak", u.streak ? s.best + " days" : "Hidden"], ["Days logged in", u.streak ? s.total : "Hidden"], ["Focus sessions", s.focus], ["Encouragements sent", s.sent], ["Encouragements received", s.received], ["Posts", s.posts], ["Followers", s.followers], ["Following", s.following]].map(([k, v]) => '<div class="stat"><b>' + v + "</b><small>" + k + "</small></div>").join("") + "</div>";
   $("pf-tab").innerHTML = h;
 }
 document.addEventListener("click", e => { const b = e.target.closest("#pf-tabs button"); if (b) pfTab(b.dataset.pt); });
 $("pv-close").onclick = () => $("pv").classList.add("hidden");
-const BADGES = [["First steps", "Log in on your first day", s => s.total >= 1], ["3-day streak", "Log in 3 days in a row", s => s.best >= 3], ["Week warrior", "Reach a 7-day streak", s => s.best >= 7], ["Focus starter", "Finish a focus session", s => s.focus >= 1], ["Deep worker", "Finish 10 focus sessions", s => s.focus >= 10], ["Cheerleader", "Send 3 encouragements", s => s.sent >= 3], ["Well loved", "Receive 5 encouragements", s => s.received >= 5], ["Storyteller", "Share your first post", s => s.posts >= 1], ["Connector", "Get 5 followers", s => s.followers >= 5]];
+// achievement medals: [name, how to get it, stat key, target, tier, icon]
+const BICON = {
+  steps: '<path d="M8 3c1.7 0 2.5 1.8 2.5 3.8S9.6 10 8 10 5.5 8.8 5.5 6.8 6.3 3 8 3zM16 9c1.7 0 2.5 1.8 2.5 3.8S17.6 16 16 16s-2.5-1.2-2.5-3.2S14.3 9 16 9zM6.5 12.5h3M14.5 18.5h3"/>',
+  flame: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/>',
+  cal: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"/>',
+  crown: '<path d="M4 18h16M5 15l-1-8 5 4 3-6 3 6 5-4-1 8z"/>',
+  timer: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/>',
+  hands: '<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-3l-2.5-4a1.5 1.5 0 0 1 2.5-1.6L7 14"/>',
+  heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  pen: '<path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'
+};
+const BADGES = [
+  ["First steps", "Log in on your first day", "total", 1, "bronze", "steps"],
+  ["3-day streak", "Log in 3 days in a row", "best", 3, "bronze", "flame"],
+  ["Week warrior", "Reach a 7-day streak", "best", 7, "silver", "cal"],
+  ["Month master", "Reach a 30-day streak", "best", 30, "saffron", "crown"],
+  ["Focus starter", "Finish a focus session", "focus", 1, "bronze", "timer"],
+  ["Deep worker", "Finish 10 focus sessions", "focus", 10, "silver", "target"],
+  ["Focus legend", "Finish 50 focus sessions", "focus", 50, "gold", "trophy"],
+  ["Cheerleader", "Send 3 encouragements", "sent", 3, "bronze", "hands"],
+  ["Well loved", "Receive 5 encouragements", "received", 5, "silver", "heart"],
+  ["Storyteller", "Share your first post", "posts", 1, "bronze", "pen"],
+  ["Connector", "Get 5 followers", "followers", 5, "silver", "users"],
+  ["Superstar", "Get 20 followers", "followers", 20, "gold", "star"]
+].map(([n, d, k, goal, tier, ic]) => [n, d, st => (st[k] || 0) >= goal, k, goal, tier, ic]);
+function badgeHtml([n, d, f, k, goal, tier, ic], st){
+  const got = f(st), have = Math.min(goal, st[k] || 0), unit = k === "best" || k === "total" ? " days" : "";
+  return '<div class="badge3 t-' + tier + (got ? " got" : "") + '"><div class="medal" aria-hidden="true"><i class="rib"></i><span class="disc"><svg class="ic" viewBox="0 0 24 24">' + BICON[ic] + "</svg></span>" + (got ? "" : '<em class="lock"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></em>') + "</div>" +
+    "<b>" + n + "</b><small>" + d + "</small>" + (got ? '<span class="bdone">Unlocked</span>' : '<span class="bprog"><i style="width:' + Math.round(have / goal * 100) + '%"></i></span><span class="bnum">' + have + " / " + goal + unit + "</span>") + "</div>";
+}
 const pfStats = u => { const st = u.stats || {}, sk = u.streak || {}; return { total: sk.total || 0, best: sk.best || 0, current: sk.current || 0, focus: st.focus || 0, sent: st.sent || 0, received: st.received || 0, posts: st.posts || 0, followers: u.followers || 0, following: u.following || 0 }; };
 $("open-activity").onclick = async () => {
   const { events, streak } = await api("/api/timeline");
@@ -2634,6 +2771,46 @@ document.addEventListener("click", async e => {
 });
 
 /* ---------- real-time updates from the server ---------- */
+/* streak celebrations: once a day for the daily streak, and at every 7-day and 30-day milestone */
+function celebrate(st){
+  const n = st && st.current; if (!n || !me) return;
+  const key = "studyhere_celebrated_" + me.id, today = new Date().toDateString();
+  let seen = {}; try { seen = JSON.parse(localStorage.getItem(key)) || {}; } catch {}
+  let kind = null;
+  if (n >= 30 && Math.floor(n / 30) > (seen.m || 0)) kind = "month";
+  else if (n >= 7 && Math.floor(n / 7) > (seen.w || 0)) kind = "week";
+  else if (seen.day !== today) kind = "day";
+  if (!kind) return;
+  seen.day = today; if (kind === "month") seen.m = Math.floor(n / 30); if (kind !== "day") seen.w = Math.max(seen.w || 0, Math.floor(n / 7));
+  try { localStorage.setItem(key, JSON.stringify(seen)); } catch {}
+  const toW = 7 - (n % 7), toM = 30 - (n % 30);
+  const C = {
+    day: { tier: "bronze", ic: "flame", tag: "Daily streak", title: n === 1 ? "Your streak starts today!" : "Day " + n + " streak!", sub: n === 1 ? "Come back tomorrow to keep the fire going." : "You've shown up " + n + " days in a row. Keep it going!", next: n < 7 ? toW + (toW === 1 ? " more day" : " more days") + " to your weekly badge" : toM + (toM === 1 ? " more day" : " more days") + " to your next monthly milestone" },
+    week: { tier: "gold", ic: "cal", tag: "Weekly achievement", title: (n / 7 >= 2 ? Math.floor(n / 7) + " weeks" : "One full week") + " in a row!", sub: n + " days of showing up. That's real discipline.", next: n < 30 ? toM + " more days to the monthly crown" : "Next week badge in 7 days" },
+    month: { tier: "saffron", ic: "crown", tag: "Monthly achievement", title: (n / 30 >= 2 ? Math.floor(n / 30) + " months" : "A whole month") + " of studying!", sub: n + " days without a break. You're in the top league now.", next: "Next monthly milestone in 30 days" }
+  }[kind];
+  const d = document.createElement("div"); d.className = "cele"; d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true"); d.setAttribute("aria-label", C.tag); d.dataset.testid = "streak-celebration";
+  const conf = Array.from({ length: 36 }, (_, i) => '<i style="--x:' + (Math.random() * 100).toFixed(1) + "%;--d:" + (Math.random() * .8).toFixed(2) + "s;--r:" + Math.round(Math.random() * 360) + "deg;--c:" + ["#F97316", "#E11D48", "#FDE047", "#22C55E", "#38BDF8", "#A855F7"][i % 6] + '"></i>').join("");
+  d.innerHTML = '<div class="cele-conf" aria-hidden="true">' + conf + '</div><div class="cele-card badge3 got t-' + C.tier + '"><span class="cele-tag"></span><div class="medal cele-medal" aria-hidden="true"><i class="rib"></i><span class="disc"><svg class="ic" viewBox="0 0 24 24">' + BICON[C.ic] + '</svg></span></div><h2></h2><p class="cele-sub"></p><p class="cele-next"></p><button class="btn" type="button">Keep it going</button></div>';
+  d.querySelector(".cele-tag").textContent = C.tag; d.querySelector("h2").textContent = C.title; d.querySelector(".cele-sub").textContent = C.sub; d.querySelector(".cele-next").textContent = C.next;
+  const close = () => { d.classList.add("out"); setTimeout(() => d.remove(), 250); document.removeEventListener("keydown", esc); };
+  const esc = e => { if (e.key === "Escape") close(); };
+  d.onclick = e => { if (e.target === d || e.target.closest(".cele-card .btn")) close(); };
+  document.addEventListener("keydown", esc);
+  document.body.appendChild(d); d.querySelector(".cele-card .btn").focus();
+}
+/* admins: approve or decline screen share requests from anywhere in the app */
+function shareReqShow(r){
+  if (me.role !== "admin" || document.querySelector('[data-sr="' + r.id + '"]')) return;
+  let box = $("share-reqs"); if (!box){ box = document.createElement("div"); box.id = "share-reqs"; box.setAttribute("aria-live", "polite"); document.body.appendChild(box); }
+  const c = document.createElement("div"); c.className = "sreq"; c.dataset.sr = r.id; c.setAttribute("role", "alertdialog"); c.setAttribute("aria-label", "Screen share request");
+  c.innerHTML = '<div class="sreq-ic" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div><div class="sreq-t"><b></b><small></small></div><div class="sreq-b"><button class="btn" data-srok="1" type="button">Approve</button><button class="btn ghost" data-srok="0" type="button">Decline</button></div>';
+  c.querySelector("b").textContent = r.name + " wants to share their screen";
+  c.querySelector("small").textContent = "Room " + r.room + " \u00b7 expires in 2 minutes";
+  c.onclick = e => { const b = e.target.closest("[data-srok]"); if (!b) return; dmSock && dmSock.emit("share-decide", { id: r.id, ok: b.dataset.srok === "1" }); c.classList.add("done"); };
+  box.appendChild(c); try { beep(); } catch {}
+}
+function shareReqHide(id, by){ const c = document.querySelector('[data-sr="' + id + '"]'); if (!c) return; if (by && by !== me.name){ c.querySelector("small").textContent = "Handled by " + by; setTimeout(() => c.remove(), 1500); } else c.remove(); }
 function liveHandlers(s){
   s.on("post-new", d => { if (d.inFeed) loadFeed(); if (pvOpen() && PF && PF.id === d.uid && d.uid !== me.id) openUser(PF.id, PFT); });
   s.on("post-del", d => document.querySelectorAll('[data-post="' + d.id + '"]').forEach(p => p.remove()));
@@ -3679,6 +3856,7 @@ function connectDm(){
   if (dmSock) return;
   dmSock = io({ auth: { token }, query: { dm: "1" }, forceNew: true });   // a separate connection so messages arrive anywhere in the app
   dmSock.on("dm", onDm); dmSock.on("notif", onNotif); liveHandlers(dmSock);
+  dmSock.on("share-request", shareReqShow); dmSock.on("share-request-done", d => shareReqHide(d.id, d.by));
   dmSock.on("suspended", d => { alert(d.message); logout(); });
   dmSock.on("connect_error", e => { if (e.message === "unauthorized") logout(); });
   setInterval(() => { if (me && dmSock) refreshChats(); }, 60000);

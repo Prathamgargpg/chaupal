@@ -47,6 +47,9 @@ On by default. Set `AUTO_MOD=off` to turn it off.
 - **Posts** reported by 3 different people are hidden until an admin reviews them. Dismissing the report restores the post.
 - **Strikes:** 3 confirmed violations within 24 hours suspend the account for 24 hours. Every automatic action appears in Admin → Reports as "flagged by auto-moderation", and admins can dismiss it or lift the suspension.
 
+## Screen sharing
+Only admins can share their screen straight away. Anyone else who taps Share screen sends a request; every admin who's online gets an Approve / Decline card, wherever they are in the app. An approval lasts until that person leaves the room, and unanswered requests expire after 2 minutes.
+
 ## When people can't connect
 Some office and mobile networks block direct WebRTC. Add a TURN relay (Metered.ca has a free tier) by setting the Metered or TURN variables above. The app picks them up automatically, and `/healthz` reports whether TURN is active.
 

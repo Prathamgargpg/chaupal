@@ -1020,6 +1020,13 @@ function videoBan(t, src, score, confirmed = true){
   }, VIDEO_BAN_MS + 500);
 }
 
+/* screen sharing: only admins share freely; everyone else asks, and any online admin approves or declines.
+   An approval lasts for that person's current visit to the room. */
+const shareReqs = new Map();   // request id -> { from: socket id, uid, name, room, at }
+const adminSockets = () => [...io.sockets.sockets.values()].filter(x => x.user && x.user.role === "admin");
+function shareDone(id, by){ shareReqs.delete(id); for (const a of adminSockets()) a.emit("share-request-done", { id, by }); }
+setInterval(() => { const now = Date.now(); for (const [id, r] of shareReqs) if (now - r.at > 120000){ const t = io.sockets.sockets.get(r.from); if (t) t.emit("share-decision", { ok: false, expired: true }); shareDone(id, null); } }, 15000).unref();
+
 io.on("connection", socket => {
   if (socket.handshake.query.dm === "1"){   // app-wide connection: track who is online
     const uid = socket.user.id, n = (online.get(uid) || 0) + 1;
@@ -1048,7 +1055,7 @@ io.on("connection", socket => {
     if (members.length >= MAX_ROOM_SIZE) return ack({ error: `This meeting is full (${MAX_ROOM_SIZE} people max).` });
     socket.join(room);
     if (rm && !GT.has(room)) startVibe(room, roomVibe(rm));
-    socket.room = room; socket.joinedAt = Date.now(); socket.camMs = 0; socket.camSince = 0;
+    socket.room = room; socket.shareOK = false; socket.joinedAt = Date.now(); socket.camMs = 0; socket.camSince = 0;
     logEvent(socket.user.id, "joined_room", { room });
     socket.to(room).emit("peer-joined", peerInfo(socket));
     const vb = videoBans.get(socket.user.id) || 0;
@@ -1148,6 +1155,27 @@ io.on("connection", socket => {
   });
 
   // admin controls: allow/stop someone's mic or camera, or remove them (admins only, never against other admins)
+  socket.on("share-req", (ack) => {
+    const reply = typeof ack === "function" ? ack : () => {};
+    if (!socket.room) return reply({ error: "Join a room first." });
+    if (socket.user.role === "admin" || socket.shareOK) return reply({ ok: true });
+    for (const r of shareReqs.values()) if (r.from === socket.id) return reply({ pending: true });
+    const now = Date.now(); if (now - (socket.shareAskAt || 0) < 20000) return reply({ error: "You just asked. Give the admin a moment." }); socket.shareAskAt = now;
+    const admins = adminSockets().filter(a => a.user.id !== socket.user.id);
+    if (!admins.length) return reply({ error: "No admin is online right now, so screen sharing can't be approved. Try again later." });
+    const id = crypto.randomBytes(8).toString("hex");
+    shareReqs.set(id, { from: socket.id, uid: socket.user.id, name: socket.user.name, room: socket.room, at: now });
+    for (const a of admins) a.emit("share-request", { id, name: socket.user.name, room: socket.room });
+    reply({ pending: true });
+  });
+  socket.on("share-decide", ({ id, ok } = {}) => {
+    if (socket.user.role !== "admin") return;
+    const r = shareReqs.get(String(id)); if (!r) return socket.emit("share-request-done", { id, by: null });
+    const t = io.sockets.sockets.get(r.from);
+    if (t && t.room === r.room){ if (ok) t.shareOK = true; t.emit("share-decision", { ok: !!ok, by: socket.user.name }); }
+    shareDone(String(id), socket.user.name);
+  });
+
   socket.on("admin-action", ({ to, action } = {}) => {
     const t = io.sockets.sockets.get(to);
     if (socket.user.role !== "admin" || !t || !socket.room || t.room !== socket.room || t.user.role === "admin") return;
