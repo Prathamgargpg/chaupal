@@ -52,7 +52,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS users (
 )`);
 for (const [c, d] of [["title", "TEXT DEFAULT ''"], ["bio", "TEXT DEFAULT ''"], ["role", "TEXT DEFAULT 'user'"], ["disabled", "INTEGER DEFAULT 0"], ["visibility", "TEXT DEFAULT 'public'"], ["show_streak", "INTEGER DEFAULT 1"], ["show_activity", "INTEGER DEFAULT 0"], ["daily_goal", "INTEGER DEFAULT 4"], ["show_leaderboard", "INTEGER DEFAULT 1"],
   ["avatar", "TEXT DEFAULT ''"], ["cover", "TEXT DEFAULT ''"], ["photo_v", "INTEGER DEFAULT 0"], ["pronouns", "TEXT DEFAULT ''"], ["age", "INTEGER DEFAULT 0"], ["country", "TEXT DEFAULT ''"],
-  ["relationship", "TEXT DEFAULT ''"], ["looking_for", "TEXT DEFAULT '[]'"], ["interests", "TEXT DEFAULT '[]'"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["settings", "TEXT DEFAULT '{}'"], ["dm_privacy", "TEXT DEFAULT 'everyone'"], ["pw_changed_at", "INTEGER DEFAULT 0"], ["suspended_until", "INTEGER DEFAULT 0"]])
+  ["relationship", "TEXT DEFAULT ''"], ["looking_for", "TEXT DEFAULT '[]'"], ["interests", "TEXT DEFAULT '[]'"], ["instagram", "TEXT DEFAULT ''"], ["linkedin", "TEXT DEFAULT ''"], ["last_seen", "INTEGER DEFAULT 0"], ["settings", "TEXT DEFAULT '{}'"], ["dm_privacy", "TEXT DEFAULT 'everyone'"], ["pw_changed_at", "INTEGER DEFAULT 0"], ["suspended_until", "INTEGER DEFAULT 0"], ["show_online", "INTEGER DEFAULT 1"], ["sess_after", "INTEGER DEFAULT 0"]])
   if (!db.prepare("PRAGMA table_info(users)").all().some(x => x.name === c)) db.exec(`ALTER TABLE users ADD COLUMN ${c} ${d}`);
 db.exec(`CREATE TABLE IF NOT EXISTS encouragements (
   id INTEGER PRIMARY KEY AUTOINCREMENT, from_id INTEGER NOT NULL, to_id INTEGER NOT NULL,
@@ -83,7 +83,7 @@ CREATE INDEX IF NOT EXISTS idx_pins_pinned ON pins(pinned_id);
 CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, text TEXT NOT NULL, due TEXT DEFAULT '', done INTEGER DEFAULT 0, created_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id);`);
 const findByEmail = db.prepare("SELECT * FROM users WHERE email = ?");
-const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, (avatar != '') has_avatar, (cover != '') has_cover, photo_v, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, last_seen, dm_privacy, show_leaderboard, pw_changed_at, suspended_until FROM users WHERE id = ?");
+const findById = db.prepare("SELECT id, email, name, title, bio, role, disabled, visibility, show_streak, show_activity, (avatar != '') has_avatar, (cover != '') has_cover, photo_v, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, last_seen, dm_privacy, show_leaderboard, pw_changed_at, suspended_until, show_online, sess_after FROM users WHERE id = ?");
 const pwHashOf = db.prepare("SELECT password_hash FROM users WHERE id = ?");
 if (!db.prepare("PRAGMA table_info(posts)").all().some(x => x.name === "hidden")) db.exec("ALTER TABLE posts ADD COLUMN hidden INTEGER DEFAULT 0");
 const insertUser = db.prepare("INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)");
@@ -173,7 +173,7 @@ app.get("/", (_req, res) => {
 
 const sign = u => jwt.sign({ id: u.id, name: u.name }, JWT_SECRET, { expiresIn: "7d" });
 // a login token stops working once the password changes after it was issued
-const tokenFresh = (p, u) => !u.pw_changed_at || (p.iat || 0) >= Math.floor(u.pw_changed_at / 1000);
+const tokenFresh = (p, u) => (p.iat || 0) >= Math.floor(Math.max(u.pw_changed_at || 0, u.sess_after || 0) / 1000);   // signs out after a password change or "sign out of all devices"
 async function setPassword(id, password){
   db.prepare("UPDATE users SET password_hash = ?, pw_changed_at = ? WHERE id = ?").run(await bcrypt.hash(String(password), 10), Date.now(), id);
   db.prepare("DELETE FROM reset_tokens WHERE user_id = ?").run(id);
@@ -193,7 +193,7 @@ function photoUrl(u, kind, viewer){
 }
 const profileFields = (u, viewer = u) => ({ avatar_url: photoUrl(u, "avatar", viewer), cover_url: photoUrl(u, "cover", viewer), pronouns: u.pronouns || "", age: u.age || 0, country: u.country || "", relationship: u.relationship || "",
   looking_for: jsonArr(u.looking_for), interests: jsonArr(u.interests), instagram: u.instagram || "", linkedin: u.linkedin || "" });
-const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0, dm_privacy: u.dm_privacy || "everyone", show_leaderboard: u.show_leaderboard ?? 1, ...profileFields(u) });
+const publicUser = u => ({ id: u.id, name: u.name, email: u.email, title: u.title || "", bio: u.bio || "", role: u.role || "user", visibility: u.visibility || "public", show_streak: u.show_streak ?? 1, show_activity: u.show_activity ?? 0, dm_privacy: u.dm_privacy || "everyone", show_leaderboard: u.show_leaderboard ?? 1, show_online: u.show_online ?? 1, ...profileFields(u) });
 
 /* ---------- settings: titles, encouragement rules ---------- */
 const TITLES = ["Student", "Developer", "Designer", "Founder", "Mentor", "Teacher", "Writer", "Job seeker"];
@@ -268,6 +268,7 @@ app.post("/api/signup", rateLimit("signup", 60, 3600000), wrap(async (req, res) 
   const n = String(name || "").trim().slice(0, 40) || e.split("@")[0];
   if (!EMAIL_RE.test(e)) return res.status(400).json({ error: "Enter a valid email address." });
   if (String(password || "").length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
+  if (String(password).length > 200) return res.status(400).json({ error: "Password is too long." });
   const badName = screenProfile(0, n); if (badName) return res.status(400).json({ error: "Please choose a name without offensive words." });
   if (findByEmail.get(e)) return res.status(409).json({ error: "An account with this email already exists. Sign in instead." });
   const hash = await bcrypt.hash(password, 10);
@@ -336,6 +337,7 @@ app.post("/api/reset", rateLimit("reset", 30, 600000), wrap(async (req, res) => 
   const row = db.prepare("SELECT * FROM reset_tokens WHERE token_hash = ? AND expires_at > ?").get(hashTok(String(token || "")), Date.now());
   if (!row) return res.status(400).json({ error: "This reset link is invalid or has expired. Request a new one." });
   if (String(password).length > 200) return res.status(400).json({ error: "Password is too long." });
+  if (db.prepare("SELECT disabled FROM users WHERE id = ?").get(row.user_id)?.disabled) return res.status(403).json({ error: "This account has been disabled. Contact the admin." });
   await setPassword(row.user_id, password);
   kick(row.user_id);
   res.json({ ok: true });
@@ -396,17 +398,75 @@ app.put("/api/me", auth, (req, res) => {
 app.put("/api/privacy", auth, (req, res) => {
   const b = req.body || {};
   if ((b.visibility || "public") !== req.user.visibility) db.prepare("UPDATE users SET photo_v = ? WHERE id = ?").run(Date.now(), req.user.id);   // new photo links, so old cached ones stop matching
-  db.prepare("UPDATE users SET visibility = ?, show_streak = ?, show_activity = ?, show_leaderboard = ?, dm_privacy = ? WHERE id = ?").run(
+  const showOn = b.show_online === undefined ? (req.user.show_online ?? 1) : b.show_online ? 1 : 0;
+  db.prepare("UPDATE users SET visibility = ?, show_streak = ?, show_activity = ?, show_leaderboard = ?, dm_privacy = ?, show_online = ? WHERE id = ?").run(
     ["public", "followers", "private"].includes(b.visibility) ? b.visibility : "public", b.show_streak ? 1 : 0, b.show_activity ? 1 : 0, b.show_leaderboard ? 1 : 0,
-    ["everyone", "following", "nobody"].includes(b.dm_privacy) ? b.dm_privacy : "everyone", req.user.id);
+    ["everyone", "following", "nobody"].includes(b.dm_privacy) ? b.dm_privacy : "everyone", showOn, req.user.id);
+  // tell everyone the new state: hidden looks the same as "offline, last seen unknown"
+  if (online.has(req.user.id)){ if (!showOn) emitAll("presence", { uid: req.user.id, online: false, last_seen: 0 }); else emitPresence(req.user.id, true); }
   res.json({ user: publicUser(findById.get(req.user.id)) });
 });
+
+/* ---------- your data: download, sign out everywhere, delete account ---------- */
+app.get("/api/me/export", rateLimit("export", 5, 3600000, req => req.headers.authorization || req.ip), auth, (req, res) => {
+  const me = req.user.id, all = (sql, ...a) => db.prepare(sql).all(...a);
+  const u = db.prepare("SELECT id, email, name, title, bio, role, visibility, show_streak, show_activity, show_leaderboard, show_online, dm_privacy, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, daily_goal, created_at, last_seen, (avatar != '') has_profile_picture, (cover != '') has_cover_picture FROM users WHERE id = ?").get(me);
+  const data = {
+    exported_at: new Date().toISOString(), app: "Study here",
+    note: "Everything Study here stores about your account. Times are milliseconds since 1970 (UTC). Your password is stored only as a one-way hash and is not included.",
+    account: { ...u, looking_for: jsonArr(u.looking_for), interests: jsonArr(u.interests) }, settings: userSettings(me),
+    posts: all("SELECT id, body, created_at FROM posts WHERE user_id = ? ORDER BY id", me),
+    comments: all("SELECT id, post_id, body, created_at FROM comments WHERE user_id = ? ORDER BY id", me),
+    likes: all("SELECT post_id, created_at FROM likes WHERE user_id = ?", me),
+    messages: all("SELECT d.id, d.from_id, d.to_id, CASE WHEN d.from_id = ? THEN 'sent' ELSE 'received' END direction, o.name other_person, d.body, d.created_at, d.read_at FROM dms d LEFT JOIN users o ON o.id = CASE WHEN d.from_id = ? THEN d.to_id ELSE d.from_id END WHERE d.from_id = ? OR d.to_id = ? ORDER BY d.id", me, me, me, me),
+    following: all("SELECT u.id, u.name, f.created_at FROM follows f JOIN users u ON u.id = f.followee_id WHERE f.follower_id = ?", me),
+    followers: all("SELECT u.id, u.name, f.created_at FROM follows f JOIN users u ON u.id = f.follower_id WHERE f.followee_id = ?", me),
+    blocked: all("SELECT u.id, u.name, b.created_at FROM blocks b JOIN users u ON u.id = b.blocked_id WHERE b.blocker_id = ?", me),
+    tasks: all("SELECT id, text, due, done, created_at FROM tasks WHERE user_id = ? ORDER BY id", me),
+    encouragements_sent: all("SELECT to_id, message, created_at FROM encouragements WHERE from_id = ?", me),
+    encouragements_received: all("SELECT from_id, message, created_at FROM encouragements WHERE to_id = ?", me),
+    pins_given: all("SELECT pinned_id, created_at FROM pins WHERE pinner_id = ?", me),
+    notifications: all("SELECT type, actor_id, text, created_at, read_at FROM notifs WHERE user_id = ? ORDER BY id DESC LIMIT 1000", me),
+    reports_you_made: all("SELECT kind, target_id, reason, status, created_at FROM reports WHERE reporter_id = ?", me),
+    login_days: all("SELECT day FROM login_days WHERE user_id = ? ORDER BY day", me).map(r => r.day),
+    activity: all("SELECT type, data, created_at FROM events WHERE user_id = ? ORDER BY id", me).map(e => ({ ...e, data: JSON.parse(e.data || "{}") }))
+  };
+  res.set({ "Content-Disposition": `attachment; filename="study-here-data-${dkey(Date.now())}.json"`, "Cache-Control": "no-store" }).type("application/json").send(JSON.stringify(data, null, 2));
+});
+app.post("/api/logout-all", rateLimit("logoutall", 10, 600000), auth, (req, res) => {
+  db.prepare("UPDATE users SET sess_after = ? WHERE id = ?").run(Date.now(), req.user.id);
+  kick(req.user.id);
+  res.json({ ok: true, token: sign(findById.get(req.user.id)) });   // this device stays signed in
+});
+// removes the account and everything tied to it (posts, comments, likes, messages, follows, activity, pictures)
+function eraseUser(id){
+  const posts = db.prepare("SELECT id FROM posts WHERE user_id = ?").all(id).map(r => r.id);
+  db.transaction(() => {
+    for (const pid of posts){ db.prepare("DELETE FROM comments WHERE post_id = ?").run(pid); db.prepare("DELETE FROM likes WHERE post_id = ?").run(pid); }
+    for (const [t, cols] of Object.entries({ posts: ["user_id"], comments: ["user_id"], likes: ["user_id"], dms: ["from_id", "to_id"], follows: ["follower_id", "followee_id"],
+      blocks: ["blocker_id", "blocked_id"], pins: ["pinner_id", "pinned_id"], tasks: ["user_id"], events: ["user_id"], login_days: ["user_id"], notifs: ["user_id", "actor_id"],
+      encouragements: ["from_id", "to_id"], reset_tokens: ["user_id"], reports: ["reporter_id", "target_id"] }))
+      db.prepare(`DELETE FROM ${t} WHERE ${cols.map(c => c + " = ?").join(" OR ")}`).run(...cols.map(() => id));
+    db.prepare("DELETE FROM users WHERE id = ?").run(id);
+  })();
+  for (const pid of posts) emitAll("post-del", { id: pid });
+  online.delete(id); videoBans.delete(id); kick(id);
+  emitAll("presence", { uid: id, online: false, last_seen: 0 });
+}
+app.delete("/api/me", rateLimit("delacct", 10, 600000), auth, wrap(async (req, res) => {
+  const b = req.body || {};
+  if (!(await bcrypt.compare(String(b.password || ""), pwHashOf.get(req.user.id).password_hash))) return res.status(400).json({ error: "Your password is wrong." });
+  if (req.user.role === "admin" && db.prepare("SELECT COUNT(*) c FROM users WHERE role = 'admin' AND disabled = 0").get().c <= 1)
+    return res.status(400).json({ error: "You're the only admin. Make someone else an admin first, then delete your account." });
+  eraseUser(req.user.id);
+  res.json({ ok: true });
+}));
 
 /* ---------- app settings (video, pins, troubleshooting, pomodoro) ---------- */
 const SET_DEF = { pomo_focus: 25, pomo_short: 5, pomo_long: 15, pomo_rounds: 4, pomo_sound: true, pomo_auto: false,
   tiles: 4, mirror_self: true, mirror_others: false, self_view: true,
   hide_pin_notifs: false, auto_pinback: false, hide_pin_counts: false, hide_my_pins: false, sort_pinned: true,
-  disable_messages: false, disable_pinning: false, low_res: false };
+  disable_messages: false, disable_pinning: false, low_res: false, hide_ip: false };
 const SET_NUM = { pomo_focus: [1, 120], pomo_short: [1, 60], pomo_long: [1, 90], pomo_rounds: [1, 12], tiles: [4, 12] };
 function userSettings(uid){
   let s = {}; try { s = JSON.parse(db.prepare("SELECT settings s FROM users WHERE id = ?").get(uid)?.s || "{}"); } catch {}
@@ -529,7 +589,7 @@ app.get("/api/users/:id", auth, (req, res) => {
   const base = { id: o.id, name: o.name, title: o.title, visibility: o.visibility, followers: cnt("followee_id"), following: cnt("follower_id"), isFollowing: follows(req.user.id, o.id), followsMe: follows(o.id, req.user.id), isMe: o.id === req.user.id, iBlocked: !!db.prepare("SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?").get(req.user.id, o.id) };
   if (blockedEither(req.user.id, o.id) && req.user.role !== "admin") return res.json({ ...base, restricted: true, blocked: true });
   if (!canView(req.user, o)) return res.json({ ...base, restricted: true });
-  Object.assign(base, profileFields(o, req.user), { online: online.has(o.id), last_seen: online.has(o.id) ? Date.now() : o.last_seen || 0 });
+  Object.assign(base, profileFields(o, req.user), o.show_online || o.id === req.user.id || req.user.role === "admin" ? { online: online.has(o.id), last_seen: online.has(o.id) ? Date.now() : o.last_seen || 0 } : { online: false, last_seen: 0 });
   const self = o.id === req.user.id || req.user.role === "admin";
   const showAct = self || o.show_activity;
   const week = Date.now() - 7 * 864e5;
@@ -537,7 +597,7 @@ app.get("/api/users/:id", auth, (req, res) => {
   const left = showAct ? db.prepare("SELECT data, created_at FROM events WHERE user_id = ? AND type = 'left_room' AND created_at > ? ORDER BY id DESC LIMIT 500").all(o.id, Date.now() - 32 * 864e5).map(e => ({ ...JSON.parse(e.data || "{}"), at: e.created_at })) : null;
   const sessions = left && { all: left.map(e => ({ at: e.at, ms: e.ms || 0 })), recent: left.slice(0, 8), weekRoom: left.filter(e => e.at >= week).reduce((a, e) => a + (e.ms || 0), 0), weekCam: left.filter(e => e.at >= week).reduce((a, e) => a + (e.cam || 0), 0) };
   const partners = db.prepare("SELECT u.id, u.name, u.title, u.visibility, (u.avatar != '') has_avatar, u.photo_v FROM follows a JOIN follows b ON b.follower_id = a.followee_id AND b.followee_id = a.follower_id JOIN users u ON u.id = a.followee_id WHERE a.follower_id = ? AND u.disabled = 0 LIMIT 30").all(o.id)
-    .map(p => ({ id: p.id, name: p.name, title: p.title || "", avatar_url: photoUrl(p, "avatar", req.user), online: online.has(p.id) }));
+    .map(p => ({ id: p.id, name: p.name, title: p.title || "", avatar_url: photoUrl(p, "avatar", req.user), online: isOnline(p.id) }));
   res.json({ ...base, bio: o.bio, streak: self || o.show_streak ? streakOf(o.id) : null,
     posts: withLikes(db.prepare(POSTQ + "p.user_id = ? ORDER BY p.id DESC LIMIT 20").all(o.id), req.user),
     activity: showAct ? eventsOf(o.id, 20) : null, sessions, partners,
@@ -572,7 +632,7 @@ app.get("/api/users/:id/follows", auth, (req, res) => {
   if (!canView(req.user, o)) return res.status(403).json({ error: "This list is hidden." });
   const followers = req.query.type !== "following";
   const rows = db.prepare(`SELECT u.id, u.name, u.title, u.visibility, (u.avatar != '') has_avatar, u.photo_v FROM follows f JOIN users u ON u.id = ${followers ? "f.follower_id" : "f.followee_id"} WHERE ${followers ? "f.followee_id" : "f.follower_id"} = ? AND u.disabled = 0 ORDER BY f.created_at DESC LIMIT 200`).all(o.id);
-  res.json({ users: rows.filter(r => !blockedEither(req.user.id, r.id)).map(r => ({ id: r.id, name: r.name, title: r.title || "", avatar_url: photoUrl(r, "avatar", req.user), online: online.has(r.id), isFollowing: follows(req.user.id, r.id), isMe: r.id === req.user.id })) });
+  res.json({ users: rows.filter(r => !blockedEither(req.user.id, r.id)).map(r => ({ id: r.id, name: r.name, title: r.title || "", avatar_url: photoUrl(r, "avatar", req.user), online: isOnline(r.id), isFollowing: follows(req.user.id, r.id), isMe: r.id === req.user.id })) });
 });
 
 app.post("/api/posts", auth, (req, res) => {
@@ -718,6 +778,13 @@ const emitPostUpdate = (id, owner) => emitAll("post-update", { id, likes: likeCo
 function followChanged(a, b){
   const c = (col, id) => db.prepare(`SELECT COUNT(*) c FROM follows WHERE ${col} = ?`).get(id).c;
   for (const uid of [a, b]) emitAll("follow-update", { uid, followers: c("followee_id", uid), following: c("follower_id", uid) });
+}
+/* online / last-seen goes only to people allowed to see the profile, and never if the user turned it off */
+const showsOnline = id => (db.prepare("SELECT show_online s FROM users WHERE id = ?").get(id)?.s ?? 1) === 1;
+const isOnline = id => online.has(id) && showsOnline(id);
+function emitPresence(uid, on){
+  const u = findById.get(uid); if (!u || !u.show_online) return;
+  for (const s of appSockets()) if (s.user.id === uid || (!blockedEither(s.user.id, uid) && canView(s.user, u))) s.emit("presence", { uid, online: on, last_seen: Date.now() });
 }
 const touchSeen = uid => db.prepare("UPDATE users SET last_seen = ? WHERE id = ?").run(Date.now(), uid);
 app.get("/api/notifs", auth, (req, res) => {
@@ -902,8 +969,7 @@ app.patch("/api/admin/users/:id", auth, admin, wrap(async (req, res) => {
 app.delete("/api/admin/users/:id", auth, admin, (req, res) => {
   const id = Number(req.params.id);
   if (id === req.user.id) return res.status(400).json({ error: "You can't delete yourself." });
-  db.prepare("DELETE FROM users WHERE id = ?").run(id);
-  kick(id);
+  if (findById.get(id)) eraseUser(id);
   res.json({ ok: true });
 });
 
@@ -1044,12 +1110,12 @@ io.on("connection", socket => {
   if (socket.handshake.query.dm === "1"){   // app-wide connection: track who is online
     const uid = socket.user.id, n = (online.get(uid) || 0) + 1;
     online.set(uid, n); touchSeen(uid);
-    if (n === 1) emitAll("presence", { uid, online: true, last_seen: Date.now() }, uid);
+    if (n === 1) emitPresence(uid, true);
     socket.on("disconnect", () => {
       const left = (online.get(uid) || 1) - 1;
       if (left > 0) return online.set(uid, left);
       online.delete(uid); touchSeen(uid);
-      emitAll("presence", { uid, online: false, last_seen: Date.now() }, uid);
+      emitPresence(uid, false);
     });
   }
   // camera on/off, used to measure "video on" time for the profile

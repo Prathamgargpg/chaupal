@@ -1453,6 +1453,16 @@ html[data-theme="dark"] .cele-tag{background:#4A2A18;color:#FDBA74}
 /* timer theme videos */
 .timer .scene{position:relative;overflow:hidden}
 .timer .scene .scene-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:transparent}
+
+/* privacy: calls & data */
+#pr .pr-sec{border-top:1px solid var(--line,#eadfd6);margin-top:14px;padding-top:12px}
+#pr .pr-sec b{display:block;margin-bottom:2px}
+#pr .pr-sec .hint{margin:2px 0 8px}
+#pr .pr-danger b{color:#B91C1C}
+#pr .pr-del{background:#B91C1C;border-color:#B91C1C;color:#fff;margin-top:8px}
+#pr .pr-del[data-arm="1"]{background:#7F1D1D}
+#pr .card{max-height:90vh;overflow:auto}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style>
 </head>
 <body>
@@ -1817,13 +1827,22 @@ html[data-theme="dark"] .cele-tag{background:#4A2A18;color:#FDBA74}
 
 <div id="pr" class="modal hidden"><div class="card" data-testid="privacy-modal">
   <h2>Privacy settings</h2>
-  <div class="tabs" id="pr-tabs" style="margin-top:12px"><button data-pr="msg" aria-selected="true" data-testid="privacy-tab-messaging">Messaging</button><button data-pr="prof" aria-selected="false" data-testid="privacy-tab-profile">Profile</button></div>
+  <div class="tabs" id="pr-tabs" style="margin-top:12px"><button data-pr="msg" aria-selected="true" data-testid="privacy-tab-messaging">Messaging</button><button data-pr="prof" aria-selected="false" data-testid="privacy-tab-profile">Profile</button><button data-pr="data" aria-selected="false" data-testid="privacy-tab-data">Calls &amp; data</button></div>
   <div data-prp="msg"><label for="pr-dm">Who can message me?</label><select id="pr-dm" data-testid="privacy-dm-select"><option value="everyone">Everyone</option><option value="following">Only people I follow</option><option value="nobody">No one</option></select><p class="hint">People you have already messaged can always reply.</p></div>
   <div data-prp="prof" class="hidden">  <label for="p-vis">Who can see your profile and posts</label>
   <select id="p-vis" data-testid="privacy-visibility-select"><option value="public">Everyone</option><option value="followers">Only people who follow me</option><option value="private">Only me</option></select>
   <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-streak" style="width:auto" data-testid="privacy-streak-check"> Show my login streak on my profile</label>
   <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="p-act" style="width:auto" data-testid="privacy-activity-check"> Show my recent activity on my profile</label>
-  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pr-lb" style="width:auto" data-testid="privacy-leaderboard-check"> Show me on the weekly leaderboard</label></div>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pr-lb" style="width:auto" data-testid="privacy-leaderboard-check"> Show me on the weekly leaderboard</label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pr-on" style="width:auto" data-testid="privacy-online-check"> Show when I'm online and when I was last seen</label></div>
+  <div data-prp="data" class="hidden">
+    <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400"><input type="checkbox" id="pr-ip" style="width:auto;margin-top:3px" data-testid="privacy-hideip-check"><span>Hide my IP address in video rooms<br><small class="hint" style="margin:0">Your video goes through a secure relay server, so other people in the room can't see your internet address or rough location. May add a little delay.</small></span></label>
+    <div class="pr-sec"><b>Your data</b><p class="hint">Download a copy of everything Study here stores about you: profile, posts, messages, tasks and activity.</p><button class="btn ghost full" id="pr-export" type="button" data-testid="privacy-export-btn">Download my data</button></div>
+    <div class="pr-sec"><b>Signed-in devices</b><p class="hint">Lost a phone or used a shared computer? Sign out everywhere except this device.</p><button class="btn ghost full" id="pr-outall" type="button" data-testid="privacy-logout-all-btn">Sign out of all other devices</button></div>
+    <div class="pr-sec pr-danger"><b>Delete account</b><p class="hint">Permanently erases your account, posts, comments, messages, follows and activity. This can't be undone.</p>
+      <label for="pr-delpw" class="sr-only">Your password</label><input type="password" id="pr-delpw" placeholder="Enter your password to confirm" autocomplete="current-password" data-testid="privacy-delete-password">
+      <button class="btn full pr-del" id="pr-del" type="button" data-testid="privacy-delete-btn">Delete my account</button></div>
+  </div>
   <button class="btn full" id="pr-save" data-testid="privacy-save-btn">Save</button><button class="btn ghost full" id="pr-close" data-testid="privacy-close-btn">Discard changes</button>
   <div class="msg" id="pr-msg" role="alert"></div>
 </div></div>
@@ -2169,7 +2188,7 @@ async function flushCandidates(p){
 
 async function connectTo(id, name, initiator, relayOnly){
   // relay-only is used on the retry: it forces the TURN route that strict networks need
-  const pc = new RTCPeerConnection({ iceServers, iceCandidatePoolSize: 2, ...(relayOnly && relayOn ? { iceTransportPolicy: "relay" } : {}) });
+  const pc = new RTCPeerConnection({ iceServers, iceCandidatePoolSize: 2, ...((relayOnly || SET.hide_ip) && relayOn ? { iceTransportPolicy: "relay" } : {}) });
   const entry = peers.get(id) || { name, chain: Promise.resolve() };
   entry.pc = pc; entry.name = name; entry.pending = [];
   peers.set(id, entry);
@@ -2850,7 +2869,7 @@ function liveHandlers(s){
 document.addEventListener("keydown", e => { if (e.key !== "Escape") return; for (const id of ["prof", "pr", "st", "fl", "cpw"]) if (!$(id).classList.contains("hidden")) return $(id).classList.add("hidden"); });
 /* ---------- user settings (video, audio, pomodoro, pins, troubleshooting) ---------- */
 var SET = { pomo_focus: 25, pomo_short: 5, pomo_long: 15, pomo_rounds: 4, pomo_sound: true, pomo_auto: false, tiles: 4, mirror_self: true, mirror_others: false, self_view: true,
-  hide_pin_notifs: false, auto_pinback: false, hide_pin_counts: false, hide_my_pins: false, sort_pinned: true, disable_messages: false, disable_pinning: false, low_res: false };
+  hide_pin_notifs: false, auto_pinback: false, hide_pin_counts: false, hide_my_pins: false, sort_pinned: true, disable_messages: false, disable_pinning: false, low_res: false, hide_ip: false };
 var myPins = new Set(), myFollowing = new Set(), meteredError = "";
 // checks whether STUN and the TURN relay actually answer from this network
 async function testVideoConnection(){
@@ -3100,6 +3119,7 @@ function prTab(t){
 document.querySelectorAll("#pr-tabs button").forEach(b => b.onclick = () => prTab(b.dataset.pr));
 function openPrivacy(){
   $("pr-dm").value = me.dm_privacy || "everyone"; $("p-vis").value = me.visibility || "public"; $("p-streak").checked = !!me.show_streak; $("p-act").checked = !!me.show_activity; $("pr-lb").checked = me.show_leaderboard !== 0;
+  $("pr-on").checked = me.show_online !== 0; $("pr-ip").checked = !!SET.hide_ip; $("pr-delpw").value = ""; prDelArm(false);
   $("pr-msg").textContent = ""; prTab("msg"); $("pr").classList.remove("hidden");
 }
 $("pr-close").onclick = () => $("pr").classList.add("hidden");
@@ -3130,10 +3150,45 @@ $("cpw-save").onclick = saveChangePw;
 CPW.forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") saveChangePw(); }));
 $("pr-save").onclick = async () => {
   try {
-    const r = await api("/api/privacy", { method: "PUT", body: { dm_privacy: $("pr-dm").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked, show_leaderboard: $("pr-lb").checked } });
+    const r = await api("/api/privacy", { method: "PUT", body: { dm_privacy: $("pr-dm").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked, show_leaderboard: $("pr-lb").checked, show_online: $("pr-on").checked } });
+    if (!!SET.hide_ip !== $("pr-ip").checked){ const st = await api("/api/settings", { method: "PUT", body: { hide_ip: $("pr-ip").checked } }); Object.assign(SET, st.settings); }
     Object.assign(me, r.user); $("pr").classList.add("hidden"); toast("Privacy settings saved");
     if (pvOpen() && PF && PF.id === me.id) openUser(me.id, PFT);
   } catch (e) { $("pr-msg").textContent = e.message; }
+};
+
+/* your data: download, sign out everywhere, delete account */
+$("pr-export").onclick = async () => {
+  const b = $("pr-export"); b.disabled = true;
+  try {
+    const r = await fetch("/api/me/export", { headers: { Authorization: "Bearer " + token } });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "Couldn't prepare your data. Try again.");
+    const url = URL.createObjectURL(await r.blob()), a = document.createElement("a");
+    a.href = url; a.download = "study-here-my-data.json"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast("Your data is downloading");
+  } catch (e) { $("pr-msg").textContent = e.message; }
+  finally { b.disabled = false; }
+};
+$("pr-outall").onclick = async () => {
+  try {
+    const r = await api("/api/logout-all", { method: "POST", body: {} });
+    token = r.token; try { localStorage.setItem("studyhere_token", token); } catch {}
+    $("pr").classList.add("hidden"); toast("Signed out of all other devices");
+    setTimeout(() => location.reload(), 1200);   // this device reconnects with its fresh token
+  } catch (e) { $("pr-msg").textContent = e.message; }
+};
+let prDelTimer = 0;
+function prDelArm(on){ const b = $("pr-del"); b.dataset.arm = on ? "1" : ""; b.textContent = on ? "Click again to delete forever" : "Delete my account"; clearTimeout(prDelTimer); if (on) prDelTimer = setTimeout(() => prDelArm(false), 6000); }
+$("pr-del").onclick = async () => {
+  const m = $("pr-msg"); m.textContent = "";
+  if (!$("pr-delpw").value) { m.textContent = "Enter your password to confirm."; return $("pr-delpw").focus(); }
+  if (!$("pr-del").dataset.arm) return prDelArm(true);
+  $("pr-del").disabled = true;
+  try {
+    await api("/api/me", { method: "DELETE", body: { password: $("pr-delpw").value } });
+    $("pr").classList.add("hidden"); logout(); toast("Your account and data have been deleted.");
+  } catch (e) { m.textContent = e.message; prDelArm(false); }
+  finally { $("pr-del").disabled = false; }
 };
 
 /* ---------- tasks ---------- */
@@ -4117,7 +4172,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
 /* ---------- boot ---------- */
 (async () => {
   const rt = new URLSearchParams(location.search).get("reset");
-  if (rt){ resetToken = rt; show("auth"); setMode("reset"); return; }
+  if (rt){ resetToken = rt; history.replaceState(null, "", location.pathname); show("auth"); setMode("reset"); return; }
   if (!token){ show("auth"); return; }
   try { const r = await api("/api/me"); me = r.user; quota = r.quota; afterLogin(); }
   catch { token = null; localStorage.removeItem("studyhere_token"); show("auth"); }

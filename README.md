@@ -60,3 +60,12 @@ Some office and mobile networks block direct WebRTC. Add a TURN relay (Metered.c
 - `sw.js` – service worker
 - `render.yaml` – Render config
 - `env.example` – settings template
+
+## Privacy controls (Privacy settings → Profile / Calls & data)
+
+- **Online status**: users can hide "online now" and "last seen". Presence is only ever sent to people allowed to view the profile (never for private profiles or blocked users).
+- **Hide my IP in video rooms**: forces the call through the TURN relay (Metered), so other participants never see the user's IP address or rough location.
+- **Download my data**: a JSON file with the account, settings, posts, comments, likes, messages, follows, blocks, tasks, notifications and activity (no password hash).
+- **Sign out of all other devices**: invalidates every existing login token except the current one.
+- **Delete my account**: password-confirmed; permanently erases the user and everything tied to them. Admin deletion erases the same way. The last remaining admin can't delete themselves.
+- Password-reset tokens are removed from the address bar as soon as the page opens, and reset links don't work for disabled accounts.
