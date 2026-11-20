@@ -8,6 +8,7 @@ import Database from "better-sqlite3";
 import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import compression from "compression";
 import { checkText } from "./moderation.js";
 import crypto from "crypto";
 
@@ -112,6 +113,8 @@ if (pool) {
 /* ---------- app ---------- */
 const app = express();
 app.set("trust proxy", 1);
+app.disable("x-powered-by");
+app.use(compression({ threshold: 1024 }));   // the page is ~370 KB raw; gzip/brotli makes it ~80 KB
 app.use("/api/me/photo", express.json({ limit: "2mb" }));   // compressed profile / cover pictures
 app.use(express.json({ limit: "10kb" }));
 // browser security headers on every response.
@@ -206,13 +209,17 @@ function quota(uid) {
 }
 
 // tiny in-memory rate limit for auth endpoints
-const hits = new Map();
-function limit(req, res, next) {
-  const key = req.ip, now = Date.now();
-  const arr = (hits.get(key) || []).filter(t => now - t < 10 * 60 * 1000);
-  if (arr.length >= 30) return res.status(429).json({ error: "Too many attempts. Try again in a few minutes." });
-  arr.push(now); hits.set(key, arr); next();
-}
+/* rate limits: separate buckets per action. Logins count only failures, per IP and per email,
+   so a whole class signing in from the same college Wi-Fi isn't locked out. */
+const buckets = new Map();
+const recent = (key, win) => (buckets.get(key) || []).filter(t => Date.now() - t < win);
+const full = (key, max, win) => recent(key, win).length >= max;
+function hit(key, max, win){ const a = recent(key, win); if (a.length >= max){ buckets.set(key, a); return false; } a.push(Date.now()); buckets.set(key, a); return true; }
+setInterval(() => { for (const [k, a] of buckets){ const f = a.filter(t => Date.now() - t < 3600000); if (f.length) buckets.set(k, f); else buckets.delete(k); } }, 600000).unref();
+const TOO_MANY = { error: "Too many attempts. Try again in a few minutes." };
+const rateLimit = (name, max, win, keyOf = req => req.ip) => (req, res, next) => hit(name + ":" + keyOf(req), max, win) ? next() : res.status(429).json(TOO_MANY);
+const limit = rateLimit("gen", 30, 600000);
+const LOGIN_WIN = 15 * 60000;
 
 // Express 4 does not catch errors thrown in async routes; this does, and answers in JSON
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -254,7 +261,7 @@ function screenProfile(uid, ...parts){
   return r.severe || r.mild ? "Please remove the offensive words from your name, bio or interests." : null;
 }
 
-app.post("/api/signup", limit, wrap(async (req, res) => {
+app.post("/api/signup", rateLimit("signup", 60, 3600000), wrap(async (req, res) => {
   const { name, email, password } = req.body || {};
   const e = String(email || "").trim().toLowerCase();
   const n = String(name || "").trim().slice(0, 40) || e.split("@")[0];
@@ -277,11 +284,13 @@ app.post("/api/signup", limit, wrap(async (req, res) => {
   res.json({ token: sign(user), user: publicUser(user) });
 }));
 
-app.post("/api/login", limit, wrap(async (req, res) => {
+app.post("/api/login", wrap(async (req, res) => {
   const { email, password } = req.body || {};
-  const row = findByEmail.get(String(email || "").trim().toLowerCase());
+  const em = String(email || "").trim().toLowerCase().slice(0, 200);
+  if (full("lf-ip:" + req.ip, 50, LOGIN_WIN) || full("lf-em:" + em, 8, LOGIN_WIN)) return res.status(429).json({ error: "Too many wrong passwords. Wait 15 minutes, or use Forgot password." });
+  const row = findByEmail.get(em);
   const ok = row && (await bcrypt.compare(String(password || ""), row.password_hash));
-  if (!ok) return res.status(401).json({ error: "Email or password is incorrect." });
+  if (!ok){ hit("lf-ip:" + req.ip, 50, LOGIN_WIN); hit("lf-em:" + em, 8, LOGIN_WIN); return res.status(401).json({ error: "Email or password is incorrect." }); }
   if (row.disabled) return res.status(403).json({ error: "This account has been disabled. Contact the admin." });
   if (row.suspended_until > Date.now()) return res.status(403).json({ error: suspendedMsg(row.suspended_until) });
   recordLogin(row.id);
@@ -304,7 +313,7 @@ async function sendMail(to, subject, html, text) {
   return r.ok;
 }
 // always answers "ok" so nobody can use this to find out which emails have accounts
-app.post("/api/forgot", limit, wrap(async (req, res) => {
+app.post("/api/forgot", rateLimit("forgot", 20, 600000), wrap(async (req, res) => {
   const e = String((req.body || {}).email || "").trim().toLowerCase();
   const u = EMAIL_RE.test(e) ? findByEmail.get(e) : null;
   if (u && !u.disabled && !db.prepare("SELECT 1 FROM reset_tokens WHERE user_id = ? AND created_at > ?").get(u.id, Date.now() - 120000)) {
@@ -320,7 +329,7 @@ app.post("/api/forgot", limit, wrap(async (req, res) => {
   // mail:false only says the server can't send email at all; it reveals nothing about the address
   res.json({ ok: true, mail: mailReady() });
 }));
-app.post("/api/reset", limit, wrap(async (req, res) => {
+app.post("/api/reset", rateLimit("reset", 30, 600000), wrap(async (req, res) => {
   const { token, password } = req.body || {};
   if (String(password || "").length < 8) return res.status(400).json({ error: "Password must be at least 8 characters." });
   const row = db.prepare("SELECT * FROM reset_tokens WHERE token_hash = ? AND expires_at > ?").get(hashTok(String(token || "")), Date.now());
@@ -344,7 +353,7 @@ function auth(req, res, next) {
 
 app.get("/api/me", auth, (req, res) => { recordLogin(req.user.id); res.json({ user: publicUser(req.user), quota: quota(req.user.id), streak: streakOf(req.user.id), unread: unreadOf(req.user.id), notifUnread: notifUnread(req.user.id) }); });
 // change password while signed in: needs the current one, signs out other devices, returns a fresh token
-app.put("/api/password", limit, auth, wrap(async (req, res) => {
+app.put("/api/password", rateLimit("pw", 20, 600000), auth, wrap(async (req, res) => {
   const { current, password } = req.body || {};
   if (!(await bcrypt.compare(String(current || ""), pwHashOf.get(req.user.id).password_hash))) return res.status(400).json({ error: "Your current password is wrong." });
   if (String(password || "").length < 8) return res.status(400).json({ error: "New password must be at least 8 characters." });
@@ -951,6 +960,9 @@ app.get("/healthz", (_req, res) => {
 });
 
 // any unhandled route error (including bad JSON bodies) -> JSON, never an HTML page
+// unknown API addresses answer in JSON, not with an HTML error page
+app.use("/api", (_req, res) => res.status(404).json({ error: "Not found." }));
+
 app.use((err, _req, res, _next) => {
   console.error("Request error:", err);
   if (err.type === "entity.parse.failed") return res.status(400).json({ error: "Bad request." });
@@ -1114,6 +1126,7 @@ io.on("connection", socket => {
   socket.on("chat", (text, ack) => {
     if (!socket.room || typeof text !== "string") return;
     const reply = typeof ack === "function" ? ack : null;
+    if (!hit("chat:" + socket.id, 8, 10000)) return reply ? reply({ error: "You're sending messages too fast. Slow down a little." }) : null;
     const sc = screenText(socket.user.id, text.slice(0, 1000), "room chat");
     if (sc.block) return reply ? reply({ error: sc.block }) : socket.emit("mod-warn", { message: sc.block });
     socket.to(socket.room).emit("chat", { name: socket.user.name, text: sc.text });
@@ -1214,6 +1227,7 @@ io.on("connection", socket => {
   });
   // what you are working on, shown under your name on your tile
   socket.on("goal", g => {
+    if (!hit("goal:" + socket.id, 6, 10000)) return;
     const sc = screenText(socket.user.id, String(g || "").trim().slice(0, 80), "goal");
     if (sc.block) socket.emit("mod-warn", { message: sc.block });
     socket.goal = sc.block ? "" : sc.text;
