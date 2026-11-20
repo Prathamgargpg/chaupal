@@ -408,7 +408,7 @@ app.put("/api/privacy", auth, (req, res) => {
 });
 
 /* ---------- your data: download, sign out everywhere, delete account ---------- */
-app.get("/api/me/export", rateLimit("export", 5, 3600000, req => req.headers.authorization || req.ip), auth, (req, res) => {
+app.get("/api/me/export", rateLimit("export", 5, 3600000, req => req.headers.authorization || req.ip), auth, admin, (req, res) => {
   const me = req.user.id, all = (sql, ...a) => db.prepare(sql).all(...a);
   const u = db.prepare("SELECT id, email, name, title, bio, role, visibility, show_streak, show_activity, show_leaderboard, show_online, dm_privacy, pronouns, age, country, relationship, looking_for, interests, instagram, linkedin, daily_goal, created_at, last_seen, (avatar != '') has_profile_picture, (cover != '') has_cover_picture FROM users WHERE id = ?").get(me);
   const data = {
@@ -433,7 +433,7 @@ app.get("/api/me/export", rateLimit("export", 5, 3600000, req => req.headers.aut
   };
   res.set({ "Content-Disposition": `attachment; filename="study-here-data-${dkey(Date.now())}.json"`, "Cache-Control": "no-store" }).type("application/json").send(JSON.stringify(data, null, 2));
 });
-app.post("/api/logout-all", rateLimit("logoutall", 10, 600000), auth, (req, res) => {
+app.post("/api/logout-all", rateLimit("logoutall", 10, 600000), auth, admin, (req, res) => {
   db.prepare("UPDATE users SET sess_after = ? WHERE id = ?").run(Date.now(), req.user.id);
   kick(req.user.id);
   res.json({ ok: true, token: sign(findById.get(req.user.id)) });   // this device stays signed in
@@ -453,7 +453,7 @@ function eraseUser(id){
   online.delete(id); videoBans.delete(id); kick(id);
   emitAll("presence", { uid: id, online: false, last_seen: 0 });
 }
-app.delete("/api/me", rateLimit("delacct", 10, 600000), auth, wrap(async (req, res) => {
+app.delete("/api/me", rateLimit("delacct", 10, 600000), auth, admin, wrap(async (req, res) => {
   const b = req.body || {};
   if (!(await bcrypt.compare(String(b.password || ""), pwHashOf.get(req.user.id).password_hash))) return res.status(400).json({ error: "Your password is wrong." });
   if (req.user.role === "admin" && db.prepare("SELECT COUNT(*) c FROM users WHERE role = 'admin' AND disabled = 0").get().c <= 1)
@@ -485,6 +485,7 @@ function cleanSettings(b){
 app.get("/api/settings", auth, (req, res) => res.json({ settings: userSettings(req.user.id) }));
 app.put("/api/settings", auth, (req, res) => {
   const s = { ...userSettings(req.user.id), ...cleanSettings(req.body || {}) };
+  if (req.user.role !== "admin") s.hide_ip = false;   // "Calls & data" options are admin-only
   db.prepare("UPDATE users SET settings = ? WHERE id = ?").run(JSON.stringify(s), req.user.id);
   for (const k of io.sockets.sockets.values()) if (k.user.id === req.user.id){ k.settings = s; if (k.room) k.to(k.room).emit("peer-updated", peerInfo(k)); }
   res.json({ settings: s });
@@ -861,7 +862,7 @@ app.put("/api/goal", auth, (req, res) => {
 });
 
 /* ---------- admin ---------- */
-const admin = (req, res, next) => (req.user.role === "admin" ? next() : res.status(403).json({ error: "Admins only." }));
+function admin(req, res, next){ return req.user.role === "admin" ? next() : res.status(403).json({ error: "Admins only." }); }
 const kick = uid => { for (const s of io.sockets.sockets.values()) if (s.user.id === uid) s.disconnect(true); };
 /* ---------- study rooms (created by admins) ---------- */
 const genRoomCode = () => { const r = n => Array.from(crypto.randomBytes(n), b => "abcdefghijkmnpqrstuvwxyz"[b % 24]).join(""); return `${r(3)}-${r(4)}-${r(3)}`; };

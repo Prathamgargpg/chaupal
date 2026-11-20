@@ -1827,7 +1827,7 @@ html[data-theme="dark"] .cele-tag{background:#4A2A18;color:#FDBA74}
 
 <div id="pr" class="modal hidden"><div class="card" data-testid="privacy-modal">
   <h2>Privacy settings</h2>
-  <div class="tabs" id="pr-tabs" style="margin-top:12px"><button data-pr="msg" aria-selected="true" data-testid="privacy-tab-messaging">Messaging</button><button data-pr="prof" aria-selected="false" data-testid="privacy-tab-profile">Profile</button><button data-pr="data" aria-selected="false" data-testid="privacy-tab-data">Calls &amp; data</button></div>
+  <div class="tabs" id="pr-tabs" style="margin-top:12px"><button data-pr="msg" aria-selected="true" data-testid="privacy-tab-messaging">Messaging</button><button data-pr="prof" aria-selected="false" data-testid="privacy-tab-profile">Profile</button><button data-pr="data" aria-selected="false" id="pr-tab-data" class="hidden" data-testid="privacy-tab-data">Calls &amp; data</button></div>
   <div data-prp="msg"><label for="pr-dm">Who can message me?</label><select id="pr-dm" data-testid="privacy-dm-select"><option value="everyone">Everyone</option><option value="following">Only people I follow</option><option value="nobody">No one</option></select><p class="hint">People you have already messaged can always reply.</p></div>
   <div data-prp="prof" class="hidden">  <label for="p-vis">Who can see your profile and posts</label>
   <select id="p-vis" data-testid="privacy-visibility-select"><option value="public">Everyone</option><option value="followers">Only people who follow me</option><option value="private">Only me</option></select>
@@ -2188,7 +2188,7 @@ async function flushCandidates(p){
 
 async function connectTo(id, name, initiator, relayOnly){
   // relay-only is used on the retry: it forces the TURN route that strict networks need
-  const pc = new RTCPeerConnection({ iceServers, iceCandidatePoolSize: 2, ...((relayOnly || SET.hide_ip) && relayOn ? { iceTransportPolicy: "relay" } : {}) });
+  const pc = new RTCPeerConnection({ iceServers, iceCandidatePoolSize: 2, ...((relayOnly || (SET.hide_ip && me && me.role === "admin")) && relayOn ? { iceTransportPolicy: "relay" } : {}) });
   const entry = peers.get(id) || { name, chain: Promise.resolve() };
   entry.pc = pc; entry.name = name; entry.pending = [];
   peers.set(id, entry);
@@ -3120,7 +3120,7 @@ document.querySelectorAll("#pr-tabs button").forEach(b => b.onclick = () => prTa
 function openPrivacy(){
   $("pr-dm").value = me.dm_privacy || "everyone"; $("p-vis").value = me.visibility || "public"; $("p-streak").checked = !!me.show_streak; $("p-act").checked = !!me.show_activity; $("pr-lb").checked = me.show_leaderboard !== 0;
   $("pr-on").checked = me.show_online !== 0; $("pr-ip").checked = !!SET.hide_ip; $("pr-delpw").value = ""; prDelArm(false);
-  $("pr-msg").textContent = ""; prTab("msg"); $("pr").classList.remove("hidden");
+  $("pr-tab-data").classList.toggle("hidden", me.role !== "admin"); $("pr-msg").textContent = ""; prTab("msg"); $("pr").classList.remove("hidden");
 }
 $("pr-close").onclick = () => $("pr").classList.add("hidden");
 /* ---- change password (signed in) ---- */
@@ -3151,7 +3151,7 @@ CPW.forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter"
 $("pr-save").onclick = async () => {
   try {
     const r = await api("/api/privacy", { method: "PUT", body: { dm_privacy: $("pr-dm").value, visibility: $("p-vis").value, show_streak: $("p-streak").checked, show_activity: $("p-act").checked, show_leaderboard: $("pr-lb").checked, show_online: $("pr-on").checked } });
-    if (!!SET.hide_ip !== $("pr-ip").checked){ const st = await api("/api/settings", { method: "PUT", body: { hide_ip: $("pr-ip").checked } }); Object.assign(SET, st.settings); }
+    if (me.role === "admin" && !!SET.hide_ip !== $("pr-ip").checked){ const st = await api("/api/settings", { method: "PUT", body: { hide_ip: $("pr-ip").checked } }); Object.assign(SET, st.settings); }
     Object.assign(me, r.user); $("pr").classList.add("hidden"); toast("Privacy settings saved");
     if (pvOpen() && PF && PF.id === me.id) openUser(me.id, PFT);
   } catch (e) { $("pr-msg").textContent = e.message; }
